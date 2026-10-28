@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toy Car Energy Lab</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#14181f;--mu:#566070;--bd:#d3d9e3;--ek:#2563eb;--eg:#15954a;--ed:#e07000;--es:#8b3fd1;--sky:#eef3fb;--ground:#8a93a3;--carpet:#a33b3b;--bad:#c62828;--good:#1b7a3a;--warn:#fdecea;--ok:#e6f6ec;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f131a;--card:#181e28;--tx:#eef1f6;--mu:#a5afbf;--bd:#2e3746;--ek:#5b9bff;--eg:#4cd07a;--ed:#ffa040;--es:#c08cff;--sky:#141b27;--ground:#3b4558;--carpet:#d05a5a;--bad:#ff8a80;--good:#6fdc8f;--warn:#3a1d1d;--ok:#16301f}}
+:root[data-theme="dark"]{--bg:#0f131a;--card:#181e28;--tx:#eef1f6;--mu:#a5afbf;--bd:#2e3746;--ek:#5b9bff;--eg:#4cd07a;--ed:#ffa040;--es:#c08cff;--sky:#141b27;--ground:#3b4558;--carpet:#d05a5a;--bad:#ff8a80;--good:#6fdc8f;--warn:#3a1d1d;--ok:#16301f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:14px}
+h1{font-size:1.35rem;margin:0 0 2px}
+.sub{color:var(--mu);margin:0 0 12px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+canvas{width:100%;height:auto;display:block;border-radius:8px}
+#banner{margin:10px 0 0;padding:9px 12px;border-radius:8px;font-weight:600;border:1px solid var(--bd)}
+#banner.stall{background:var(--warn);color:var(--bad);border-color:var(--bad)}
+#banner.done{background:var(--ok);color:var(--good);border-color:var(--good)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+h2{font-size:1rem;margin:0 0 8px}
+.row{margin:8px 0}
+.row label{display:flex;justify-content:space-between;font-weight:600;font-size:.92rem}
+.row output{font-variant-numeric:tabular-nums;color:var(--ek)}
+input[type=range]{width:100%}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+button,select{font:inherit;padding:7px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+button.p{background:var(--ek);color:#fff;border-color:var(--ek);font-weight:600}
+.bars{display:flex;gap:10px;justify-content:space-around;align-items:flex-end}
+.col{flex:1;text-align:center;min-width:0}
+.val{font-variant-numeric:tabular-nums;font-weight:700;font-size:.9rem;height:1.4em}
+.track{height:210px;border-bottom:2px solid var(--tx);border-left:2px solid var(--tx);display:flex;align-items:flex-end;background:var(--sky)}
+.fill{width:100%;height:0;transition:none}
+.nm{font-size:.78rem;color:var(--mu);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+td{padding:4px 2px;border-bottom:1px solid var(--bd)}td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+#insight{margin-top:10px;padding:10px;border-radius:8px;background:var(--sky);border-left:4px solid var(--ek);font-size:.9rem}
+.mu{color:var(--mu);font-size:.8rem;margin-top:8px}
+</style></head><body>
+<h1>Toy Car Energy Lab</h1>
+<p class="sub">Adjustable-mass car · spring A → smooth floor → ramp → carpet (friction) → smooth track → bumper spring D</p>
+<div class="card">
+<canvas id="cv" width="920" height="330"></canvas>
+<div id="banner">Ready — press Play.</div>
+</div>
+<div class="grid">
+<div class="card"><h2>Controls</h2>
+<div class="row"><label>Car mass (m)<output id="om"></output></label><input id="mass" type="range" min="0.3" max="1.8" step="0.05" value="0.5"></div>
+<div class="row"><label>Velocity at B (v<sub>B</sub>)<output id="ovB"></output></label><input id="vB" type="range" min="1" max="6" step="0.1" value="3"></div>
+<div class="row"><label>Track height (h)<output id="oh"></output></label><input id="h" type="range" min="0" max="1.5" step="0.01" value="0.2"></div>
+<div class="row"><label>Carpet friction work (W<sub>diss</sub>)<output id="oW"></output></label><input id="W" type="range" min="0" max="3" step="0.01" value="0.67"></div>
+<div class="btns"><button class="p" id="play">Play</button><button id="reset">Reset</button>
+<label>Speed <select id="spd"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label></div>
+<div class="btns"><button id="hmaxBtn">Set h = h<sub>max</sub></button><button id="defBtn">Defaults</button></div>
+<div class="mu" id="phase"></div></div>
+<div class="card"><h2>Energy bars (LOL chart, live)</h2><div class="bars" id="bars"></div>
+<div class="mu" id="sum"></div></div>
+<div class="card"><h2>Analysis</h2><table id="tbl"></table><div id="insight"></div></div>
+</div>
+<script>
+let m=0.5,K=40;const g=9.8;
+const X={wallA:0.1,natA:1.5,B:2.4,r0:3.2,r1:4.4,c0:4.9,c1:6.5,natD:7.3,wallD:8.7};
+const $=id=>document.getElementById(id);
+const p={m:0.5,vB:3,h:0.2,W:0.67};
+let pts=[],s=0,v=0,wd=0,running=false,state="ready",E=0,c0=0,startX=0,last=0;
+const cv=$("cv"),ctx=cv.getContext("2d"),CW=cv.width,CH=cv.height,sx=100,floorY=CH-48;
+const tX=x=>x*sx,tY=y=>floorY-y*sx;
+function yOf(x){if(x<=X.r0)return 0;if(x>=X.r1)return p.h;const u=(x-X.r0)/(X.r1-X.r0);return p.h*(1-Math.cos(Math.PI*u))/2}
+function build(){pts=[];let S=0,px=0.3,py=0;for(let x=0.3;x<=8.5001;x+=0.01){const y=yOf(x);if(x>0.3)S+=Math.hypot(x-px,y-py);pts.push({x,y,s:S});px=x;py=y}}
+function at(S){let lo=0,hi=pts.length-1;if(S<=0)S=0;if(S>=pts[hi].s)S=pts[hi].s-1e-6;
+while(hi-lo>1){const mid=(lo+hi)>>1;if(pts[mid].s<=S)lo=mid;else hi=mid}
+const a=pts[lo],b=pts[hi],t=(S-a.s)/(b.s-a.s);
+return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,dyds:(b.y-a.y)/(b.s-a.s),ang:Math.atan2(b.y-a.y,b.x-a.x)}}
+function reset(){m=p.m;K=80*m;build();E=0.5*m*p.vB*p.vB;c0=Math.sqrt(2*E/K);startX=X.natA-c0;s=startX-0.3;v=0;wd=0;running=false;state="ready";$("play").textContent="Play";readout();frame()}
+function sub(dt){
+const P=at(s);let a=-g*P.dyds;
+if(P.x<X.natA)a+=K*(X.natA-P.x)/m;else if(P.x>X.natD)a-=K*(P.x-X.natD)/m;
+v+=a*dt;let ds;
+if(P.x>=X.c0&&P.x<=X.c1){const F=p.W/(X.c1-X.c0),dv=F/m*dt;
+if(Math.abs(v)<=dv){wd+=0.5*m*v*v;v=0;ds=0}
+else{v-=Math.sign(v)*dv;ds=v*dt;wd+=F*Math.abs(ds)}}
+else ds=v*dt;
+s+=ds;
+if(v<=0){v=0;running=false;state=at(s).x<X.natD?"stall":"done";$("play").textContent="Play"}}
+function loop(t){
+const dt=Math.min(0.05,(t-last)/1000)*parseFloat($("spd").value);last=t;
+if(running){let n=Math.ceil(dt/0.0005),h=dt/n;for(let i=0;i<n&&running;i++)sub(h)}
+frame();if(running)requestAnimationFrame(loop)}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function spring(x1,x2,y,col){const n=12,amp=9;ctx.beginPath();ctx.moveTo(tX(x1),y);
+for(let i=1;i<n;i++){ctx.lineTo(tX(x1+(x2-x1)*(i-0.5)/n),y+(i%2?-amp:amp))}
+ctx.lineTo(tX(x2),y);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke()}
+function draw(P){
+ctx.clearRect(0,0,CW,CH);ctx.fillStyle=cssv("--sky");ctx.fillRect(0,0,CW,CH);
+const tx=cssv("--tx"),mu=cssv("--mu");
+// ground
+ctx.beginPath();ctx.moveTo(tX(0.3),CH);pts.forEach(q=>ctx.lineTo(tX(q.x),tY(q.y)));ctx.lineTo(tX(8.5),CH);ctx.closePath();ctx.fillStyle=cssv("--ground");ctx.fill();
+ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(tX(q.x),tY(q.y)):ctx.moveTo(tX(q.x),tY(q.y)));ctx.strokeStyle=tx;ctx.lineWidth=3;ctx.stroke();
+// carpet
+ctx.fillStyle=cssv("--carpet");ctx.fillRect(tX(X.c0),tY(p.h)-4,tX(X.c1-X.c0),6);
+ctx.font="12px system-ui";ctx.textAlign="center";ctx.fillStyle=tx;ctx.fillText("carpet strip (friction)",tX((X.c0+X.c1)/2),tY(p.h)-12);
+// h marker
+ctx.setLineDash([5,4]);ctx.strokeStyle=mu;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(tX(2.7),tY(p.h));ctx.lineTo(tX(X.r1),tY(p.h));ctx.stroke();ctx.setLineDash([]);
+ctx.beginPath();ctx.moveTo(tX(2.8),tY(0));ctx.lineTo(tX(2.8),tY(p.h));ctx.stroke();
+ctx.textAlign="right";ctx.fillStyle=tx;ctx.fillText("h = "+(p.h*100).toFixed(0)+" cm",tX(2.72),tY(p.h/2)+4);
+// walls + springs
+ctx.fillStyle=tx;ctx.fillRect(tX(X.wallA)-6,tY(0)-40,6,40);ctx.fillRect(tX(X.wallD),tY(p.h)-40,6,40);
+const aEnd=Math.min(P.x-0.2,1.3+0.2),dFront=P.x+0.2,dEnd=Math.max(X.natD+0.2,dFront);
+spring(X.wallA,Math.min(aEnd,X.natA-0.2),tY(0)-14,cssv("--es"));
+spring(dEnd,X.wallD,tY(p.h)-14,cssv("--es"));
+// labels
+ctx.font="bold 15px system-ui";ctx.textAlign="center";ctx.fillStyle=tx;
+const lab=(t,x,y)=>ctx.fillText(t,tX(x),tY(y)+20);
+lab("A",startX,0);lab("B",X.B,0);lab("C",X.c1,p.h);lab("D",X.natD,p.h);
+ctx.font="11px system-ui";ctx.fillStyle=mu;ctx.fillText("spring A",tX(0.75),tY(0)-48);ctx.fillText("spring D",tX(8.1),tY(p.h)-48);
+// car
+ctx.save();ctx.translate(tX(P.x),tY(P.y));ctx.rotate(-P.ang);
+ctx.fillStyle="#e0483e";ctx.beginPath();ctx.roundRect(-20,-27,40,20,5);ctx.fill();
+ctx.fillStyle="#cfe8ff";ctx.fillRect(-4,-24,13,8);
+ctx.fillStyle="#111";[-12,12].forEach(w=>{ctx.beginPath();ctx.arc(w,-5,5,0,7);ctx.fill()});
+ctx.restore()}
+function energies(P){return{Ek:0.5*m*v*v,Eg:m*g*P.y,Ed:wd,Es:P.x<X.natA?0.5*K*(X.natA-P.x)**2:P.x>X.natD?0.5*K*(P.x-X.natD)**2:0}}
+const barDef=[["Kinetic E<sub>k</sub>","Ek","--ek"],["Gravitational E<sub>g</sub>","Eg","--eg"],["Dissipated W<sub>diss</sub>","Ed","--ed"],["Spring E<sub>e</sub>","Es","--es"]];
+$("bars").innerHTML=barDef.map(b=>`<div class="col"><div class="val" id="v${b[1]}"></div><div class="track"><div class="fill" id="f${b[1]}" style="background:var(${b[2]})"></div></div><div class="nm">${b[0]}</div></div>`).join("");
+function phaseName(x){return x<X.natA?"Phase: released by spring A":x<X.r0?"Phase: smooth floor":x<X.r1?"Phase: climbing the ramp":x<X.c0?"Phase: raised smooth track":x<=X.c1?"Phase: on the carpet (friction)":x<X.natD?"Phase: smooth track to D":"Phase: compressing bumper spring D"}
+function frame(){
+const P=at(s);draw(P);const e=energies(P);
+barDef.forEach(b=>{$("v"+b[1]).textContent=e[b[1]].toFixed(2)+" J";$("f"+b[1]).style.height=Math.min(100,e[b[1]]/E*100)+"%"});
+$("sum").textContent="Sum E\u2096+E\u1d4d+W+E\u2091 = "+(e.Ek+e.Eg+e.Ed+e.Es).toFixed(2)+" J  (E_total = "+E.toFixed(2)+" J)";
+$("phase").textContent=phaseName(P.x)+" · speed "+v.toFixed(2)+" m/s";
+const b=$("banner");
+if(state==="stall"){b.className="stall";b.textContent="Car stalled! Not enough initial energy to overcome height/friction."}
+else if(state==="done"){b.className="done";b.textContent="Car stopped at D. Bumper spring stores "+e.Es.toFixed(2)+" J."}
+else{b.className="";b.textContent=running?"Running…":(s>startX-0.3+1e-6?"Paused.":"Ready — press Play.")}}
+function readout(){
+const mg=m*g,EsD=E-mg*p.h-p.W,hmax=Math.max(0,(E-p.W)/mg);
+$("om").textContent=p.m.toFixed(2)+" kg";$("ovB").textContent=p.vB.toFixed(1)+" m/s";$("oh").textContent=p.h.toFixed(2)+" m ("+(p.h*100).toFixed(0)+" cm)";$("oW").textContent=p.W.toFixed(2)+" J";
+$("tbl").innerHTML=[["v<sub>B</sub>",p.vB.toFixed(1)+" m/s"],["E<sub>A,spring</sub> = ½mv<sub>B</sub>²",E.toFixed(2)+" J"],["h",p.h.toFixed(2)+" m"],["W<sub>carpet</sub>",p.W.toFixed(2)+" J"],["E<sub>D,spring</sub> (final)",EsD>=0?EsD.toFixed(2)+" J":"not reached"],["h<sub>max</sub> = (E − W)/mg",(E-p.W>0?hmax.toFixed(3)+" m":"0 (carpet stops car)")]].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+let t;
+if(E-p.W<=0)t="The carpet removes at least all of the car’s energy, so it can’t get across the strip no matter how low the track is.";
+else if(EsD>=0)t=`Energy budget: ${E.toFixed(2)} J − ${(mg*p.h).toFixed(2)} J (height) − ${p.W.toFixed(2)} J (carpet) = <b>${EsD.toFixed(2)} J</b> left for spring D. The track could be raised another ${((hmax-p.h)*100).toFixed(1)} cm before the car just barely reaches D.`;
+else t=`The track is ${((p.h-hmax)*100).toFixed(1)} cm too high: the car needs ${(-EsD).toFixed(2)} J more energy to reach D. Max allowable h = (${E.toFixed(2)} − ${p.W.toFixed(2)}) ÷ (${mg.toFixed(2)} N) = <b>${hmax.toFixed(3)} m</b>.`;
+$("insight").innerHTML=t}
+function setP(){p.m=+$("mass").value;p.vB=+$("vB").value;p.h=+$("h").value;p.W=+$("W").value;reset()}
+["mass","vB","h","W"].forEach(i=>$(i).addEventListener("input",setP));
+$("play").onclick=()=>{if(running){running=false;$("play").textContent="Play";frame();return}
+if(state!=="ready"){reset()}running=true;state="ready";$("play").textContent="Pause";last=performance.now();requestAnimationFrame(loop)};
+$("reset").onclick=reset;
+$("hmaxBtn").onclick=()=>{const hm=Math.max(0,(E-p.W)/(m*g));$("h").value=Math.min(1.5,hm).toFixed(2);setP()};
+$("defBtn").onclick=()=>{$("mass").value=0.5;$("vB").value=3;$("h").value=0.2;$("W").value=0.67;setP()};
+reset();
+</script></body></html>
