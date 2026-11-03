@@ -257,8 +257,8 @@ footer{max-width:900px; margin:0 auto; padding:0 1rem 2.5rem; color:var(--muted)
     <div class="concept">
       <h3>Voltage (V)</h3>
       <p class="unit">Measured in volts (V)</p>
-      <p>Voltage tells you how much energy the battery gives each bit of charge. Here’s a helpful way to picture it: a <b>3 V battery gives each charge 3 “joules”</b> of energy to carry around the circuit.</p>
-      <p class="unit">The quotation marks are on purpose. It’s not exactly joules, but it’s a great way to think about it for now.</p>
+      <p>Voltage tells you how much energy the battery gives each bit of charge. Here’s a helpful way to picture it: a <b>3 V battery gives each charge 3 “joules” (3 volts)</b> of energy to carry around the circuit.</p>
+      <p class="unit">The quotation marks are on purpose. It’s not exactly joules, but it’s a great way to think about it for now. Scientists call it voltage and measure it in volts, so that’s the word you’ll see on the circuits.</p>
     </div>
     <div class="concept">
       <h3>Current (I)</h3>
@@ -268,8 +268,8 @@ footer{max-width:900px; margin:0 auto; padding:0 1rem 2.5rem; color:var(--muted)
     </div>
   </div>
   <h3>Following the energy</h3>
-  <div class="chain"><span>Chemical energy in the battery</span><i>→</i><span>carried by the charges</span><i>→</i><span>dumped into the bulbs</span><i>→</i><span>dissipated as light and heat</span></div>
-  <p>The more energy each charge dumps into a bulb, the <b>brighter</b> that bulb glows.</p>
+  <div class="chain"><span>Chemical energy in the battery</span><i>→</i><span>carried by the charges</span><i>→</i><span>delivered to the bulbs</span><i>→</i><span>dissipated as light and heat</span></div>
+  <p>The more energy each charge delivers to a bulb (the more volts across it), the <b>brighter</b> that bulb glows.</p>
   <div class="note">
     <p><b>Watch the wording.</b> Charge is what moves through the wires, and it doesn’t get used up. The same charge that leaves the battery comes back to it. What gets used up is the <b>energy</b> the charge was carrying. Back at the battery, the charge gets “refilled.”</p>
   </div>
@@ -284,19 +284,19 @@ footer{max-width:900px; margin:0 auto; padding:0 1rem 2.5rem; color:var(--muted)
 <section class="sec" id="s5" hidden>
   <p class="secnum">Section 5 of 7</p>
   <h2>Where does the energy go?</h2>
-  <p>Think of the bulbs as <b>obstacles in an obstacle course</b>, and each charge as a runner that starts with 3 “joules” from the battery.</p>
+  <p>Think of the bulbs as <b>obstacles in an obstacle course</b>, and each charge as a runner that starts with 3 “joules” (3 V) from the battery.</p>
   <div class="two">
-    <div class="concept"><h3>Series: one course, every obstacle</h3><p>Every charge has to get through <b>every</b> bulb. If it dumped all 3 “joules” into the first bulb, it would have nothing left for the next one. So it has to <b>split its energy</b> between the bulbs. Less energy per bulb means dimmer bulbs.</p></div>
-    <div class="concept"><h3>Parallel: pick one path</h3><p>Each charge takes only <b>one branch</b>, so it only hits <b>one</b> obstacle. It can dump <b>all 3 “joules”</b> into that one bulb. That’s why parallel bulbs are brighter.</p></div>
+    <div class="concept"><h3>Series: one course, every obstacle</h3><p>Every charge has to get through <b>every</b> bulb. If it delivered all 3 “joules” (3 V) to the first bulb, it would have nothing left for the next one. So it has to <b>split its energy</b> between the bulbs, and the bulbs <b>split the 3 V</b>. Less voltage per bulb means dimmer bulbs.</p></div>
+    <div class="concept"><h3>Parallel: pick one path</h3><p>Each charge takes only <b>one branch</b>, so it only hits <b>one</b> obstacle. It can deliver <b>all 3 “joules” (the full 3 V)</b> to that one bulb. That’s why parallel bulbs are brighter.</p></div>
   </div>
-  <p>Turn on <b>Show “joules” per charge</b> in each circuit. You’ll see how much energy each charge gives each bulb, and every trip a charge can take from the battery and back.</p>
+  <p>Turn on <b>Show voltage</b> in each circuit. You’ll see the voltage across each bulb (how much energy each charge delivers to it) and every path a charge can take from the battery and back.</p>
 
   <h3>Series</h3>
   <div data-mount="s5series"></div>
-  <p><b>Predict first</b>, then change the circuit to match each row and use the energy labels to check. Type in how many “joules” each charge gives the bulb.</p>
+  <p><b>Predict first</b>, then change the circuit to match each row and use the voltage labels to check. Type in the voltage across the bulb.</p>
   <div data-mount="tblSeries"></div>
   <div class="note">
-    <p><b>Why a “different brand”?</b> Some of you saw this in lab with the Christmas lights. Bulbs from different manufacturers aren’t identical, so instead of splitting its 3 “joules” as 1.5 + 1.5, a charge might give 2 to one bulb and 1 to the other. The split changes, but <b>it always adds up to 3</b>. The charge dumps all of its energy before it gets back to the battery to be refilled. In voltage language: the bulbs split the battery’s 3 V, so 1.5 V + 1.5 V, or 2 V + 1 V.</p>
+    <p><b>Why a “different brand”?</b> Some of you saw this in lab with the Christmas lights. Bulbs from different manufacturers aren’t identical, so instead of splitting the 3 V as 1.5 V + 1.5 V, you might get 2 V across one bulb and 1 V across the other. The split changes, but <b>it always adds up to the battery’s 3 V</b>. In energy terms, the charge delivers all of its 3 “joules” before it gets back to the battery to be refilled.</p>
   </div>
 
   <h3>Parallel</h3>
@@ -316,7 +316,7 @@ footer{max-width:900px; margin:0 auto; padding:0 1rem 2.5rem; color:var(--muted)
   <p class="secnum">Section 6 of 7</p>
   <h2>Complex circuits: series and parallel together</h2>
   <p>A complex circuit isn’t a new kind of circuit. It’s just <b>series and parallel combined in one circuit</b>. The trick is to find which bulbs are in series with each other and which are in parallel.</p>
-  <p>For each circuit, try unscrewing bulbs and turn on the energy labels. Answer the questions below each one. Predict before you test!</p>
+  <p>For each circuit, try unscrewing bulbs and turn on <b>Show voltage</b>. Answer the questions below each one. Predict before you test!</p>
 
   <h3>Circuit 1</h3>
   <p><b>B and C are in parallel with each other</b>, and that pair is <b>in series with A</b>. Every charge goes through A, then picks <b>one</b> of B or C.</p>
@@ -507,7 +507,7 @@ function makeWidget(host, cfg){
   if(cfg.energy){
     const lbl = h('label','toggle'); const cb = document.createElement('input'); cb.type = 'checkbox';
     cb.onchange = () => { st.energy = cb.checked; render(); };
-    lbl.append(cb, document.createTextNode('Show “joules” per charge')); ctl.append(lbl);
+    lbl.append(cb, document.createTextNode('Show voltage')); ctl.append(lbl);
   }
   if(cfg.colorToggle){
     const lbl = h('label','toggle'); colorCb = document.createElement('input'); colorCb.type = 'checkbox'; colorCb.checked = st.colors;
@@ -580,7 +580,7 @@ function makeWidget(host, cfg){
         sv('title',{},g).textContent = b.out ? 'Click to screw this bulb back in' : 'Click to unscrew this bulb';
         g.addEventListener('click', () => { st.out.has(b.id) ? st.out.delete(b.id) : st.out.add(b.id); render(); });
       }
-      if(st.energy && !b.out) badges.push({x:b.x, y:b.y+33, t: fmt(E) + ' “J”'});
+      if(st.energy && !b.out) badges.push({x:b.x, y:b.y+33, t: fmt(E) + ' V'});
     });
     // energy badges drawn last so they sit on top of wires
     badges.forEach(bd => {
@@ -594,13 +594,13 @@ function makeWidget(host, cfg){
       else {
         const trips = findTrips(c, V);
         if(!trips.length){
-          tripsEl.innerHTML = '<div class="none">No complete path, so charges can’t get around and no bulb gets any energy.</div>';
+          tripsEl.innerHTML = '<div class="none">No complete path, so charges can’t get around and every bulb has 0 V.</div>';
         } else {
           const name = b => 'Bulb ' + (b.label || b.id);
-          tripsEl.innerHTML = `<div class="th">Trips a charge can take (each one starts with 3 “J”):</div>` +
+          tripsEl.innerHTML = `<div class="th">Paths a charge can take (the battery gives 3 V):</div>` +
             trips.map((t,i) => `<div class="trip"><span>${trips.length>1 ? 'Path '+(i+1)+':' : 'The only path:'}</span>` +
-              t.map(e => `<span class="arr">→</span><span class="chip">${esc(name(e.b))} gets ${fmt(e.e)}</span>`).join('') +
-              `<span class="arr">→</span><span class="end">back to the battery with 0, gets refilled</span></div>`).join('');
+              t.map(e => `<span class="arr">→</span><span class="chip">${esc(name(e.b))}: ${fmt(e.e)} V</span>`).join('') +
+              `<span class="arr">→</span><span class="end">back to the battery to be refilled</span></div>`).join('');
         }
       }
     }
@@ -639,9 +639,9 @@ const CP = {
     ['What the real circuit looks like on the table', false, 'Remember the messy and tidy pairs. They looked different but were the same circuit.'],
     ['How the parts are connected to each other', true, 'A diagram is a map of connections, not a picture.'],
     ['How bright each bulb is', false, 'Diagrams usually don’t show brightness. They show connections.']]},
-  'c-volt': {q:'Using our picture of voltage, a 9 V battery gives each charge about how many “joules”?', opts:[
+  'c-volt': {q:'Using our picture of voltage, how many “joules” does a 9 V battery give each charge?', opts:[
     ['3', false, 'That would be a 3 V battery.'],
-    ['9', true, '9 V means about 9 “joules” for each charge.'],
+    ['9', true, '9 V means each charge gets about 9 “joules” (9 volts).'],
     ['It depends on how many bulbs there are', false, 'The battery gives each charge the same amount no matter what’s connected. What changes is how the charge splits it up.']]},
   'c-curr': {q:'A hose sprays 2 liters of water every second. In the circuit version of this picture, “2 liters per second” is most like…', opts:[
     ['voltage', false, 'Voltage is about how much energy each charge gets, not how much is flowing.'],
@@ -652,31 +652,31 @@ const CP = {
     ['Charge travels around the circuit and comes back; the energy it carries is what gets used.', true, 'The charge is like a delivery truck. The truck comes back; the packages (energy) get dropped off.'],
     ['Voltage flows through the wires into the bulb.', false, 'Charge is what moves. Voltage tells you how much energy each charge gets.']]},
   'c-chain': {q:'The light and heat coming from a bulb started out as…', opts:[
-    ['chemical energy stored in the battery', true, 'Chemical energy → carried by charges → dumped in the bulb → dissipated as light and heat.'],
+    ['chemical energy stored in the battery', true, 'Chemical energy → carried by charges → delivered to the bulb → dissipated as light and heat.'],
     ['energy stored in the wires', false, 'The wires just carry the charges. Where does the energy start?'],
     ['charge that got used up in the bulb', false, 'Charge isn’t used up. Think about the energy chain above.']]},
-  'c-sum': {q:'Two bulbs from different brands are in series with a 3 V battery. Each charge gives the first bulb 1.8 “joules.” How many does it give the second bulb?', opts:[
-    ['1.8', false, 'Then the charge would need 3.6 “joules,” but the battery only gives it 3.'],
-    ['1.2', true, '1.8 + 1.2 = 3. The charge splits its 3 “joules” and uses all of them.'],
-    ['3', false, 'In series, the charge has to save some energy for the second bulb. It can’t give all 3 to each.'],
-    ['1.5', false, '1.5 each only happens with identical bulbs. Here the first one already got 1.8.']]},
-  'c-par': {q:'Why does each bulb in a parallel circuit get all 3 “joules”?', opts:[
-    ['Each charge only goes through one bulb, so it can dump all its energy there', true, 'One path, one obstacle, all 3 “joules.” Each bulb is connected directly to both ends of the battery.'],
+  'c-sum': {q:'Two bulbs from different brands are in series with a 3 V battery. The voltage across the first bulb is 1.8 V. What is the voltage across the second bulb?', opts:[
+    ['1.8 V', false, 'That adds up to 3.6 V, but the battery only gives 3 V.'],
+    ['1.2 V', true, '1.8 V + 1.2 V = 3 V. In series, the bulb voltages add up to the battery voltage.'],
+    ['3 V', false, 'In series, the bulbs share the 3 V. The charge has to save some energy for the second bulb.'],
+    ['1.5 V', false, '1.5 V each only happens with identical bulbs. Here the first one already has 1.8 V.']]},
+  'c-par': {q:'Why does each bulb in a parallel circuit get the full 3 V?', opts:[
+    ['Each charge only goes through one bulb, so it can deliver all its energy there', true, 'One path, one obstacle, all 3 V. Each bulb is connected directly to both ends of the battery.'],
     ['Parallel circuits use a stronger battery', false, 'It’s the same 3 V battery in both circuits.'],
     ['The bulbs are closer to the battery', false, 'Distance doesn’t matter. Connections do. Try the color trick.']]},
   'c-bright': {q:'Why are two bulbs in series dimmer than two bulbs in parallel?', opts:[
-    ['In series, each charge has to split its energy between the bulbs, so each bulb gets less', true, 'Less energy dumped into each bulb means less light.'],
+    ['In series, each charge has to split its energy between the bulbs, so each bulb gets less', true, 'Less energy delivered to each bulb (less voltage across it) means less light.'],
     ['The charges get used up by the first bulb', false, 'Charges aren’t used up. Think about the energy each charge carries.'],
-    ['Series circuits have less charge in the wires', false, 'Think about the obstacle course. What does each charge have to do with its 3 “joules”?']]},
+    ['Series circuits have less charge in the wires', false, 'Think about the obstacle course. What does each charge have to do with its energy?']]},
   'k1s': {q:'Circuit 1: Which bulbs are in parallel with each other?', opts:[
     ['A and B', false, 'Can a charge choose between A and B, or does it have to go through A first?'],
     ['B and C', true, 'A charge picks either B or C. Both are connected between the same two wires.'],
     ['All three', false, 'Every charge goes through A, so A isn’t on a separate branch.']]},
   'k1a': {q:'Circuit 1: Predict, then check. Which bulb is the brightest?', opts:[
-    ['A', true, 'Every charge goes through A, then only one of B or C. It gives 2 “joules” to A and 1 to B or C. Turn on the energy labels to see it.'],
-    ['B', false, 'Turn on the energy labels and compare.'],
-    ['C', false, 'Turn on the energy labels and compare.'],
-    ['They’re all the same', false, 'Look at the glow, then turn on the energy labels.']]},
+    ['A', true, 'Every charge goes through A, then only one of B or C. A gets 2 V, and B and C get 1 V each. Turn on Show voltage to see it.'],
+    ['B', false, 'Turn on Show voltage and compare.'],
+    ['C', false, 'Turn on Show voltage and compare.'],
+    ['They’re all the same', false, 'Look at the glow, then turn on Show voltage.']]},
   'k1b': {q:'Circuit 1: If you unscrew bulb A, what happens?', opts:[
     ['All the bulbs go out', true, 'A is in series with everything else, so it’s on the only path back to the battery.'],
     ['Only A goes out', false, 'Try it. Every charge has to pass through A.'],
@@ -684,15 +684,15 @@ const CP = {
   'k1c': {q:'Circuit 1: Screw A back in. Now unscrew B. What happens to A and C?', opts:[
     ['Both go out', false, 'Try it. Is there still a path through A and C?'],
     ['Nothing changes', false, 'Try it and look closely at both bulbs.'],
-    ['A gets dimmer and C gets brighter', true, 'Now A and C are simply in series and split 3 “joules” evenly: 1.5 each. A went down from 2; C went up from 1.'],
-    ['A gets brighter and C gets dimmer', false, 'Turn on the energy labels and compare before and after.']]},
+    ['A gets dimmer and C gets brighter', true, 'Now A and C are simply in series and split the 3 V evenly: 1.5 V each. A went down from 2 V; C went up from 1 V.'],
+    ['A gets brighter and C gets dimmer', false, 'Turn on Show voltage and compare before and after.']]},
   'k2s': {q:'Circuit 2: Which bulbs are in series with each other?', opts:[
     ['A and B', false, 'A charge going through A doesn’t go through B. They’re on different paths.'],
     ['B and C', true, 'A charge that goes through B has to go through C next. They share one path.'],
     ['None of them', false, 'Look at the right-hand path. Can a charge go through B without going through C?']]},
   'k2a': {q:'Circuit 2: Which bulb is the brightest?', opts:[
-    ['A', true, 'A charge that takes A’s path hits only one obstacle, so it dumps all 3 “joules” into A. Charges on the other path split 1.5 + 1.5 between B and C.'],
-    ['B', false, 'Turn on the energy labels and compare.'],
+    ['A', true, 'A charge that takes A’s path hits only one obstacle, so A gets the full 3 V. On the other path, B and C split it: 1.5 V + 1.5 V.'],
+    ['B', false, 'Turn on Show voltage and compare.'],
     ['B and C tie for brightest', false, 'B and C are equal, but compare them to A.']]},
   'k2b': {q:'Circuit 2: If you unscrew B, what happens?', opts:[
     ['Everything goes out', false, 'Try it. Is A’s path still connected to the battery?'],
@@ -756,15 +756,15 @@ function mountSort(host){
 function mountTable(host, id, rows){
   const wrap = h('div','wrapx'); host.appendChild(wrap);
   const t = h('table','rd'); wrap.appendChild(t);
-  t.innerHTML = '<thead><tr><th>Bulb</th><th>Setup</th><th>“Joules” per charge</th><th></th></tr></thead>';
+  t.innerHTML = '<thead><tr><th>Bulb</th><th>Setup</th><th>Voltage across bulb</th><th></th></tr></thead>';
   const tb = h('tbody'); t.appendChild(tb);
   const saved = S.tables[id] || [];
   const inputs = rows.map((r,i) => {
     const tr = h('tr'); tb.appendChild(tr);
     tr.appendChild(h('td','', r[0])); tr.appendChild(h('td','setup', r[1]));
     const td = h('td'); const inp = document.createElement('input'); inp.type = 'text'; inp.inputMode = 'decimal';
-    inp.setAttribute('aria-label', r[0] + ', ' + r[1] + ': joules per charge'); inp.value = saved[i] ?? '';
-    td.append(inp, document.createTextNode(' “J”')); tr.appendChild(td);
+    inp.setAttribute('aria-label', r[0] + ', ' + r[1] + ': voltage in volts'); inp.value = saved[i] ?? '';
+    td.append(inp, document.createTextNode(' V')); tr.appendChild(td);
     const stc = h('td','st'); tr.appendChild(stc);
     return {inp, stc, ans:r[2]};
   });
@@ -789,12 +789,12 @@ function mountTable(host, id, rows){
 const EXIT = [
   {id:'e1', q:'Is this circuit series or parallel?', diagram:'Y', opts:['Series','Parallel'], ans:0,
    why:'There’s only one path: from +, through bulb 1, through bulb 2, and back. It just looks like the lampboard.'},
-  {id:'e2', q:'A 3 V battery is connected to two identical bulbs in series. How many “joules” does each charge give one bulb?', opts:['0','1.5','3','6'], ans:1,
-   why:'The charge has to split its 3 “joules” evenly between two identical bulbs: 1.5 + 1.5 = 3.'},
-  {id:'e3', q:'Two bulbs from different brands are in series with a 3 V battery. Each charge gives one bulb 2.4 “joules.” How many does it give the other bulb?', opts:['0.6','1.5','2.4','3'], ans:0,
-   why:'The split can be uneven, but it always adds up to the 3 “joules” from the battery: 2.4 + 0.6 = 3.'},
-  {id:'e4', q:'Three identical bulbs are in parallel with a 3 V battery. How many “joules” does each charge give the bulb it passes through?', opts:['1','1.5','3','9'], ans:2,
-   why:'Each charge goes through only one bulb, so it dumps all 3 “joules” there.'},
+  {id:'e2', q:'A 3 V battery is connected to two identical bulbs in series. What is the voltage across one bulb?', opts:['0 V','1.5 V','3 V','6 V'], ans:1,
+   why:'Two identical bulbs in series split the 3 V evenly: 1.5 V + 1.5 V = 3 V.'},
+  {id:'e3', q:'Two bulbs from different brands are in series with a 3 V battery. The voltage across one bulb is 2.4 V. What is the voltage across the other bulb?', opts:['0.6 V','1.5 V','2.4 V','3 V'], ans:0,
+   why:'The split can be uneven, but it always adds up to the battery’s 3 V: 2.4 V + 0.6 V = 3 V.'},
+  {id:'e4', q:'Three identical bulbs are in parallel with a 3 V battery. What is the voltage across each bulb?', opts:['1 V','1.5 V','3 V','9 V'], ans:2,
+   why:'Each bulb is connected directly to both ends of the battery, so each gets the full 3 V. Each charge only goes through one bulb, so it delivers all its energy there.'},
   {id:'e5', q:'In that same parallel circuit, you unscrew one bulb. What happens to the other two?', opts:['They go out','They get dimmer','They stay lit at the same brightness','They get brighter'], ans:2,
    why:'Each branch has its own connection to the battery, so removing one branch doesn’t change the others.'},
   {id:'e6', q:'Maya draws her circuit shaped exactly like the lampboard. Jordan redraws the same circuit as a neat rectangle with the same connections. Whose diagram is correct?',
