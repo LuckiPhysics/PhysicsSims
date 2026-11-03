@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Series, Parallel &amp; Energy – Self-Guided Lesson</title>
+<style>
+:root{
+  --bg:#e9efed; --grid:rgba(40,90,80,.075);
+  --paper:#fbfcfb; --ink:#18222c; --muted:#56636f; --rule:#cfd9d6;
+  --accent:#1d5c63; --accent-ink:#ffffff;
+  --good:#1c7a45; --good-bg:#e1f2e7; --bad:#a9362c; --bad-bg:#f9e6e3;
+  --wire:#26313b; --glass:#ffffff; --glow:#ffc93a; --filament:#d9730d;
+  --energy:#b86a00; --energy-bg:#fff3d6;
+  --plus:#d43d33; --minus:#1f6fd1; --n1:#18995a; --n2:#e0861a; --n3:#8a55d4; --n4:#c23f86;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#11171b; --grid:rgba(140,200,190,.05);
+    --paper:#182127; --ink:#e6ecea; --muted:#9aa8b0; --rule:#2a363d;
+    --accent:#5fb3b0; --accent-ink:#0b1a1b;
+    --good:#5fd08f; --good-bg:#16301f; --bad:#f08b80; --bad-bg:#3a1c19;
+    --wire:#d5dde0; --glass:#1f2a30; --glow:#ffcf45; --filament:#ffad3b;
+    --energy:#ffc560; --energy-bg:#33280f;
+    --plus:#ff6a5f; --minus:#5a9dff; --n1:#4ad18a; --n2:#f5a640; --n3:#b28cff; --n4:#ff7ab8;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:88px}
+body{
+  margin:0; color:var(--ink); background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:Roboto,"Segoe UI","Helvetica Neue",Arial,sans-serif; font-size:17px; line-height:1.55;
+}
+h1,h2,h3{line-height:1.2; letter-spacing:-.01em}
+h2{font-size:1.65rem; font-weight:800; margin:0 0 .4rem}
+h3{font-size:1.15rem; font-weight:700; margin:1.6rem 0 .4rem}
+p{margin:.5rem 0 .8rem; max-width:68ch}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--glow); outline-offset:2px}
+
+.top{position:sticky; top:0; z-index:10; background:var(--paper); border-bottom:1px solid var(--rule)}
+.top-in{max-width:900px; margin:0 auto; padding:.6rem 1rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap}
+.title{font-weight:800; font-size:1.05rem; margin:0; white-space:nowrap}
+#steps{display:flex; gap:.3rem; flex-wrap:wrap; flex:1; justify-content:flex-end}
+.step{border:1px solid var(--rule); background:transparent; color:var(--muted); border-radius:999px; padding:.15rem .65rem; font-size:.82rem; cursor:pointer}
+.step.locked{opacity:.45; cursor:not-allowed}
+.step.current{border-color:var(--accent); color:var(--ink); font-weight:700}
+.step.done{background:var(--good-bg); border-color:var(--good); color:var(--good)}
+
+main{max-width:900px; margin:0 auto; padding:1.2rem 1rem 3rem}
+.sec{background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:1.6rem 1.6rem 1.4rem; margin:0 0 1.4rem}
+.sec[hidden]{display:none}
+.secnum{color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lead{font-size:1.08rem}
+
+.hero{display:grid; grid-template-columns:1.3fr 1fr; gap:1.4rem; align-items:center}
+.hero h2{font-size:2.2rem; letter-spacing:-.02em}
+@media (max-width:720px){.hero{grid-template-columns:1fr}}
+
+.goals{margin:.4rem 0 1rem; padding-left:1.2rem}
+.goals li{margin:.2rem 0}
+.fields{display:flex; gap:.8rem; flex-wrap:wrap; margin:1rem 0}
+.fields label{display:flex; flex-direction:column; font-size:.9rem; color:var(--muted); gap:.2rem}
+.fields input{font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--rule); border-radius:8px; padding:.45rem .6rem; min-width:220px}
+.fields input.period{min-width:90px; width:90px}
+
+.btn{background:var(--accent); color:var(--accent-ink); border:0; border-radius:8px; padding:.55rem 1rem; font-weight:700; cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn.small{padding:.3rem .7rem; font-size:.9rem}
+.btn.ghost{background:transparent; color:var(--accent); border:1px solid var(--accent)}
+
+.two{display:grid; grid-template-columns:1fr 1fr; gap:1rem}
+@media (max-width:720px){.two{grid-template-columns:1fr}}
+
+.concept{border-left:4px solid var(--accent); padding:.2rem 0 .2rem 1rem; margin:.6rem 0}
+.concept h3{margin-top:.2rem}
+.concept .unit{color:var(--muted); font-size:.95rem}
+.note{background:var(--bg); border-radius:10px; padding:.8rem 1rem; margin:1rem 0}
+.note p{margin:.2rem 0}
+.tryit{margin:.4rem 0 .6rem; padding-left:1.2rem}
+.tryit li{margin:.25rem 0}
+
+.chain{display:flex; flex-wrap:wrap; align-items:center; gap:.4rem; margin:.6rem 0 .2rem}
+.chain span{background:var(--energy-bg); color:var(--energy); font-weight:700; border-radius:8px; padding:.35rem .7rem}
+.chain i{font-style:normal; color:var(--muted); font-weight:700}
+
+.widget{border:1px solid var(--rule); border-radius:12px; padding:.6rem; background:var(--paper); margin:.6rem 0}
+.widget .cap{font-weight:700; margin:.1rem .2rem .3rem}
+.stage{display:flex; justify-content:center}
+svg.circ{width:100%; height:auto; display:block; user-select:none; -webkit-user-select:none}
+.ctl{display:flex; flex-wrap:wrap; gap:.5rem .8rem; align-items:center; padding:.4rem .2rem .1rem; font-size:.92rem}
+.count{min-width:4.5rem; text-align:center; font-weight:700}
+.toggle{display:inline-flex; gap:.35rem; align-items:center; cursor:pointer}
+.toggle input{width:1.05rem; height:1.05rem; accent-color:var(--accent)}
+.toggle.disabled{opacity:.45}
+.lbl{font-size:13px; fill:var(--muted); font-weight:700}
+.lbl-big{font-size:15px; fill:var(--ink); font-weight:800}
+.bulbg.clickable{cursor:pointer}
+
+.trips{margin:.5rem .2rem .2rem; font-size:.93rem}
+.trips:empty{display:none}
+.trips .th{font-weight:700; margin-bottom:.25rem}
+.trip{display:flex; flex-wrap:wrap; align-items:center; gap:.3rem; margin:.25rem 0}
+.trip .chip{background:var(--energy-bg); color:var(--energy); border-radius:6px; padding:.1rem .45rem; font-weight:700}
+.trip .arr{color:var(--muted)}
+.trip .end{color:var(--muted)}
+.trips .none{color:var(--bad); font-weight:600}
+
+.cp{border:2px solid var(--rule); border-radius:12px; padding:.9rem 1rem; margin:1rem 0; background:var(--paper)}
+.cp.done{border-color:var(--good)}
+.cp-tag{font-size:.85rem; font-weight:700; color:var(--accent)}
+.cp-q{font-weight:600; margin:.2rem 0 .6rem}
+.cp-opts{display:flex; flex-direction:column; gap:.4rem}
+.opt{text-align:left; background:var(--bg); color:var(--ink); border:1px solid var(--rule); border-radius:8px; padding:.5rem .75rem; cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-bg); border-color:var(--good); font-weight:700}
+.opt.wrong{background:var(--bad-bg); border-color:var(--bad); text-decoration:line-through; opacity:.8}
+.opt.missed{border-color:var(--good); border-style:dashed}
+.fb{margin-top:.6rem; font-size:.95rem; border-radius:8px}
+.fb:empty{display:none}
+.fb.good{color:var(--good)} .fb.bad{color:var(--bad)}
+.fb.box{padding:.5rem .7rem}
+.fb.box.good{background:var(--good-bg)} .fb.box.bad{background:var(--bad-bg)}
+
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem}
+@media (max-width:760px){.grid3{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.grid3{grid-template-columns:1fr}}
+.tile{border:2px solid var(--rule); border-radius:12px; padding:.5rem; display:flex; flex-direction:column}
+.tile.ok{border-color:var(--good)}
+.tile .widget{border:0; margin:0; padding:0}
+.tile-num{font-weight:700; font-size:.9rem; margin:.1rem .2rem}
+.tile-btns{display:flex; gap:.4rem; margin-top:auto; padding-top:.3rem}
+.tile-btns .btn{flex:1}
+.tile .fb{font-size:.86rem; margin-top:.4rem}
+
+table.rd{border-collapse:collapse; width:100%; margin:.6rem 0; font-size:.95rem}
+table.rd th, table.rd td{border-bottom:1px solid var(--rule); padding:.45rem .4rem; text-align:left; vertical-align:middle}
+table.rd th{color:var(--muted); font-weight:600; font-size:.85rem}
+table.rd .setup{color:var(--muted); font-size:.85rem}
+table.rd input{width:5.2rem; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--rule); border-radius:6px; padding:.25rem .4rem}
+table.rd td.st{width:2rem; font-weight:800}
+.st.ok{color:var(--good)} .st.no{color:var(--bad)}
+.wrapx{overflow-x:auto}
+
+.next{margin-top:1.2rem; padding-top:1rem; border-top:1px dashed var(--rule); display:flex; align-items:center; gap:1rem; flex-wrap:wrap}
+.next[hidden]{display:none}
+.next span{color:var(--good); font-weight:700}
+
+textarea{width:100%; min-height:7rem; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--rule); border-radius:8px; padding:.6rem}
+.results{border:3px solid var(--accent); border-radius:14px; padding:1.2rem 1.4rem; margin-top:1.2rem; background:var(--paper)}
+.results h3{margin-top:0; font-size:1.35rem}
+.results dl{display:grid; grid-template-columns:max-content 1fr; gap:.3rem 1rem; margin:.4rem 0}
+.results dt{color:var(--muted)} .results dd{margin:0; font-weight:700}
+.results .resp{background:var(--bg); border-radius:8px; padding:.6rem .8rem; white-space:pre-wrap; font-weight:400}
+.submit{margin-top:.8rem; font-weight:700; color:var(--accent)}
+
+footer{max-width:900px; margin:0 auto; padding:0 1rem 2.5rem; color:var(--muted); font-size:.88rem; display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:center}
+.linkbtn{background:none; border:0; color:var(--accent); text-decoration:underline; cursor:pointer; padding:0}
+@media (max-width:560px){ .sec{padding:1.1rem} body{font-size:16px} .title{white-space:normal} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <p class="title">⚡ Series, parallel &amp; energy</p>
+    <nav id="steps" aria-label="Lesson sections"></nav>
+  </div>
+</header>
+
+<main>
+<!-- ============ 1 START ============ -->
+<section class="sec" id="s1">
+  <div class="hero">
+    <div>
+      <p class="secnum">Section 1 of 7</p>
+      <h2>Today, this page is your teacher.</h2>
+      <p class="lead">Work through it with your lab partner. You’ll rebuild your lab circuits, redraw them, and follow where the battery’s energy goes. Sections unlock one at a time as you finish the checkpoints.</p>
+    </div>
+    <div id="heroCirc"></div>
+  </div>
+  <h3>By the end you should be able to…</h3>
+  <ul class="goals">
+    <li>explain why a circuit is series or parallel</li>
+    <li>define voltage and current</li>
+    <li>apply voltage to series and parallel circuits</li>
+  </ul>
+  <div class="fields">
+    <label>Your name(s)<input id="names" autocomplete="off" placeholder="e.g. Ana R. and Sam T."></label>
+    <label>Period<input id="period" class="period" autocomplete="off"></label>
+  </div>
+  <button class="btn" id="startBtn">Start the lesson</button>
+  <p class="fb bad" id="startMsg"></p>
+  <div class="next" hidden><span>✓ Ready</span><button class="btn small" data-goto="s2">Go to section 2</button></div>
+</section>
+
+<!-- ============ 2 LAB REVIEW ============ -->
+<section class="sec" id="s2" hidden>
+  <p class="secnum">Section 2 of 7</p>
+  <h2>Back to the lab: series vs parallel</h2>
+  <div class="two">
+    <div class="concept"><h3>Series</h3><p>Bulbs are lined up one right after another. There’s <b>one path</b>, so charge has to go through every bulb to get back to the battery.</p></div>
+    <div class="concept"><h3>Parallel</h3><p>Bulbs sit on <b>separate branches</b>, like forks in the road. The charge splits up, and each bit of charge goes through only one branch.</p></div>
+  </div>
+  <h3>Try it</h3>
+  <ol class="tryit">
+    <li>Click a bulb to unscrew it. Click it again to screw it back in. What happens to the other bulbs?</li>
+    <li>Use <b>+ bulb</b> to add a 3rd bulb to each circuit. Watch the brightness.</li>
+  </ol>
+  <div class="two">
+    <div data-mount="s2series"></div>
+    <div data-mount="s2parallel"></div>
+  </div>
+  <p>Notice how easy it was to add a bulb: one more bulb on the loop, or one more rung on the ladder. That’s the point of a circuit diagram. It’s quick to change because it only shows the connections.</p>
+  <div data-cp="c-unscrew-s"></div>
+  <div data-cp="c-unscrew-p"></div>
+  <div data-cp="c-add-s"></div>
+  <div data-cp="c-add-p"></div>
+  <div class="next" hidden><span>✓ Section complete</span><button class="btn small" data-goto="s3">Go to section 3</button></div>
+</section>
+
+<!-- ============ 3 DRAWINGS ============ -->
+<section class="sec" id="s3" hidden>
+  <p class="secnum">Section 3 of 7</p>
+  <h2>Same circuit, different drawings</h2>
+  <p>In the lab, a lot of you drew diagrams shaped like the lampboard. Those were technically correct! But a circuit diagram <b>doesn’t show what the circuit looks like</b>. It only shows <b>what’s connected to what</b>. You can stretch, bend, and move wires around, and as long as the connections stay the same, it’s the same circuit.</p>
+  <div class="note">
+    <p><b>The color trick.</b> Turn on <b>Color the connections</b>. Wires that are connected to each other (with nothing in between) get the same color. Red touches the <b>+</b> end of the battery, blue touches the <b>−</b> end, and any wire stuck between two bulbs gets its own color.</p>
+  </div>
+  <h3>Pair 1: messy vs. tidy</h3>
+  <div class="two"><div data-mount="pairF"></div><div data-mount="pairA"></div></div>
+  <h3>Pair 2: messy vs. tidy</h3>
+  <div class="two"><div data-mount="pairG"></div><div data-mount="pairD"></div></div>
+  <p>Turn the colors on for each pair. Same color pattern means same circuit. The tidy versions are easier to read because you can see the paths instantly.</p>
+  <div class="note">
+    <p><b>Drawing tip.</b> Put the battery on the left and draw one big rectangle. For series, put the bulbs right on the rectangle. For parallel, draw the bulbs as rungs of a ladder between the top wire and the bottom wire.</p>
+    <p><b>Quick test.</b> If one side of a bulb touches the red wire and the other side touches the blue wire, that bulb is connected straight across the battery. If every bulb does that, the circuit is parallel.</p>
+  </div>
+  <h3>Sort these drawings</h3>
+  <p>Decide whether each one is series or parallel. If you get one wrong, the connection colors turn on to help you.</p>
+  <div data-mount="sort"></div>
+  <div data-cp="c-diagram"></div>
+  <div class="next" hidden><span>✓ Section complete</span><button class="btn small" data-goto="s4">Go to section 4</button></div>
+</section>
+
+<!-- ============ 4 VOLTAGE / CURRENT / ENERGY ============ -->
+<section class="sec" id="s4" hidden>
+  <p class="secnum">Section 4 of 7</p>
+  <h2>Voltage, current, and energy</h2>
+  <p>You just finished the energy unit, so let’s use it. The battery’s job is to give charges energy, and the bulbs are where that energy gets used.</p>
+  <div class="two">
+    <div class="concept">
+      <h3>Voltage (V)</h3>
+      <p class="unit">Measured in volts (V)</p>
+      <p>Voltage tells you how much energy the battery gives each bit of charge. Here’s a helpful way to picture it: a <b>3 V battery gives each charge 3 “joules”</b> of energy to carry around the circuit.</p>
+      <p class="unit">The quotation marks are on purpose. It’s not exactly joules, but it’s a great way to think about it for now.</p>
+    </div>
+    <div class="concept">
+      <h3>Current (I)</h3>
+      <p class="unit">Measured in amps (A)</p>
+      <p>Current is <b>how much charge passes one spot each second</b>.</p>
+      <p>Water picture: <b>liters per second</b> coming out of a hose. A fire hydrant has a much bigger flow than a garden hose.</p>
+    </div>
+  </div>
+  <h3>Following the energy</h3>
+  <div class="chain"><span>Chemical energy in the battery</span><i>→</i><span>carried by the charges</span><i>→</i><span>dumped into the bulbs</span><i>→</i><span>dissipated as light and heat</span></div>
+  <p>The more energy each charge dumps into a bulb, the <b>brighter</b> that bulb glows.</p>
+  <div class="note">
+    <p><b>Watch the wording.</b> Charge is what moves through the wires, and it doesn’t get used up. The same charge that leaves the battery comes back to it. What gets used up is the <b>energy</b> the charge was carrying. Back at the battery, the charge gets “refilled.”</p>
+  </div>
+  <div data-cp="c-volt"></div>
+  <div data-cp="c-curr"></div>
+  <div data-cp="c-flow"></div>
+  <div data-cp="c-chain"></div>
+  <div class="next" hidden><span>✓ Section complete</span><button class="btn small" data-goto="s5">Go to section 5</button></div>
+</section>
+
+<!-- ============ 5 ENERGY IN SERIES & PARALLEL ============ -->
+<section class="sec" id="s5" hidden>
+  <p class="secnum">Section 5 of 7</p>
+  <h2>Where does the energy go?</h2>
+  <p>Think of the bulbs as <b>obstacles in an obstacle course</b>, and each charge as a runner that starts with 3 “joules” from the battery.</p>
+  <div class="two">
+    <div class="concept"><h3>Series: one course, every obstacle</h3><p>Every charge has to get through <b>every</b> bulb. If it dumped all 3 “joules” into the first bulb, it would have nothing left for the next one. So it has to <b>split its energy</b> between the bulbs. Less energy per bulb means dimmer bulbs.</p></div>
+    <div class="concept"><h3>Parallel: pick one path</h3><p>Each charge takes only <b>one branch</b>, so it only hits <b>one</b> obstacle. It can dump <b>all 3 “joules”</b> into that one bulb. That’s why parallel bulbs are brighter.</p></div>
+  </div>
+  <p>Turn on <b>Show “joules” per charge</b> in each circuit. You’ll see how much energy each charge gives each bulb, and every trip a charge can take from the battery and back.</p>
+
+  <h3>Series</h3>
+  <div data-mount="s5series"></div>
+  <p><b>Predict first</b>, then change the circuit to match each row and use the energy labels to check. Type in how many “joules” each charge gives the bulb.</p>
+  <div data-mount="tblSeries"></div>
+  <div class="note">
+    <p><b>Why a “different brand”?</b> Some of you saw this in lab with the Christmas lights. Bulbs from different manufacturers aren’t identical, so instead of splitting its 3 “joules” as 1.5 + 1.5, a charge might give 2 to one bulb and 1 to the other. The split changes, but <b>it always adds up to 3</b>. The charge dumps all of its energy before it gets back to the battery to be refilled. In voltage language: the bulbs split the battery’s 3 V, so 1.5 V + 1.5 V, or 2 V + 1 V.</p>
+  </div>
+
+  <h3>Parallel</h3>
+  <div data-mount="s5parallel"></div>
+  <div data-mount="tblParallel"></div>
+  <div class="note">
+    <p><b>Why does each parallel bulb get all 3?</b> Turn on the connection colors above. In parallel, every bulb has one side on the red wire and the other side on the blue wire, so it’s <b>directly touching both ends of the battery</b>. Each bulb gets the full 3 V. In series, bulb 1 touches the + end on one side but bulb 2 on the other, so it only gets part of the 3 V.</p>
+  </div>
+  <div data-cp="c-sum"></div>
+  <div data-cp="c-par"></div>
+  <div data-cp="c-bright"></div>
+  <div class="next" hidden><span>✓ Section complete</span><button class="btn small" data-goto="s6">Go to section 6</button></div>
+</section>
+
+<!-- ============ 6 COMBINATION ============ -->
+<section class="sec" id="s6" hidden>
+  <p class="secnum">Section 6 of 7</p>
+  <h2>Complex circuits: series and parallel together</h2>
+  <p>A complex circuit isn’t a new kind of circuit. It’s just <b>series and parallel combined in one circuit</b>. The trick is to find which bulbs are in series with each other and which are in parallel.</p>
+  <p>For each circuit, try unscrewing bulbs and turn on the energy labels. Answer the questions below each one. Predict before you test!</p>
+
+  <h3>Circuit 1</h3>
+  <p><b>B and C are in parallel with each other</b>, and that pair is <b>in series with A</b>. Every charge goes through A, then picks <b>one</b> of B or C.</p>
+  <div data-mount="k1"></div>
+  <div data-cp="k1s"></div>
+  <div data-cp="k1a"></div>
+  <div data-cp="k1b"></div>
+  <div data-cp="k1c"></div>
+
+  <h3>Circuit 2</h3>
+  <p><b>B and C are in series with each other</b>, and that pair is <b>in parallel with A</b>. A charge either goes through A alone, or through B and then C.</p>
+  <div data-mount="k2"></div>
+  <div data-cp="k2s"></div>
+  <div data-cp="k2a"></div>
+  <div data-cp="k2b"></div>
+  <div class="next" hidden><span>✓ Section complete</span><button class="btn small" data-goto="s7">Go to the exit ticket</button></div>
+</section>
+
+<!-- ============ 7 EXIT ============ -->
+<section class="sec" id="s7" hidden>
+  <p class="secnum">Section 7 of 7</p>
+  <h2>Exit ticket</h2>
+  <p>This time you only get <b>one try</b> per question, so think before you click. You can scroll up and use the circuits to help.</p>
+  <div id="exitQs"></div>
+  <h3>In your own words</h3>
+  <p>Use the obstacle-course idea to explain why bulbs in parallel are brighter than bulbs in series.</p>
+  <textarea id="resp" placeholder="Write 2–3 sentences."></textarea>
+  <p><button class="btn" id="finishBtn">Finish and show my results</button></p>
+  <p class="fb bad" id="finishMsg"></p>
+  <div id="resultsHost"></div>
+</section>
+</main>
+
+<footer>
+  <span>Circuits unit · self-guided lesson</span>
+  <span>New group on this computer? <button class="linkbtn" id="resetBtn">Start over</button></span>
+</footer>
+
+<script>
+/* ===================== settings you can edit ===================== */
+const CONFIG = {
+  submitText: "Take a screenshot of this card and turn it in the way your teacher asked (for example, on Google Classroom).",
+  storageKey: "circuits-series-parallel-energy-v2"
+};
+
+/* ===================== saved progress ===================== */
+function blank(){ return {names:"", period:"", done:{}, attempts:{}, exit:{}, response:"", tables:{}, sort:{}, finished:false, finishedAt:""}; }
+function load(){ try{ const r = localStorage.getItem(CONFIG.storageKey); if(r) return Object.assign(blank(), JSON.parse(r)); }catch(e){} return blank(); }
+function save(){ try{ localStorage.setItem(CONFIG.storageKey, JSON.stringify(S)); }catch(e){} }
+let S = load();
+
+/* ===================== helpers ===================== */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, parent){ const n = document.createElementNS(SVGNS, tag); for(const k in attrs) n.setAttribute(k, attrs[k]); if(parent) parent.appendChild(n); return n; }
+function h(tag, cls, html){ const n = document.createElement(tag); if(cls) n.className = cls; if(html != null) n.innerHTML = html; return n; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmt(x){ const r = Math.round(x*100)/100; return (Math.abs(r - Math.round(r)) < 1e-9) ? String(Math.round(r)) : String(r); }
+
+/* ===================== circuit solver ===================== */
+/* Battery holds node "p" at V and node "n" at 0; each bulb is a resistor.
+   A tiny leak keeps disconnected pieces solvable. */
+function solve(c){
+  const known = {p:c.V, n:0};
+  const U = Object.keys(c.nodes).filter(k => !(k in known));
+  const idx = {}; U.forEach((k,i) => idx[k] = i);
+  const N = U.length;
+  const A = Array.from({length:N}, () => new Array(N).fill(0));
+  const B = new Array(N).fill(0);
+  for(let i=0;i<N;i++) A[i][i] += 1e-9;
+  c.bulbs.forEach(b => {
+    if(b.out) return;
+    const g = 1/(b.R || 1);
+    [[b.a,b.b],[b.b,b.a]].forEach(([x,y]) => {
+      if(!(x in idx)) return;
+      const i = idx[x]; A[i][i] += g;
+      if(y in idx) A[i][idx[y]] -= g; else B[i] += g*known[y];
+    });
+  });
+  for(let k=0;k<N;k++){
+    let m = k; for(let r=k+1;r<N;r++) if(Math.abs(A[r][k]) > Math.abs(A[m][k])) m = r;
+    [A[k],A[m]] = [A[m],A[k]]; [B[k],B[m]] = [B[m],B[k]];
+    for(let r=k+1;r<N;r++){ const f = A[r][k]/A[k][k]; if(!f) continue; for(let j=k;j<N;j++) A[r][j] -= f*A[k][j]; B[r] -= f*B[k]; }
+  }
+  const x = new Array(N).fill(0);
+  for(let k=N-1;k>=0;k--){ let s = B[k]; for(let j=k+1;j<N;j++) s -= A[k][j]*x[j]; x[k] = s/A[k][k]; }
+  const V = Object.assign({}, known); U.forEach((k,i) => V[k] = x[i]);
+  return V;
+}
+/* Energy each charge gives a bulb = the bulb's share of the battery voltage, but only if charge actually flows through it. */
+function bulbEnergy(b, V){
+  if(b.out) return 0;
+  const drop = Math.abs(V[b.a] - V[b.b]);
+  return drop/(b.R||1) > 1e-6 ? drop : 0;
+}
+/* Every trip a charge can take from + back to −, passing through lit bulbs downhill in energy. */
+function findTrips(c, V){
+  const edges = c.bulbs.map(b => {
+    const e = bulbEnergy(b, V); if(e < 0.01) return null;
+    const hi = V[b.a] > V[b.b];
+    return {b, from: hi ? b.a : b.b, to: hi ? b.b : b.a, e};
+  }).filter(Boolean);
+  const res = [];
+  (function dfs(node, path, seen){
+    if(res.length > 8) return;
+    if(node === 'n'){ res.push(path.slice()); return; }
+    edges.filter(e => e.from === node && !seen.has(e.b.id)).forEach(e => { seen.add(e.b.id); path.push(e); dfs(e.to, path, seen); path.pop(); seen.delete(e.b.id); });
+  })('p', [], new Set());
+  return res;
+}
+
+/* ===================== circuit layouts ===================== */
+function C(w, hgt, nodes, bulbs, extra){ return Object.assign({w, h:hgt, V:3, battery:{x:40,y:100}, nodes, bulbs}, extra||{}); }
+
+function seriesCircuit(p){
+  const n = p.n, L=40, T=44, Bt=200, R=330, y=122, x0=92, span=220;
+  const xs = [...Array(n)].map((_,i) => x0 + (i+0.5)*span/n);
+  const nodes = {p:[[[L,y-4],[L,T],[xs[0]-14,T]]]};
+  for(let i=1;i<n;i++) nodes['m'+i] = [[[xs[i-1]+14,T],[xs[i]-14,T]]];
+  nodes.n = [[[xs[n-1]+14,T],[R,T],[R,Bt],[L,Bt],[L,y+4]]];
+  const bulbs = xs.map((x,i) => ({id:'b'+(i+1), label:String(i+1), x, y:T, o:'h',
+    a: i===0 ? 'p' : 'm'+i, b: i===n-1 ? 'n' : 'm'+(i+1),
+    R: (p.brandB && i===1) ? 0.5 : 1, brand: (p.brandB && i===1)}));
+  return {w:360, h:224, V:3, battery:{x:L,y}, showV:true, nodes, bulbs};
+}
+function parallelCircuit(p){
+  const n = p.n, L=40, T=44, Bt=200, y=122;
+  const xs = [...Array(n)].map((_,i) => 128 + i*62);
+  const xl = xs[n-1];
+  const nodes = {p:[[[L,y-4],[L,T],[xl,T],[xl,y-14]]], n:[[[xl,y+14],[xl,Bt],[L,Bt],[L,y+4]]]};
+  xs.slice(0,-1).forEach(x => { nodes.p.push([[x,T],[x,y-14]]); nodes.n.push([[x,y+14],[x,Bt]]); });
+  const bulbs = xs.map((x,i) => ({id:'b'+(i+1), label:String(i+1), x, y, o:'v', a:'p', b:'n'}));
+  return {w:360, h:224, V:3, battery:{x:L,y}, showV:true, nodes, bulbs};
+}
+
+const D = {
+  A: () => C(230,200,{p:[[[40,96],[40,30],[180,30],[180,51]]], m1:[[[180,79],[180,121]]], n:[[[180,149],[180,170],[40,170],[40,104]]]},
+        [{id:'b1',x:180,y:65,o:'v',a:'p',b:'m1'},{id:'b2',x:180,y:135,o:'v',a:'m1',b:'n'}]),
+  B: () => C(230,200,{p:[[[40,96],[40,30],[180,30],[180,86]]], m1:[[[180,114],[180,170],[124,170]]], n:[[[96,170],[40,170],[40,104]]]},
+        [{id:'b1',x:180,y:100,o:'v',a:'p',b:'m1'},{id:'b2',x:110,y:170,o:'h',a:'m1',b:'n'}]),
+  C: () => C(240,200,{p:[[[40,96],[40,30],[90,30],[90,62],[140,62],[140,30],[200,30],[200,86]]], m1:[[[200,114],[200,170],[124,170]]], n:[[[96,170],[40,170],[40,104]]]},
+        [{id:'b1',x:200,y:100,o:'v',a:'p',b:'m1'},{id:'b2',x:110,y:170,o:'h',a:'m1',b:'n'}]),
+  D: () => C(230,200,{p:[[[40,96],[40,30],[190,30],[190,86]],[[120,30],[120,86]]], n:[[[190,114],[190,170],[40,170],[40,104]],[[120,114],[120,170]]]},
+        [{id:'b1',x:120,y:100,o:'v',a:'p',b:'n'},{id:'b2',x:190,y:100,o:'v',a:'p',b:'n'}]),
+  E: () => C(240,200,{p:[[[40,96],[40,30],[180,30],[180,95]],[[160,95],[200,95]],[[160,95],[160,106]],[[200,95],[200,106]]],
+                     n:[[[160,134],[160,145],[200,145],[200,134]],[[180,145],[180,170],[40,170],[40,104]]]},
+        [{id:'b1',x:160,y:120,o:'v',a:'p',b:'n'},{id:'b2',x:200,y:120,o:'v',a:'p',b:'n'}]),
+  F: () => C(230,200,{p:[[[40,96],[40,30],[120,30],[120,86]]], m1:[[[120,114],[120,150],[155,150],[155,50],[190,50],[190,86]]], n:[[[190,114],[190,170],[40,170],[40,104]]]},
+        [{id:'b1',x:120,y:100,o:'v',a:'p',b:'m1'},{id:'b2',x:190,y:100,o:'v',a:'m1',b:'n'}]),
+  G: () => C(220,200,{p:[[[40,96],[40,30],[90,30],[90,130],[116,130]],[[90,70],[116,70]]], n:[[[144,70],[170,70],[170,170],[40,170],[40,104]],[[144,130],[170,130]]]},
+        [{id:'b1',x:130,y:70,o:'h',a:'p',b:'n'},{id:'b2',x:130,y:130,o:'h',a:'p',b:'n'}]),
+  J: () => C(240,200,{p:[[[40,96],[40,30],[200,30],[200,86]],[[80,30],[80,130],[106,130]]], n:[[[200,114],[200,170],[40,170],[40,104]],[[134,130],[160,130],[160,170]]]},
+        [{id:'b1',x:200,y:100,o:'v',a:'p',b:'n'},{id:'b2',x:120,y:130,o:'h',a:'p',b:'n'}]),
+  L: () => C(250,205,{p:[[[40,96],[40,30],[110,30],[110,86]]], m1:[[[110,114],[110,170],[190,170],[190,114]]], n:[[[190,86],[190,50],[225,50],[225,190],[40,190],[40,104]]]},
+        [{id:'b1',x:110,y:100,o:'v',a:'p',b:'m1'},{id:'b2',x:190,y:100,o:'v',a:'m1',b:'n'}]),
+  Y: () => C(250,200,{p:[[[40,96],[40,30],[120,30],[120,86]]], m1:[[[120,114],[120,140],[190,140],[190,114]]], n:[[[190,86],[190,60],[220,60],[220,175],[40,175],[40,104]]]},
+        [{id:'b1',x:120,y:100,o:'v',a:'p',b:'m1'},{id:'b2',x:190,y:100,o:'v',a:'m1',b:'n'}]),
+  K1: () => C(260,205,{p:[[[40,101],[40,45],[96,45]]], m1:[[[124,45],[210,45],[210,91]],[[150,45],[150,91]]], n:[[[150,119],[150,180],[40,180],[40,109]],[[210,119],[210,180],[150,180]]]},
+        [{id:'A',label:'A',x:110,y:45,o:'h',a:'p',b:'m1'},{id:'B',label:'B',x:150,y:105,o:'v',a:'m1',b:'n',lx:118,ly:110},{id:'C',label:'C',x:210,y:105,o:'v',a:'m1',b:'n'}],
+        {showV:true, battery:{x:40,y:105}}),
+  K2: () => C(260,215,{p:[[[40,101],[40,35],[200,35],[200,61]],[[120,35],[120,91]]], m1:[[[200,89],[200,131]]], n:[[[200,159],[200,190],[40,190],[40,109]],[[120,119],[120,190]]]},
+        [{id:'A',label:'A',x:120,y:105,o:'v',a:'p',b:'n'},{id:'B',label:'B',x:200,y:75,o:'v',a:'p',b:'m1'},{id:'C',label:'C',x:200,y:145,o:'v',a:'m1',b:'n'}],
+        {showV:true, battery:{x:40,y:105}})
+};
+
+/* ===================== circuit widget ===================== */
+let WID = 0;
+function makeWidget(host, cfg){
+  const id = ++WID;
+  const st = {params:Object.assign({}, cfg.params||{}), out:new Set(), colors:!!cfg.colors, energy:false};
+  const box = h('div','widget'); host.appendChild(box);
+  if(cfg.caption) box.appendChild(h('div','cap', cfg.caption));
+  const stage = h('div','stage'); box.appendChild(stage);
+  const svg = sv('svg',{class:'circ', role:'img', 'aria-label': cfg.caption || 'Circuit diagram'}); stage.appendChild(svg);
+
+  const ctl = h('div','ctl');
+  let minusB, plusB, countL, brandCb, brandLbl, colorCb;
+  if(cfg.counter){
+    minusB = h('button','btn small ghost','− bulb'); plusB = h('button','btn small ghost','+ bulb'); countL = h('span','count');
+    minusB.onclick = () => { if(st.params.n > cfg.counter.min){ st.params.n--; st.out.clear(); render(); } };
+    plusB.onclick  = () => { if(st.params.n < cfg.counter.max){ st.params.n++; st.out.clear(); render(); } };
+    ctl.append(minusB, countL, plusB);
+  }
+  if(cfg.brand){
+    brandLbl = h('label','toggle'); brandCb = document.createElement('input'); brandCb.type = 'checkbox';
+    brandCb.onchange = () => { st.params.brandB = brandCb.checked; render(); };
+    brandLbl.append(brandCb, document.createTextNode('Bulb 2 is a different brand (B)')); ctl.append(brandLbl);
+  }
+  if(cfg.energy){
+    const lbl = h('label','toggle'); const cb = document.createElement('input'); cb.type = 'checkbox';
+    cb.onchange = () => { st.energy = cb.checked; render(); };
+    lbl.append(cb, document.createTextNode('Show “joules” per charge')); ctl.append(lbl);
+  }
+  if(cfg.colorToggle){
+    const lbl = h('label','toggle'); colorCb = document.createElement('input'); colorCb.type = 'checkbox'; colorCb.checked = st.colors;
+    colorCb.onchange = () => { st.colors = colorCb.checked; render(); if(cfg.onColor) cfg.onColor(st.colors); };
+    lbl.append(colorCb, document.createTextNode('Color the connections')); ctl.append(lbl);
+  }
+  if(cfg.unscrew){
+    const r = h('button','btn small ghost','Screw all bulbs in'); r.onclick = () => { st.out.clear(); render(); }; ctl.append(r);
+  }
+  if(ctl.children.length) box.appendChild(ctl);
+  const tripsEl = cfg.energy ? h('div','trips') : null;
+  if(tripsEl) box.appendChild(tripsEl);
+
+  function render(){
+    const c = cfg.build(st.params);
+    c.bulbs.forEach(b => b.out = st.out.has(b.id));
+    const V = solve(c);
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.setAttribute('viewBox', `0 0 ${c.w} ${c.h}`);
+    svg.style.maxWidth = (cfg.maxW || Math.round(c.w*1.55)) + 'px';
+    const defs = sv('defs',{},svg);
+    const gid = 'glow' + id;
+    const rg = sv('radialGradient',{id:gid},defs);
+    sv('stop',{offset:'0%', style:'stop-color:var(--glow);stop-opacity:.95'},rg);
+    sv('stop',{offset:'100%', style:'stop-color:var(--glow);stop-opacity:0'},rg);
+
+    const mids = Object.keys(c.nodes).filter(k => k!=='p' && k!=='n');
+    const pal = ['var(--n1)','var(--n2)','var(--n3)','var(--n4)'];
+    const colorOf = k => !st.colors ? 'var(--wire)' : k==='p' ? 'var(--plus)' : k==='n' ? 'var(--minus)' : pal[mids.indexOf(k) % 4];
+    const ptsStr = pts => pts.map(q => q.join(',')).join(' ');
+
+    for(const k in c.nodes) c.nodes[k].forEach(pts => sv('polyline',{points:ptsStr(pts), fill:'none',
+      style:`stroke:${colorOf(k)};stroke-width:${st.colors?4.5:3};stroke-linecap:round;stroke-linejoin:round`},svg));
+
+    const bx = c.battery.x, by = c.battery.y;
+    sv('line',{x1:bx-15,y1:by-4,x2:bx+15,y2:by-4, style:`stroke:${st.colors?'var(--plus)':'var(--wire)'};stroke-width:3;stroke-linecap:round`},svg);
+    sv('line',{x1:bx-8,y1:by+4,x2:bx+8,y2:by+4, style:`stroke:${st.colors?'var(--minus)':'var(--wire)'};stroke-width:6`},svg);
+    if(c.showV){
+      sv('text',{x:bx-26,y:by-4,class:'lbl'},svg).textContent = '+';
+      sv('text',{x:bx+20,y:by+5,class:'lbl-big'},svg).textContent = '3 V';
+    }
+
+    const badges = [];
+    c.bulbs.forEach(b => {
+      const E = bulbEnergy(b, V);
+      const P = E*E/(b.R||1);
+      const glow = (b.out || cfg.lit === false) ? 0 : Math.sqrt(Math.min(1, P/9));
+      const g = sv('g',{transform:`translate(${b.x},${b.y})`, class:'bulbg' + (cfg.unscrew ? ' clickable' : '')},svg);
+      if(glow > 0.02) sv('circle',{r:31, style:`fill:url(#${gid});opacity:${glow.toFixed(3)}`},g);
+      const inner = sv('g',{transform: b.o==='h' ? 'rotate(90)' : ''},g);
+      if(b.out){
+        sv('circle',{r:14, style:'fill:var(--paper);stroke:var(--muted);stroke-width:2;stroke-dasharray:3 3'},inner);
+      } else {
+        sv('circle',{r:14, style:'fill:var(--glass);stroke:var(--wire);stroke-width:2.5'},inner);
+        if(glow > 0.02) sv('circle',{r:12.5, style:`fill:var(--glow);opacity:${(glow*0.85).toFixed(3)}`},inner);
+        sv('path',{d:'M0,-14 L0,-9 L-5,-6 L5,-2 L-5,2 L5,6 L0,9 L0,14', fill:'none',
+          style:`stroke:${glow>0.05?'var(--filament)':'var(--wire)'};stroke-width:1.8;stroke-linejoin:round`},inner);
+      }
+      if(b.brand){
+        sv('circle',{cx:12,cy:-12,r:7, style:'fill:var(--accent)'},g);
+        sv('text',{x:12,y:-8.5,'text-anchor':'middle', style:'fill:var(--accent-ink);font-size:10px;font-weight:800'},g).textContent = 'B';
+      }
+      if(b.label){
+        const lx = (b.lx ?? (b.o==='h' ? b.x : b.x+22)) - b.x;
+        const ly = (b.ly ?? (b.o==='h' ? b.y-22 : b.y+5)) - b.y;
+        sv('text',{x:lx, y:ly, 'text-anchor': b.o==='h' && b.lx==null ? 'middle' : 'start', class:'lbl'},g).textContent = b.label;
+      }
+      if(b.out) sv('text',{x:0,y:4,'text-anchor':'middle', style:'fill:var(--muted);font-size:9px;font-weight:700'},g).textContent = 'out';
+      if(cfg.unscrew){
+        sv('title',{},g).textContent = b.out ? 'Click to screw this bulb back in' : 'Click to unscrew this bulb';
+        g.addEventListener('click', () => { st.out.has(b.id) ? st.out.delete(b.id) : st.out.add(b.id); render(); });
+      }
+      if(st.energy && !b.out) badges.push({x:b.x, y:b.y+33, t: fmt(E) + ' “J”'});
+    });
+    // energy badges drawn last so they sit on top of wires
+    badges.forEach(bd => {
+      const w = 12 + bd.t.length*6.4;
+      sv('rect',{x:bd.x-w/2, y:bd.y-10, width:w, height:19, rx:6, style:'fill:var(--energy-bg);stroke:var(--energy);stroke-width:1.2'},svg);
+      sv('text',{x:bd.x, y:bd.y+4, 'text-anchor':'middle', style:'fill:var(--energy);font-size:12px;font-weight:800'},svg).textContent = bd.t;
+    });
+
+    if(tripsEl){
+      if(!st.energy){ tripsEl.innerHTML = ''; }
+      else {
+        const trips = findTrips(c, V);
+        if(!trips.length){
+          tripsEl.innerHTML = '<div class="none">No complete path, so charges can’t get around and no bulb gets any energy.</div>';
+        } else {
+          const name = b => 'Bulb ' + (b.label || b.id);
+          tripsEl.innerHTML = `<div class="th">Trips a charge can take (each one starts with 3 “J”):</div>` +
+            trips.map((t,i) => `<div class="trip"><span>${trips.length>1 ? 'Path '+(i+1)+':' : 'The only path:'}</span>` +
+              t.map(e => `<span class="arr">→</span><span class="chip">${esc(name(e.b))} gets ${fmt(e.e)}</span>`).join('') +
+              `<span class="arr">→</span><span class="end">back to the battery with 0, gets refilled</span></div>`).join('');
+        }
+      }
+    }
+    if(cfg.counter){
+      countL.textContent = st.params.n + (st.params.n === 1 ? ' bulb' : ' bulbs');
+      minusB.disabled = st.params.n <= cfg.counter.min; plusB.disabled = st.params.n >= cfg.counter.max;
+    }
+    if(cfg.brand){
+      brandCb.checked = !!st.params.brandB; brandCb.disabled = st.params.n < 2;
+      brandLbl.classList.toggle('disabled', st.params.n < 2);
+    }
+  }
+  render();
+  return { render, setColors(on){ st.colors = on; if(colorCb) colorCb.checked = on; render(); } };
+}
+
+/* ===================== checkpoints (retry until right) ===================== */
+const CP = {
+  'c-unscrew-s': {q:'In the series circuit, what happens when you unscrew one bulb?', opts:[
+    ['All the bulbs go out', true, 'There’s only one path, so breaking it anywhere stops the charge everywhere.'],
+    ['The other bulbs get brighter', false, 'Try it in the series circuit above and look again.'],
+    ['Only that bulb goes out', false, 'Try it in the series circuit above. With only one path, can charge still get around?']]},
+  'c-unscrew-p': {q:'In the parallel circuit, what happens to the other bulbs when you unscrew one?', opts:[
+    ['They all go out', false, 'Try it in the parallel circuit above. Each branch is its own path.'],
+    ['They get brighter', false, 'Look closely: their brightness doesn’t change.'],
+    ['They stay lit at the same brightness', true, 'Each branch has its own connection to both ends of the battery, so removing one branch doesn’t affect the others.']]},
+  'c-add-s': {q:'Adding a 3rd bulb in series makes each bulb…', opts:[
+    ['brighter', false, 'Add a bulb to the series circuit and watch again.'],
+    ['dimmer', true, 'Good observation. You’ll find out exactly why in section 5.'],
+    ['stay the same', false, 'Add a bulb to the series circuit and compare the glow.']]},
+  'c-add-p': {q:'Adding a 3rd bulb in parallel makes each bulb…', opts:[
+    ['brighter', false, 'Add a bulb to the parallel circuit and watch again.'],
+    ['dimmer', false, 'Add a bulb to the parallel circuit and compare again. That’s what happens in series.'],
+    ['stay the same', true, 'Each new branch connects straight across the battery, so every bulb still glows the same.']]},
+  'c-diagram': {q:'What does a circuit diagram mainly show?', opts:[
+    ['What the real circuit looks like on the table', false, 'Remember the messy and tidy pairs. They looked different but were the same circuit.'],
+    ['How the parts are connected to each other', true, 'A diagram is a map of connections, not a picture.'],
+    ['How bright each bulb is', false, 'Diagrams usually don’t show brightness. They show connections.']]},
+  'c-volt': {q:'Using our picture of voltage, a 9 V battery gives each charge about how many “joules”?', opts:[
+    ['3', false, 'That would be a 3 V battery.'],
+    ['9', true, '9 V means about 9 “joules” for each charge.'],
+    ['It depends on how many bulbs there are', false, 'The battery gives each charge the same amount no matter what’s connected. What changes is how the charge splits it up.']]},
+  'c-curr': {q:'A hose sprays 2 liters of water every second. In the circuit version of this picture, “2 liters per second” is most like…', opts:[
+    ['voltage', false, 'Voltage is about how much energy each charge gets, not how much is flowing.'],
+    ['current', true, 'Current is the amount of charge passing a spot each second, just like liters per second.'],
+    ['the battery', false, 'The battery is more like a pump that gives the water its energy.']]},
+  'c-flow': {q:'Which sentence is most accurate?', opts:[
+    ['Each bulb uses up some of the charge.', false, 'This is a really common idea, but the charge isn’t used up. The same charge that leaves the battery comes back. What bulbs use is energy.'],
+    ['Charge travels around the circuit and comes back; the energy it carries is what gets used.', true, 'The charge is like a delivery truck. The truck comes back; the packages (energy) get dropped off.'],
+    ['Voltage flows through the wires into the bulb.', false, 'Charge is what moves. Voltage tells you how much energy each charge gets.']]},
+  'c-chain': {q:'The light and heat coming from a bulb started out as…', opts:[
+    ['chemical energy stored in the battery', true, 'Chemical energy → carried by charges → dumped in the bulb → dissipated as light and heat.'],
+    ['energy stored in the wires', false, 'The wires just carry the charges. Where does the energy start?'],
+    ['charge that got used up in the bulb', false, 'Charge isn’t used up. Think about the energy chain above.']]},
+  'c-sum': {q:'Two bulbs from different brands are in series with a 3 V battery. Each charge gives the first bulb 1.8 “joules.” How many does it give the second bulb?', opts:[
+    ['1.8', false, 'Then the charge would need 3.6 “joules,” but the battery only gives it 3.'],
+    ['1.2', true, '1.8 + 1.2 = 3. The charge splits its 3 “joules” and uses all of them.'],
+    ['3', false, 'In series, the charge has to save some energy for the second bulb. It can’t give all 3 to each.'],
+    ['1.5', false, '1.5 each only happens with identical bulbs. Here the first one already got 1.8.']]},
+  'c-par': {q:'Why does each bulb in a parallel circuit get all 3 “joules”?', opts:[
+    ['Each charge only goes through one bulb, so it can dump all its energy there', true, 'One path, one obstacle, all 3 “joules.” Each bulb is connected directly to both ends of the battery.'],
+    ['Parallel circuits use a stronger battery', false, 'It’s the same 3 V battery in both circuits.'],
+    ['The bulbs are closer to the battery', false, 'Distance doesn’t matter. Connections do. Try the color trick.']]},
+  'c-bright': {q:'Why are two bulbs in series dimmer than two bulbs in parallel?', opts:[
+    ['In series, each charge has to split its energy between the bulbs, so each bulb gets less', true, 'Less energy dumped into each bulb means less light.'],
+    ['The charges get used up by the first bulb', false, 'Charges aren’t used up. Think about the energy each charge carries.'],
+    ['Series circuits have less charge in the wires', false, 'Think about the obstacle course. What does each charge have to do with its 3 “joules”?']]},
+  'k1s': {q:'Circuit 1: Which bulbs are in parallel with each other?', opts:[
+    ['A and B', false, 'Can a charge choose between A and B, or does it have to go through A first?'],
+    ['B and C', true, 'A charge picks either B or C. Both are connected between the same two wires.'],
+    ['All three', false, 'Every charge goes through A, so A isn’t on a separate branch.']]},
+  'k1a': {q:'Circuit 1: Predict, then check. Which bulb is the brightest?', opts:[
+    ['A', true, 'Every charge goes through A, then only one of B or C. It gives 2 “joules” to A and 1 to B or C. Turn on the energy labels to see it.'],
+    ['B', false, 'Turn on the energy labels and compare.'],
+    ['C', false, 'Turn on the energy labels and compare.'],
+    ['They’re all the same', false, 'Look at the glow, then turn on the energy labels.']]},
+  'k1b': {q:'Circuit 1: If you unscrew bulb A, what happens?', opts:[
+    ['All the bulbs go out', true, 'A is in series with everything else, so it’s on the only path back to the battery.'],
+    ['Only A goes out', false, 'Try it. Every charge has to pass through A.'],
+    ['B and C get brighter', false, 'Try it. Is there still a complete path?']]},
+  'k1c': {q:'Circuit 1: Screw A back in. Now unscrew B. What happens to A and C?', opts:[
+    ['Both go out', false, 'Try it. Is there still a path through A and C?'],
+    ['Nothing changes', false, 'Try it and look closely at both bulbs.'],
+    ['A gets dimmer and C gets brighter', true, 'Now A and C are simply in series and split 3 “joules” evenly: 1.5 each. A went down from 2; C went up from 1.'],
+    ['A gets brighter and C gets dimmer', false, 'Turn on the energy labels and compare before and after.']]},
+  'k2s': {q:'Circuit 2: Which bulbs are in series with each other?', opts:[
+    ['A and B', false, 'A charge going through A doesn’t go through B. They’re on different paths.'],
+    ['B and C', true, 'A charge that goes through B has to go through C next. They share one path.'],
+    ['None of them', false, 'Look at the right-hand path. Can a charge go through B without going through C?']]},
+  'k2a': {q:'Circuit 2: Which bulb is the brightest?', opts:[
+    ['A', true, 'A charge that takes A’s path hits only one obstacle, so it dumps all 3 “joules” into A. Charges on the other path split 1.5 + 1.5 between B and C.'],
+    ['B', false, 'Turn on the energy labels and compare.'],
+    ['B and C tie for brightest', false, 'B and C are equal, but compare them to A.']]},
+  'k2b': {q:'Circuit 2: If you unscrew B, what happens?', opts:[
+    ['Everything goes out', false, 'Try it. Is A’s path still connected to the battery?'],
+    ['A stays the same and C goes out', true, 'B and C are on the same path, so C loses its path. A’s path is untouched.'],
+    ['A gets brighter and C stays on', false, 'Try it and watch C.']]}
+};
+
+function mountCheckpoint(host, id){
+  const d = CP[id];
+  const box = h('div','cp'); host.appendChild(box);
+  box.appendChild(h('div','cp-tag','Checkpoint'));
+  box.appendChild(h('p','cp-q', d.q));
+  const list = h('div','cp-opts'); box.appendChild(list);
+  const fb = h('div','fb box');
+  const btns = d.opts.map((o,i) => { const b = h('button','opt', o[0]); b.onclick = () => choose(i); list.appendChild(b); return b; });
+  box.appendChild(fb);
+  function showDone(i, prefix){
+    btns[i].classList.add('right'); btns.forEach(b => b.disabled = true);
+    box.classList.add('done'); fb.className = 'fb box good'; fb.innerHTML = `<b>${prefix}</b> ${d.opts[i][2]}`;
+  }
+  function choose(i){
+    if(S.done[id]) return;
+    S.attempts[id] = (S.attempts[id]||0) + 1;
+    const o = d.opts[i];
+    if(o[1]){ showDone(i, 'Yes!'); markDone(id); }
+    else { btns[i].classList.add('wrong'); btns[i].disabled = true; fb.className = 'fb box bad'; fb.innerHTML = `<b>Not quite.</b> ${o[2]} Try again.`; save(); }
+  }
+  if(S.done[id]) showDone(d.opts.findIndex(o => o[1]), 'Done.');
+}
+
+/* ===================== sorting game ===================== */
+function mountSort(host){
+  const items = [
+    {c:D.B, a:'S'}, {c:D.E, a:'P'}, {c:D.L, a:'S'},
+    {c:D.J, a:'P'}, {c:D.C, a:'S'}, {c:() => Object.assign(parallelCircuit({n:3}), {showV:false}), a:'P'}
+  ];
+  const grid = h('div','grid3'); host.appendChild(grid);
+  items.forEach((it,i) => {
+    const tile = h('div','tile'); grid.appendChild(tile);
+    tile.appendChild(h('div','tile-num','Drawing ' + (i+1)));
+    const w = makeWidget(tile, {build:it.c, maxW:300, lit:false});
+    const row = h('div','tile-btns'); tile.appendChild(row);
+    const bS = h('button','btn small','Series'), bP = h('button','btn small','Parallel');
+    row.append(bS, bP);
+    const fb = h('div','fb'); tile.appendChild(fb);
+    const good = it.a === 'S'
+      ? 'Series. There’s one path, so charge goes through both bulbs in a row.'
+      : 'Parallel. Each bulb has its own path between the two ends of the battery.';
+    function setDone(){ tile.classList.add('ok'); bS.disabled = bP.disabled = true; fb.className = 'fb good'; fb.textContent = '✓ ' + good; }
+    function pick(ans){
+      if(S.sort[i]) return;
+      if(ans === it.a){ S.sort[i] = 1; setDone(); save(); if(items.every((_,j) => S.sort[j])) markDone('sort'); }
+      else { w.setColors(true); fb.className = 'fb bad'; fb.textContent = 'Not quite. Colors are on now: does every bulb touch both red (+) and blue (−)? If yes, it’s parallel.'; }
+    }
+    bS.onclick = () => pick('S'); bP.onclick = () => pick('P');
+    if(S.sort[i]) setDone();
+  });
+}
+
+/* ===================== energy tables ===================== */
+function mountTable(host, id, rows){
+  const wrap = h('div','wrapx'); host.appendChild(wrap);
+  const t = h('table','rd'); wrap.appendChild(t);
+  t.innerHTML = '<thead><tr><th>Bulb</th><th>Setup</th><th>“Joules” per charge</th><th></th></tr></thead>';
+  const tb = h('tbody'); t.appendChild(tb);
+  const saved = S.tables[id] || [];
+  const inputs = rows.map((r,i) => {
+    const tr = h('tr'); tb.appendChild(tr);
+    tr.appendChild(h('td','', r[0])); tr.appendChild(h('td','setup', r[1]));
+    const td = h('td'); const inp = document.createElement('input'); inp.type = 'text'; inp.inputMode = 'decimal';
+    inp.setAttribute('aria-label', r[0] + ', ' + r[1] + ': joules per charge'); inp.value = saved[i] ?? '';
+    td.append(inp, document.createTextNode(' “J”')); tr.appendChild(td);
+    const stc = h('td','st'); tr.appendChild(stc);
+    return {inp, stc, ans:r[2]};
+  });
+  const btn = h('button','btn small','Check my answers'); host.appendChild(btn);
+  const fb = h('div','fb box'); host.appendChild(fb);
+  function lock(){ inputs.forEach(o => { o.inp.disabled = true; o.stc.textContent = '✓'; o.stc.className = 'st ok'; }); btn.disabled = true; fb.className = 'fb box good'; fb.textContent = 'All correct.'; }
+  btn.onclick = () => {
+    let all = true;
+    inputs.forEach(o => {
+      const v = parseFloat(o.inp.value.replace(',', '.'));
+      const ok = !isNaN(v) && Math.abs(v - o.ans) <= 0.06;
+      o.stc.textContent = ok ? '✓' : '✗'; o.stc.className = 'st ' + (ok ? 'ok' : 'no'); if(!ok) all = false;
+    });
+    S.tables[id] = inputs.map(o => o.inp.value); save();
+    if(all){ lock(); markDone(id); }
+    else { fb.className = 'fb box bad'; fb.textContent = 'Some answers don’t match. Check the setup for those rows: how many bulbs, and is brand B on or off?'; }
+  };
+  if(S.done[id]) lock();
+}
+
+/* ===================== exit ticket ===================== */
+const EXIT = [
+  {id:'e1', q:'Is this circuit series or parallel?', diagram:'Y', opts:['Series','Parallel'], ans:0,
+   why:'There’s only one path: from +, through bulb 1, through bulb 2, and back. It just looks like the lampboard.'},
+  {id:'e2', q:'A 3 V battery is connected to two identical bulbs in series. How many “joules” does each charge give one bulb?', opts:['0','1.5','3','6'], ans:1,
+   why:'The charge has to split its 3 “joules” evenly between two identical bulbs: 1.5 + 1.5 = 3.'},
+  {id:'e3', q:'Two bulbs from different brands are in series with a 3 V battery. Each charge gives one bulb 2.4 “joules.” How many does it give the other bulb?', opts:['0.6','1.5','2.4','3'], ans:0,
+   why:'The split can be uneven, but it always adds up to the 3 “joules” from the battery: 2.4 + 0.6 = 3.'},
+  {id:'e4', q:'Three identical bulbs are in parallel with a 3 V battery. How many “joules” does each charge give the bulb it passes through?', opts:['1','1.5','3','9'], ans:2,
+   why:'Each charge goes through only one bulb, so it dumps all 3 “joules” there.'},
+  {id:'e5', q:'In that same parallel circuit, you unscrew one bulb. What happens to the other two?', opts:['They go out','They get dimmer','They stay lit at the same brightness','They get brighter'], ans:2,
+   why:'Each branch has its own connection to the battery, so removing one branch doesn’t change the others.'},
+  {id:'e6', q:'Maya draws her circuit shaped exactly like the lampboard. Jordan redraws the same circuit as a neat rectangle with the same connections. Whose diagram is correct?',
+   opts:['Only Maya’s, because it matches the real circuit','Only Jordan’s, because it’s neater','Both, because they show the same connections','Neither'], ans:2,
+   why:'A diagram shows what’s connected to what, not what the circuit looks like. Jordan’s is just easier to read.'},
+  {id:'e7', q:'Bulb X is in series with a pair of bulbs, Y and Z, which are in parallel with each other. All three bulbs are identical. Which bulb is brightest?',
+   opts:['X','Y','Z','All the same'], ans:0,
+   why:'Every charge goes through X, then only one of Y or Z. Like Circuit 1, X gets the biggest share of the energy.'}
+];
+function mountExit(){
+  const host = document.getElementById('exitQs');
+  EXIT.forEach((q,n) => {
+    const box = h('div','cp'); host.appendChild(box);
+    box.appendChild(h('div','cp-tag','Question ' + (n+1) + ' of ' + EXIT.length));
+    box.appendChild(h('p','cp-q', q.q));
+    if(q.diagram) makeWidget(box, {build:D[q.diagram], maxW:320, lit:false});
+    const list = h('div','cp-opts'); box.appendChild(list);
+    const fb = h('div','fb box');
+    const btns = q.opts.map((o,i) => { const b = h('button','opt', o); b.onclick = () => choose(i); list.appendChild(b); return b; });
+    box.appendChild(fb);
+    function show(i){
+      btns.forEach(b => b.disabled = true); box.classList.add('done');
+      if(i === q.ans){ btns[i].classList.add('right'); fb.className = 'fb box good'; fb.innerHTML = '<b>Correct.</b> ' + q.why; }
+      else { btns[i].classList.add('wrong'); btns[q.ans].classList.add('missed'); fb.className = 'fb box bad'; fb.innerHTML = '<b>Not this time.</b> The answer is “' + esc(q.opts[q.ans]) + '.” ' + q.why; }
+    }
+    function choose(i){ if(S.exit[q.id] != null) return; S.exit[q.id] = i; save(); show(i); }
+    if(S.exit[q.id] != null) show(S.exit[q.id]);
+  });
+  const resp = document.getElementById('resp');
+  resp.value = S.response || '';
+  resp.addEventListener('input', () => { S.response = resp.value; save(); if(S.finished) renderResults(); });
+  document.getElementById('finishBtn').onclick = () => {
+    const msg = document.getElementById('finishMsg');
+    const missing = EXIT.filter(q => S.exit[q.id] == null).length;
+    if(missing){ msg.textContent = `Answer all the questions first (${missing} left).`; return; }
+    if((S.response||'').trim().length < 20){ msg.textContent = 'Write a few sentences in the box before finishing.'; return; }
+    msg.textContent = '';
+    if(!S.finished){ S.finished = true; S.finishedAt = new Date().toLocaleString(); }
+    save(); markDone('exit'); renderResults();
+    document.getElementById('resultsHost').scrollIntoView({behavior:'smooth', block:'start'});
+  };
+}
+function renderResults(){
+  const host = document.getElementById('resultsHost');
+  if(!S.finished){ host.innerHTML = ''; return; }
+  const score = EXIT.filter(q => S.exit[q.id] === q.ans).length;
+  const cps = Object.keys(CP);
+  const firstTry = cps.filter(id => S.attempts[id] === 1).length;
+  host.innerHTML = `<div class="results">
+    <h3>⚡ Results: series, parallel &amp; energy</h3>
+    <dl>
+      <dt>Name(s)</dt><dd>${esc(S.names)}</dd>
+      <dt>Period</dt><dd>${esc(S.period || '–')}</dd>
+      <dt>Finished</dt><dd>${esc(S.finishedAt)}</dd>
+      <dt>Exit ticket</dt><dd>${score} / ${EXIT.length}</dd>
+      <dt>Checkpoints right on 1st try</dt><dd>${firstTry} / ${cps.length}</dd>
+    </dl>
+    <p style="margin-bottom:.3rem;color:var(--muted)">Written response</p>
+    <div class="resp">${esc(S.response)}</div>
+    <p class="submit">${esc(CONFIG.submitText)}</p>
+  </div>`;
+}
+
+/* ===================== sections & progress ===================== */
+const SECS = [
+  {id:'s1', name:'Start', req:['start']},
+  {id:'s2', name:'Lab review', req:['c-unscrew-s','c-unscrew-p','c-add-s','c-add-p']},
+  {id:'s3', name:'Drawings', req:['sort','c-diagram']},
+  {id:'s4', name:'Voltage & current', req:['c-volt','c-curr','c-flow','c-chain']},
+  {id:'s5', name:'Energy', req:['tbl-series','tbl-par','c-sum','c-par','c-bright']},
+  {id:'s6', name:'Complex circuits', req:['k1s','k1a','k1b','k1c','k2s','k2a','k2b']},
+  {id:'s7', name:'Exit ticket', req:['exit']}
+];
+const complete = i => SECS[i].req.every(r => S.done[r]);
+function markDone(id){ S.done[id] = true; save(); updateSections(); }
+function updateSections(){
+  const nav = document.getElementById('steps'); nav.innerHTML = '';
+  let current = -1;
+  SECS.forEach((s,i) => {
+    const unlocked = i === 0 || complete(i-1);
+    const el = document.getElementById(s.id);
+    el.hidden = !unlocked;
+    const nx = el.querySelector('.next'); if(nx) nx.hidden = !complete(i);
+    if(unlocked && !complete(i) && current < 0) current = i;
+    const b = h('button','step', (i+1) + '. ' + s.name);
+    if(!unlocked){ b.classList.add('locked'); b.disabled = true; b.title = 'Finish the section before this one to unlock it'; }
+    else if(complete(i)) b.classList.add('done');
+    b.onclick = () => el.scrollIntoView({behavior:'smooth', block:'start'});
+    nav.appendChild(b);
+  });
+  if(current >= 0) nav.children[current].classList.add('current');
+  renderResults();
+}
+
+/* ===================== mount everything ===================== */
+function mount(name, fn){ const el = document.querySelector(`[data-mount="${name}"]`); if(el) fn(el); }
+
+makeWidget(document.getElementById('heroCirc'), {build:parallelCircuit, params:{n:3}, unscrew:true, maxW:380});
+
+mount('s2series',   el => makeWidget(el, {caption:'Series', build:seriesCircuit, params:{n:2}, counter:{min:1,max:4}, unscrew:true}));
+mount('s2parallel', el => makeWidget(el, {caption:'Parallel', build:parallelCircuit, params:{n:2}, counter:{min:1,max:4}, unscrew:true}));
+
+function pair(aName, bName, aCirc, bCirc, aCap, bCap){
+  let wa, wb;
+  mount(aName, el => wa = makeWidget(el, {caption:aCap, build:aCirc, lit:false, colorToggle:true, onColor:on => wb && wb.setColors(on)}));
+  mount(bName, el => wb = makeWidget(el, {caption:bCap, build:bCirc, lit:false, colorToggle:true, onColor:on => wa && wa.setColors(on)}));
+}
+pair('pairF','pairA', D.F, D.A, 'Messy (lampboard-shaped)', 'Tidy');
+pair('pairG','pairD', D.G, D.D, 'Messy', 'Tidy');
+mount('sort', mountSort);
+
+mount('s5series', el => makeWidget(el, {caption:'Series with a 3 V battery', build:seriesCircuit, params:{n:2, brandB:false}, counter:{min:1,max:4}, brand:true, energy:true, colorToggle:true, unscrew:true}));
+mount('tblSeries', el => mountTable(el, 'tbl-series', [
+  ['Bulb 1', '2 identical bulbs', 1.5],
+  ['Bulb 2', '2 identical bulbs', 1.5],
+  ['Bulb 1', '3 identical bulbs', 1],
+  ['Bulb 1', '2 bulbs, bulb 2 is brand B', 2],
+  ['Bulb 2', '2 bulbs, bulb 2 is brand B', 1]
+]));
+mount('s5parallel', el => makeWidget(el, {caption:'Parallel with a 3 V battery', build:parallelCircuit, params:{n:2}, counter:{min:1,max:4}, energy:true, colorToggle:true, unscrew:true}));
+mount('tblParallel', el => mountTable(el, 'tbl-par', [
+  ['Bulb 1', '2 bulbs', 3],
+  ['Bulb 2', '2 bulbs', 3],
+  ['Bulb 3', '3 bulbs', 3]
+]));
+
+mount('k1', el => makeWidget(el, {caption:'Circuit 1: A in series with (B parallel to C)', build:D.K1, energy:true, colorToggle:true, unscrew:true}));
+mount('k2', el => makeWidget(el, {caption:'Circuit 2: A in parallel with (B in series with C)', build:D.K2, energy:true, colorToggle:true, unscrew:true}));
+
+document.querySelectorAll('[data-cp]').forEach(el => mountCheckpoint(el, el.dataset.cp));
+document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => document.getElementById(b.dataset.goto).scrollIntoView({behavior:'smooth', block:'start'}));
+mountExit();
+
+const namesI = document.getElementById('names'), periodI = document.getElementById('period');
+namesI.value = S.names; periodI.value = S.period;
+namesI.oninput = () => { S.names = namesI.value; save(); if(S.finished) renderResults(); };
+periodI.oninput = () => { S.period = periodI.value; save(); if(S.finished) renderResults(); };
+document.getElementById('startBtn').onclick = () => {
+  if(namesI.value.trim().length < 2){ document.getElementById('startMsg').textContent = 'Type your name(s) first.'; namesI.focus(); return; }
+  document.getElementById('startMsg').textContent = '';
+  markDone('start');
+  document.getElementById('s2').scrollIntoView({behavior:'smooth', block:'start'});
+};
+document.getElementById('resetBtn').onclick = () => {
+  if(confirm('Erase all progress on this computer and start over?')){ try{ localStorage.removeItem(CONFIG.storageKey); }catch(e){} location.reload(); }
+};
+updateSections();
+</script>
+</body>
+</html>
