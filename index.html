@@ -1,21 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Physics Energy Simulations</title>
-  <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-    h1 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
-    ul { list-style-type: none; padding: 0; }
-    li { margin: 15px 0; }
-    a { display: block; padding: 12px; background: #f0f4f8; color: #0056b3; text-decoration: none; border-radius: 6px; font-weight: bold; }
-    a:hover { background: #e0e8f0; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics Simulations — Interactive Science</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>Physics Energy Lab Simulations</h1>
-  <ul>
-    <li><a href="toycar-downhill.html">🚗 Toy Car Simulation: Downhill Track</a></li>
-    <li><a href="toycar-uphill.html">🚗 Toy Car Simulation: Uphill Track</a></li>
-  </ul>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans p-6 md:p-12">
+
+  <div class="max-w-6xl mx-auto space-y-8">
+    
+    <!-- Top Navigation & Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div>
+        <div class="flex items-center space-x-3">
+          <span class="text-3xl">⚡</span>
+          <h1 class="text-3xl font-extrabold text-blue-400">Physics Simulations</h1>
+        </div>
+        <p class="text-slate-400 text-sm mt-1">
+          Interactive visual models for circuits, kinematics, forces, and energy.
+        </p>
+      </div>
+
+      <!-- Navigation Link back to Hub -->
+      <a href="https://luckiphysics.github.io/" class="inline-flex items-center space-x-2 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg transition self-start sm:self-auto">
+        <span>&larr;</span>
+        <span>Back to Home Hub</span>
+      </a>
+    </header>
+
+    <!-- Simulations Grid -->
+    <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <!-- Sim 1: Circuits (Series, Parallel, Voltage) - SUB LESSON -->
+      <a href="circuits-series-parallel-voltage.html" class="group bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-950 text-blue-400 border border-blue-800/50">
+              Circuits & Electricity
+            </span>
+            <span class="text-xs text-amber-400 font-medium">Mini-Lesson</span>
+          </div>
+          <h2 class="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+            Series & Parallel Circuits
+          </h2>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Interactive sub lesson exploring voltage drops, current flow, and circuit configurations in series and parallel.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs font-semibold text-blue-400">
+          <span>Launch Lesson</span>
+          <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+        </div>
+      </a>
+
+      <!-- Sim 2: Toycar Downhill -->
+      <a href="toycar-downhill.html" class="group bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-950 text-blue-400 border border-blue-800/50">
+              Kinematics & Energy
+            </span>
+            <span class="text-xs text-slate-500">Interactive</span>
+          </div>
+          <h2 class="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+            Toy Car: Downhill Ramp
+          </h2>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Analyze acceleration, potential-to-kinetic energy conversion, and velocity of a car moving downhill.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs font-semibold text-blue-400">
+          <span>Launch Simulation</span>
+          <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+        </div>
+      </a>
+
+      <!-- Sim 3: Toycar Uphill -->
+      <a href="toycar-uphill.html" class="group bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-xl p-6 transition-all hover:-translate-y-1 shadow-lg flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-950 text-blue-400 border border-blue-800/50">
+              Kinematics & Energy
+            </span>
+            <span class="text-xs text-slate-500">Interactive</span>
+          </div>
+          <h2 class="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+            Toy Car: Uphill Motion
+          </h2>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Examine deceleration, initial kinetic energy, gravity resistive forces, and stopping distance going uphill.
+          </p>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs font-semibold text-blue-400">
+          <span>Launch Simulation</span>
+          <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+        </div>
+      </a>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center pt-8 border-t border-slate-800 text-slate-500 text-xs">
+      <p>Interactive Science Simulations &bull; Hosted on GitHub Pages</p>
+    </footer>
+
+  </div>
+
 </body>
 </html>
