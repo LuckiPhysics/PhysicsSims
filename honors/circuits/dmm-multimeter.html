@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Virtual Multimeter Lab</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  .meter { background: #f5c518; border-radius: 22px; padding: 16px; color: #111; border: 3px solid #b8920c; }
+  :root[data-theme="dark"] .meter { background: #c9a10f; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .meter { background: #c9a10f; } }
+  .lcd { background: #c7d4b6; border: 3px solid #333; border-radius: 10px; padding: 10px 16px; font: 700 44px/1.1 "SF Mono", Menlo, Consolas, monospace; text-align: right; color: #111; min-height: 70px; letter-spacing: 2px; }
+  .lcd.warn { background: #f3b4b4; }
+  .lcd #lcdUnit { font-size: 26px; }
+  .dial-label { font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: .05em; margin: 14px 0 6px; color: #3b2f00; }
+  .dial { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .dial button, .ports button, .probe-btn { min-height: 52px; border-radius: 12px; border: 2px solid #333; background: #fff8d6; color: #111; font-weight: 800; font-size: 16px; }
+  .dial button.on, .ports button.on { background: #111; color: #fff; }
+  .ports { display: grid; gap: 8px; }
+  .port-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 8px; align-items: center; }
+  .lead-name { font-weight: 800; font-size: 15px; }
+  .lead-name.red { color: #b91c1c; } .lead-name.blk { color: #111; }
+  .port-row:first-child button.on { background: #dc2626; border-color: #dc2626; }
+  .probe-row { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 8px; }
+  .probe-btn.red { border-color: #dc2626; color: #b91c1c; } .probe-btn.blk { border-color: #111; }
+  .probe-btn.red.on { background: #dc2626; color: #fff; } .probe-btn.blk.on { background: #111; color: #fff; }
+  .meter .hint { color: #3b2f00; }
+  .mission { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 2px solid var(--line); border-radius: 12px; margin-bottom: 8px; }
+  .mission.done { border-color: var(--good); background: var(--good-soft); }
+  .mbox { flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--line); }
+  .mission.done .mbox { background: var(--good); color: var(--card); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Circuits</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with the steps for each lab mission, correct answers highlighted, and the feedback students get for wrong answers.
+    Students use the <a href="dmm-multimeter.html">regular link</a>. · <a href="https://www.youtube.com/watch?v=USAyR98G-PU" target="_blank" rel="noopener">Video</a>
+  </div>
+  <header class="top">
+    <div class="kicker">Honors Physics · Circuits · Multimeter Lab</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Virtual Multimeter Lab</h1>
+      <p class="muted">About 15 minutes · Do this after the multimeter video</p>
+      <p>You'll use a virtual digital multimeter (DMM) on a battery-and-bulb circuit. You'll measure voltage and current the right way, and make the classic mistake on purpose, safely, so you never make it with a real meter.</p>
+      <a class="ghost" href="https://www.youtube.com/watch?v=USAyR98G-PU" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);margin-bottom:16px">Watch or rewatch the video (4 min)</a>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Recap -->
+  <section class="step" data-title="The two setups">
+    <div class="card">
+      <h2>Voltage vs. current: the two setups</h2>
+      <p>From the video. Keep this screen in mind for the lab.</p>
+      <table class="wx" style="font-size:17px">
+        <tr><th></th><th>Voltage</th><th>Current</th></tr>
+        <tr><td><strong>Dial</strong></td><td>V section, the range <em>just above</em> what you expect (20 V for a 4.5 V battery)</td><td>10A</td></tr>
+        <tr><td><strong>Black lead</strong></td><td>COM</td><td>COM</td></tr>
+        <tr><td><strong>Red lead</strong></td><td>V port</td><td>10A port</td></tr>
+        <tr><td><strong>Hook-up</strong></td><td><strong>Parallel:</strong> touch the probes <em>across</em> the part. Don't take anything apart.</td><td><strong>Series:</strong> <em>break the circuit open</em> and make the meter part of the loop</td></tr>
+        <tr><td><strong>Expect</strong></td><td>A bit less than the battery's label</td><td>Under 1 A. More than that means a setup mistake.</td></tr>
+      </table>
+      <div class="notes-box">A <strong>negative sign</strong> just means the probes are reversed. The number is still right. Swap the probes or ignore the sign.</div>
+    </div>
+  </section>
+
+  <!-- 2 Lab -->
+  <section class="step" data-title="Virtual lab" data-gate="lab">
+    <div class="card" id="labCard">
+      <h2>The lab</h2>
+      <p>Complete all 5 missions (listed below the meter). Each one checks itself off when you get it right. <strong id="missCount">0/5 done</strong></p>
+
+      <svg id="circ" viewBox="0 0 640 330" role="img" aria-label="Circuit: battery, wire with a connector, and a light bulb">
+        <defs>
+          <radialGradient id="glow"><stop offset="0%" stop-color="#fde047" stop-opacity="1"/><stop offset="100%" stop-color="#fde047" stop-opacity="0"/></radialGradient>
+        </defs>
+        <!-- wires -->
+        <path d="M75,110 L75,50 L280,50" fill="none" stroke="var(--ink)" stroke-width="5"/>
+        <path d="M340,50 L520,50 L520,128" fill="none" stroke="var(--ink)" stroke-width="5"/>
+        <path d="M520,222 L520,290 L75,290 L75,240" fill="none" stroke="var(--ink)" stroke-width="5"/>
+        <line id="connLink" x1="280" y1="50" x2="340" y2="50" stroke="var(--ink)" stroke-width="5"/>
+        <rect id="connBox" x="290" y="38" width="40" height="24" rx="5" fill="var(--note)" opacity=".85"/>
+        <text x="310" y="88" text-anchor="middle" font-size="14" style="fill:var(--muted)">connector</text>
+        <!-- battery -->
+        <rect x="40" y="110" width="70" height="130" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="62" y="102" width="26" height="10" fill="var(--ink)"/>
+        <text x="75" y="160" text-anchor="middle" font-size="18" font-weight="800">4.5 V</text>
+        <text x="75" y="185" text-anchor="middle" font-size="13" style="fill:var(--muted)">battery</text>
+        <text x="100" y="130" font-size="22" font-weight="800">+</text>
+        <text x="100" y="236" font-size="26" font-weight="800">−</text>
+        <!-- bulb -->
+        <circle id="bulbGlow" cx="520" cy="175" r="80" fill="url(#glow)" opacity="0"/>
+        <circle id="bulbGlass" cx="520" cy="175" r="36" fill="var(--card)" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M506,190 Q512,160 520,190 Q528,160 534,190" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="508" y="208" width="24" height="14" fill="var(--muted)"/>
+        <text x="580" y="180" font-size="15" style="fill:var(--muted)">bulb</text>
+        <!-- contact points -->
+        <g id="contacts"></g>
+        <g id="pins"></g>
+      </svg>
+      <button class="ghost" id="connBtn" style="width:100%;margin:6px 0 14px">Open the circuit at the connector</button>
+
+      <div class="meter">
+        <div class="lcd"><span id="lcd">&nbsp;</span><span id="lcdUnit"></span></div>
+        <div class="dial-label">Dial (tap to turn)</div>
+        <div class="dial" id="dial">
+          <button data-dial="OFF">OFF</button>
+          <button data-dial="200V">200 V</button>
+          <button data-dial="20V">20 V</button>
+          <button data-dial="2V">2 V</button>
+          <button data-dial="10A">10A</button>
+        </div>
+        <div class="dial-label">Plug in the leads</div>
+        <div class="ports">
+          <div class="port-row"><span class="lead-name red">Red lead</span>
+            <button data-plug="red" data-port="10A">10A</button><button data-plug="red" data-port="COM">COM</button><button data-plug="red" data-port="V">V</button></div>
+          <div class="port-row"><span class="lead-name blk">Black lead</span>
+            <button data-plug="black" data-port="10A">10A</button><button data-plug="black" data-port="COM">COM</button><button data-plug="black" data-port="V">V</button></div>
+        </div>
+        <div class="dial-label">Touch the probes to the circuit</div>
+        <div class="probe-row">
+          <button class="probe-btn red" data-hold="red">Hold red probe</button>
+          <button class="probe-btn blk" data-hold="black">Hold black probe</button>
+          <button class="probe-btn" id="liftBtn">Lift both</button>
+        </div>
+        <p class="hint" id="holdHint">Tap "Hold red probe," then tap a glowing dot on the circuit.</p>
+      </div>
+      <div class="feedback show" id="labFb" style="margin-top:14px"></div>
+      <h2 style="font-size:20px;margin-top:18px">Missions</h2>
+      <div id="missions"></div>
+    </div>
+  </section>
+
+  <!-- 3–7 Checks -->
+  <section class="step" data-title="Check 1 of 5" data-q="q1">
+    <div class="card"><h2>Check 1 of 5</h2>
+      <p>You're about to measure voltage in a circuit powered by a <strong>4.5 V</strong> battery. Which range should the dial be on?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="2">2 V</button>
+        <button class="big-btn" data-opt="20">20 V</button>
+        <button class="big-btn" data-opt="200">200 V</button>
+        <button class="big-btn" data-opt="10A">10A</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div></div>
+  </section>
+  <section class="step" data-title="Check 2 of 5" data-q="q2">
+    <div class="card"><h2>Check 2 of 5</h2>
+      <p>How do you connect the meter to measure the voltage across a bulb?</p>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="par">Touch the probes across the bulb (parallel), leaving the circuit connected</button>
+        <button class="big-btn" data-opt="ser">Break the circuit open and put the meter in the gap (series)</button>
+        <button class="big-btn" data-opt="same">Touch both probes to the same wire</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div></div>
+  </section>
+  <section class="step" data-title="Check 3 of 5" data-q="q3">
+    <div class="card"><h2>Check 3 of 5</h2>
+      <p>You just measured voltage. Now you want to measure current. Besides turning the dial to 10A, what do you change?</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="red">Move the red lead from V to 10A</button>
+        <button class="big-btn" data-opt="black">Move the black lead from COM to 10A</button>
+        <button class="big-btn" data-opt="none">Nothing. The dial does it all.</button>
+        <button class="big-btn" data-opt="swap">Swap the red and black leads</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div></div>
+  </section>
+  <section class="step" data-title="Check 4 of 5" data-q="q4">
+    <div class="card"><h2>Check 4 of 5</h2>
+      <p>What do you have to do to the circuit before you can measure the current?</p>
+      <div data-mc="q4">
+        <button class="big-btn" data-opt="break">Break it open somewhere so the meter becomes part of the loop (series)</button>
+        <button class="big-btn" data-opt="across">Nothing. Touch the probes across the bulb.</button>
+        <button class="big-btn" data-opt="battery">Touch the probes to the two ends of the battery</button>
+      </div>
+      <div class="feedback" id="q4Fb"></div></div>
+  </section>
+  <section class="step" data-title="Check 5 of 5" data-q="q5">
+    <div class="card"><h2>Check 5 of 5</h2>
+      <p>A student sets the meter for current, then touches the probes across a glowing bulb. The bulb goes dark and the meter reads about <strong>5.8 A</strong>. What happened?</p>
+      <div data-mc="q5">
+        <button class="big-btn" data-opt="short">The meter has almost no resistance, so the current took a shortcut through the meter and skipped the bulb (a short circuit)</button>
+        <button class="big-btn" data-opt="burn">The bulb burned out</button>
+        <button class="big-btn" data-opt="range">The dial was on the wrong voltage range</button>
+        <button class="big-btn" data-opt="real">That's the real current through the bulb</button>
+      </div>
+      <div class="feedback" id="q5Fb"></div></div>
+  </section>
+
+  <!-- 8 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <label for="confused"><strong>Still unsure about anything?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., why the meter has to be in series for current"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Virtual Multimeter Lab</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Lab missions</span><span class="badge g" id="rMissions"></span></div>
+      <div class="res-row"><span>Bulb voltage I measured</span><span id="rV" style="font-weight:700"></span></div>
+      <div class="res-row"><span>Circuit current I measured</span><span id="rI" style="font-weight:700"></span></div>
+      <div class="res-row"><span>Short-circuit mistake reading</span><span id="rS" style="font-weight:700"></span></div>
+      <div class="res-row"><span>Checks correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'DMM';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () { mode = modes[(modes.indexOf(mode) + 1) % 3]; try { localStorage.setItem('lp-theme', mode); } catch (e) {} applyTheme(); });
+  applyTheme();
+
+  // ================= Virtual circuit + meter =================
+  var EMF = 4.5, R_INT = 0.726, R_BULB = 10, R_METER = 0.05, P_FULL = 1.76;
+  var CONTACTS = {
+    bplus: { x: 75, y: 92, node: 'a1', label: 'battery +' },
+    bminus: { x: 75, y: 258, node: 'b', label: 'battery −' },
+    btop: { x: 520, y: 128, node: 'a2', label: 'bulb top' },
+    bbot: { x: 520, y: 222, node: 'b', label: 'bulb bottom' },
+    gapL: { x: 272, y: 50, node: 'a1', label: 'wire end (battery side)', openOnly: true },
+    gapR: { x: 348, y: 50, node: 'a2', label: 'wire end (bulb side)', openOnly: true }
+  };
+  var S = { dial: 'OFF', plug: { red: null, black: null }, tip: { red: null, black: null }, open: false, hold: null };
+  var REC = { v: null, i: null, s: null }, MISS = {};
+  var NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, a, parent) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); parent.appendChild(e); return e; }
+
+  function solve() {
+    // Nodes: a1 (battery +), a2 (bulb top), b (ground). Nodal analysis for Va1, Va2.
+    var G = [[0, 0], [0, 0]], I = [0, 0], idx = { a1: 0, a2: 1 };
+    function cond(n1, n2, g) {
+      if (n1 === n2) return;
+      [[n1, n2], [n2, n1]].forEach(function (p) { if (p[0] !== 'b') { G[idx[p[0]]][idx[p[0]]] += g; if (p[1] !== 'b') G[idx[p[0]]][idx[p[1]]] -= g; } });
+    }
+    cond('a1', 'b', 1 / R_INT); I[0] += EMF / R_INT;
+    if (!S.open) cond('a1', 'a2', 1e6);
+    cond('a2', 'b', 1 / R_BULB);
+    var am = ammeterNodes(); if (am) cond(am[0], am[1], 1 / R_METER);
+    var det = G[0][0] * G[1][1] - G[0][1] * G[1][0];
+    var va1 = (I[0] * G[1][1] - G[0][1] * I[1]) / det, va2 = (G[0][0] * I[1] - G[1][0] * I[0]) / det;
+    var V = { a1: va1, a2: va2, b: 0 };
+    var iBulb = va2 / R_BULB, iMeter = am ? (V[am[0]] - V[am[1]]) / R_METER : 0;
+    return { V: V, iBulb: iBulb, iMeter: iMeter };
+  }
+  function tipNode(c) { var t = S.tip[c]; return t ? CONTACTS[t].node : null; }
+  // Leads in 10A + COM with both tips on the circuit form a near-zero-resistance path (any dial setting).
+  function ammeterNodes() {
+    var r = S.plug.red, k = S.plug.black;
+    var hi = r === '10A' && k === 'COM' ? 'red' : (k === '10A' && r === 'COM' ? 'black' : null);
+    if (!hi) return null;
+    var lo = hi === 'red' ? 'black' : 'red';
+    var n1 = tipNode(hi), n2 = tipNode(lo);
+    if (!n1 || !n2 || n1 === n2) return null;
+    return [n1, n2];
+  }
+  function voltPair() {
+    var r = S.plug.red, k = S.plug.black;
+    if (r === 'V' && k === 'COM') return ['red', 'black'];
+    if (k === 'V' && r === 'COM') return ['black', 'red'];
+    return null;
+  }
+  function fmtV(v, range) {
+    var a = Math.abs(v), s = v < -0.0005 ? '−' : '';
+    if (range === '2V') return a > 1.999 ? '1.' : s + a.toFixed(3);
+    if (range === '20V') return a > 19.99 ? '1.' : s + a.toFixed(2);
+    return s + a.toFixed(1);
+  }
+  function compute() {
+    var sol = solve(), out = { lcd: '', unit: '', msg: '', warn: false, reading: null, kind: null, sol: sol };
+    if (S.dial === 'OFF') { out.msg = 'The meter is off. Turn the dial to start.'; return out; }
+    if (!S.plug.black && !S.plug.red) { out.lcd = '0.00'; out.unit = S.dial === '10A' ? 'A' : 'V'; out.msg = 'Plug in the leads: black into COM first.'; return out; }
+    if (S.plug.red && S.plug.red === S.plug.black) { out.lcd = '0.00'; out.unit = S.dial === '10A' ? 'A' : 'V'; out.msg = 'Both leads are in the same port. Black goes in COM.'; return out; }
+    if (S.plug.black && S.plug.black !== 'COM') { out.msg = 'The <strong>black lead always goes in COM</strong>. '; }
+    var isV = S.dial !== '10A';
+    if (isV) {
+      out.unit = 'V';
+      var vp = voltPair();
+      if (S.plug.red === '10A' || S.plug.black === '10A') { out.lcd = '0.00'; out.msg += 'A lead is in the <strong>10A</strong> port. For voltage, the red lead goes in <strong>V</strong>.'; return out; }
+      if (!vp) { out.lcd = '0.00'; out.msg += out.msg ? '' : 'Plug the red lead into V and the black lead into COM.'; return out; }
+      var nP = tipNode(vp[0]), nN = tipNode(vp[1]);
+      if (!nP || !nN) { out.lcd = fmtV(0, S.dial); out.msg = 'Leads are plugged in. Now touch both probes to the circuit.'; return out; }
+      var v = sol.V[nP] - sol.V[nN];
+      out.lcd = fmtV(v, S.dial); out.reading = v; out.kind = 'V';
+      if (out.lcd === '1.') out.msg = 'The display shows <strong>"1."</strong>, which means <strong>over range</strong>: the voltage is bigger than this setting can show. Turn the dial to a <em>higher</em> range.';
+      else if (v < -0.01) out.msg = '<strong>Negative sign:</strong> your probes are reversed. The size of the reading is still right. Swap the probes or just ignore the sign.';
+      else if (Math.abs(v) < 0.005) out.msg = nP === nN ? 'Both probes are on the same connected wire, so there\'s no potential difference between them. Touch them <em>across</em> a part.' : 'No voltage across these points right now.';
+      else if (S.dial === '200V') out.msg = 'That works, but 200 V shows only one decimal place. The range <em>just above</em> 4.5 V (20 V) gives a more precise reading.';
+      else out.msg = 'Reading the voltage between your two probes.';
+      if (S.open && ((nP === 'a1' && nN === 'a2') || (nP === 'a2' && nN === 'a1'))) out.msg += ' (With the circuit open, the battery\'s full voltage shows up across the gap.)';
+      return out;
+    }
+    // Current mode
+    out.unit = 'A';
+    var am = ammeterNodes();
+    if (S.plug.red === 'V' || S.plug.black === 'V') { out.lcd = '0.00'; out.msg += 'The dial is on 10A, but a lead is still in the <strong>V</strong> port. For current, the red lead goes in <strong>10A</strong>.'; return out; }
+    if (!(S.plug.red === '10A' && S.plug.black === 'COM') && !(S.plug.black === '10A' && S.plug.red === 'COM')) { out.lcd = '0.00'; out.msg += out.msg ? '' : 'For current: red lead in 10A, black lead in COM.'; return out; }
+    if (!tipNode('red') || !tipNode('black')) { out.lcd = '0.00'; out.msg = 'Leads are plugged in. Now touch both probes to the circuit.'; return out; }
+    var i = am ? sol.iMeter : 0;
+    var neg = i < -0.005; out.lcd = (neg ? '−' : '') + Math.abs(i).toFixed(2); out.reading = i; out.kind = 'A';
+    if (Math.abs(i) > 1) { out.warn = true; out.msg = '⚠ <strong>' + Math.abs(i).toFixed(1) + ' A! Over 1 A means a setup mistake.</strong> The meter has almost no resistance, so the current takes a shortcut through it and skips the bulb (a <strong>short circuit</strong>). On a real meter this can blow the fuse. For current, <em>open</em> the circuit and put the meter in the gap.'; }
+    else if (Math.abs(i) < 0.005) out.msg = !am ? 'Both probes are on the same connected wire, so no current goes through the meter.' : 'No current is flowing through the meter.';
+    else if (neg) out.msg = '<strong>Negative sign:</strong> current is going through the meter backward (probes reversed). The size is still right.';
+    else out.msg = 'The meter is part of the loop (in series), so all the current flows through it. Under 1 A is what we expect.';
+    return out;
+  }
+
+  var holdHint = document.getElementById('holdHint');
+  function drawCircuit(out) {
+    var cg = document.getElementById('contacts'), pg = document.getElementById('pins');
+    while (cg.firstChild) cg.removeChild(cg.firstChild); while (pg.firstChild) pg.removeChild(pg.firstChild);
+    document.getElementById('connLink').style.display = S.open ? 'none' : '';
+    document.getElementById('connBox').style.display = S.open ? 'none' : '';
+    document.getElementById('connBtn').textContent = S.open ? 'Reconnect the circuit' : 'Open the circuit at the connector';
+    Object.keys(CONTACTS).forEach(function (k) {
+      var c = CONTACTS[k]; if (c.openOnly && !S.open) return;
+      var g = svgEl('g', { 'data-contact': k, style: 'cursor:pointer' }, cg);
+      svgEl('circle', { cx: c.x, cy: c.y, r: 24, fill: S.hold ? 'var(--accent)' : 'var(--line)', 'fill-opacity': S.hold ? 0.35 : 0.5 }, g);
+      svgEl('circle', { cx: c.x, cy: c.y, r: 7, fill: 'var(--accent)' }, g);
+      g.addEventListener('click', function () { tapContact(k); });
+    });
+    ['red', 'black'].forEach(function (lead, j) {
+      var t = S.tip[lead]; if (!t) return; var c = CONTACTS[t];
+      var dx = j === 0 ? -14 : 14;
+      svgEl('line', { x1: c.x + dx, y1: c.y - 30, x2: c.x, y2: c.y, stroke: lead === 'red' ? '#dc2626' : '#111827', 'stroke-width': 6, 'stroke-linecap': 'round' }, pg);
+      svgEl('circle', { cx: c.x + dx, cy: c.y - 34, r: 9, fill: lead === 'red' ? '#dc2626' : '#111827', stroke: '#fff', 'stroke-width': 2 }, pg);
+    });
+    var p = out.sol.iBulb * out.sol.iBulb * R_BULB, b = Math.max(0, Math.min(1, p / P_FULL));
+    document.getElementById('bulbGlow').setAttribute('opacity', b.toFixed(2));
+    document.getElementById('bulbGlass').setAttribute('fill', b > 0.2 ? '#fef9c3' : 'var(--card)');
+  }
+  function tapContact(k) {
+    if (!S.hold) { holdHint.textContent = 'First tap "Hold red probe" or "Hold black probe," then tap a dot.'; return; }
+    S.tip[S.hold] = k;
+    holdHint.textContent = (S.hold === 'red' ? 'Red' : 'Black') + ' probe is touching the ' + CONTACTS[k].label + '.';
+    S.hold = null; update();
+  }
+  document.querySelectorAll('[data-dial]').forEach(function (b) { b.addEventListener('click', function () { S.dial = b.getAttribute('data-dial'); update(); }); });
+  document.querySelectorAll('[data-plug]').forEach(function (b) {
+    b.addEventListener('click', function () { var l = b.getAttribute('data-plug'), p = b.getAttribute('data-port'); S.plug[l] = S.plug[l] === p ? null : p; update(); });
+  });
+  document.querySelectorAll('[data-hold]').forEach(function (b) {
+    b.addEventListener('click', function () { S.hold = b.getAttribute('data-hold'); holdHint.textContent = 'Now tap a dot on the circuit for the ' + S.hold + ' probe.'; update(); });
+  });
+  document.getElementById('liftBtn').addEventListener('click', function () { S.tip = { red: null, black: null }; S.hold = null; holdHint.textContent = 'Both probes lifted.'; update(); });
+  document.getElementById('connBtn').addEventListener('click', function () {
+    S.open = !S.open;
+    ['red', 'black'].forEach(function (l) { if (S.tip[l] && CONTACTS[S.tip[l]].openOnly && !S.open) S.tip[l] = null; });
+    update();
+  });
+
+  // ---------- Missions ----------
+  var M = [
+    { id: 'm1', t: 'Measure the bulb\'s voltage', d: 'Use the best range, with the circuit connected and the probes across the bulb.',
+      ok: function (o) { return o.kind === 'V' && S.dial === '20V' && !S.open && pairIs('a2', 'b') && o.reading > 3; },
+      rec: function (o) { REC.v = o.reading.toFixed(2) + ' V'; } },
+    { id: 'm2', t: 'Try a range that\'s too low', d: 'While measuring the bulb, turn the dial to 2 V. What does the display show?',
+      ok: function (o) { return o.kind === 'V' && S.dial === '2V' && o.lcd === '1.'; } },
+    { id: 'm3', t: 'Reverse the probes', d: 'Measure a voltage with the probes swapped. What changes, and what doesn\'t?',
+      ok: function (o) { return o.kind === 'V' && o.reading < -3; } },
+    { id: 'm4', t: 'Measure the current correctly', d: 'Set up for current, open the circuit, and put the meter in the gap so the bulb lights.',
+      ok: function (o) { return o.kind === 'A' && S.open && Math.abs(o.reading) > 0.3 && Math.abs(o.reading) < 1; },
+      rec: function (o) { REC.i = Math.abs(o.reading).toFixed(2) + ' A'; } },
+    { id: 'm5', t: 'Make the classic mistake (safely!)', d: 'With the meter set for current and the circuit connected, touch the probes across the bulb. Watch the bulb and the reading.',
+      ok: function (o) { return o.kind === 'A' && !S.open && Math.abs(o.reading) > 1; },
+      rec: function (o) { REC.s = Math.abs(o.reading).toFixed(1) + ' A'; } }
+  ];
+  function pairIs(n1, n2) { var a = tipNode('red'), b = tipNode('black'); return (a === n1 && b === n2) || (a === n2 && b === n1); }
+  function drawMissions() {
+    var w = document.getElementById('missions');
+    w.innerHTML = M.map(function (m, i) {
+      var done = !!MISS[m.id];
+      return '<div class="mission' + (done ? ' done' : '') + '"><span class="mbox">' + (done ? '✓' : (i + 1)) + '</span><div><strong>' + m.t + '</strong><br><span class="muted" style="font-size:16px">' + m.d + '</span></div></div>';
+    }).join('');
+    document.getElementById('missCount').textContent = M.filter(function (m) { return MISS[m.id]; }).length + '/5 done';
+  }
+  function update() {
+    var o = compute();
+    document.getElementById('lcd').textContent = o.lcd || ' ';
+    document.getElementById('lcdUnit').textContent = o.lcd ? ' ' + o.unit : '';
+    document.querySelector('.lcd').classList.toggle('warn', o.warn);
+    document.querySelectorAll('[data-dial]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-dial') === S.dial); });
+    document.querySelectorAll('[data-plug]').forEach(function (b) { b.classList.toggle('on', S.plug[b.getAttribute('data-plug')] === b.getAttribute('data-port')); });
+    document.querySelectorAll('[data-hold]').forEach(function (b) { b.classList.toggle('on', S.hold === b.getAttribute('data-hold')); });
+    var fbEl = document.getElementById('labFb');
+    fbEl.className = 'feedback show ' + (o.warn ? 'bad' : 'good'); fbEl.innerHTML = o.msg || '&nbsp;';
+    drawCircuit(o);
+    M.forEach(function (m) { if (!MISS[m.id] && m.ok(o)) { MISS[m.id] = true; if (m.rec) m.rec(o); fbEl.innerHTML += '<br><strong>✓ Mission complete: ' + m.t + '</strong>'; } });
+    drawMissions(); upd();
+  }
+
+  // ---------- Checks ----------
+  var Q = {
+    q1: { ans: '20', good: '<strong>Correct.</strong> Pick the range just above what you expect. 4.5 V is over 2 V but under 20 V.',
+          bad: { '2': '4.5 V is bigger than 2 V, so the meter would show "1." (over range). You saw that in Mission 2.', '200': 'It would work, but with less precision (one decimal place). The range just above 4.5 V is better.', '10A': '10A is for measuring current, not voltage.' } },
+    q2: { ans: 'par', good: '<strong>Correct.</strong> Voltage is measured <em>across</em> a part, in parallel, and you don\'t take the circuit apart.',
+          bad: { ser: 'Breaking the circuit and going in series is how you measure <em>current</em>.', same: 'Two points on the same connected wire have no potential difference between them, so you\'d read 0.' } },
+    q3: { ans: 'red', good: '<strong>Correct.</strong> Red goes from V to 10A. Black stays in COM.',
+          bad: { black: 'Black always stays in COM. It\'s the red lead that moves.', none: 'The dial isn\'t enough. The red lead has to move to the 10A port too.', swap: 'Swapping only flips the sign. The red lead needs to go into the 10A port.' } },
+    q4: { ans: 'break', good: '<strong>Correct.</strong> Current is the flow <em>through</em> the circuit, so you open the loop and make the meter part of it (series).',
+          bad: { across: 'In current mode that\'s the short-circuit mistake from Mission 5: the bulb goes out and the meter reads way over 1 A.', battery: 'Across the battery in current mode is a short circuit too, and it\'s even worse for the meter\'s fuse.' } },
+    q5: { ans: 'short', good: '<strong>Correct.</strong> A meter set for current is almost a plain wire. Across the bulb, it gives the current an easy path that skips the bulb, so you get a short circuit and a huge, wrong reading.',
+          bad: { burn: 'The bulb is fine. It goes dark because almost no current goes through it anymore. Where did the current go instead?', range: 'The dial was set for current (10A). The problem is <em>where</em> the probes went.', real: 'Classroom circuits stay under 1 A. Over 1 A means a setup mistake.' } }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn'), nameInput = document.getElementById('nameInput');
+  var st = {}; Object.keys(Q).forEach(function (k) { st[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-gate') === 'lab') return M.every(function (m) { return MISS[m.id]; });
+    var q = s.getAttribute('data-q'); if (q) return st[q].done;
+    return true;
+  }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    upd(); if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', upd);
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var s = st[q]; if (s.right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        s.tries++; if (s.first === null) s.first = ok; if (ok) { s.right = true; s.done = true; } if (!ok && s.tries >= 3) s.done = true;
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + (s.done && !s.right ? '<br>Tap Next to move on.' : ''));
+        upd();
+      });
+    });
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var nm = M.filter(function (m) { return MISS[m.id]; }).length;
+    document.getElementById('rMissions').textContent = '✓ ' + nm + '/5';
+    document.getElementById('rV').textContent = REC.v || '—'; document.getElementById('rI').textContent = REC.i || '—'; document.getElementById('rS').textContent = REC.s || '—';
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return st[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none'; document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + nm + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  update(); render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) { var l = document.createElement('div'); l.className = 'part-label'; l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title'); s.insertBefore(l, s.firstChild); });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    note(document.getElementById('missions'), '<strong>How to complete each mission</strong> (the lab stays fully usable here, so try it):' + list([
+      '<strong>1. Bulb voltage:</strong> dial 20 V · black in COM, red in V · circuit connected · probes on bulb top and bulb bottom. Reads <strong>4.20 V</strong>, a bit under the 4.5 V label because the battery has internal resistance.',
+      '<strong>2. Too-low range:</strong> same setup, dial 2 V. Shows <strong>"1."</strong> (over range).',
+      '<strong>3. Reversed:</strong> swap which probe is on top vs. bottom. Reads <strong>−4.20 V</strong>.',
+      '<strong>4. Current:</strong> dial 10A · red in 10A, black in COM · tap "Open the circuit" · red on the battery-side wire end, black on the bulb-side end. Bulb lights; reads <strong>0.42 A</strong>.',
+      '<strong>5. Classic mistake:</strong> current setup, circuit <em>connected</em>, probes across the bulb. Bulb goes dark; reads <strong>about 5.8 A</strong> (matches the video).']) +
+      'The model is a real circuit calculation (battery internal resistance 0.73 Ω, bulb 10 Ω, meter 0.05 Ω in current mode), so other setups behave realistically too. For example, current mode across the battery also shorts.');
+    Object.keys(Q).forEach(function (q) {
+      var cfg = Q[q], g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + cfg.ans + '"]').classList.add('right'); fb(q + 'Fb', true, cfg.good);
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(cfg.bad).map(function (o) { return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + cfg.bad[o]; })));
+    });
+    nameInput.value = 'Sample Student';
+    M.forEach(function (m) { MISS[m.id] = true; }); REC = { v: '4.20 V', i: '0.42 A', s: '5.8 A' };
+    st.q1 = { first: true, done: true, right: true, tries: 1 }; st.q2 = { first: true, done: true, right: true, tries: 1 };
+    st.q3 = { first: false, done: true, right: true, tries: 2 }; st.q4 = { first: true, done: true, right: true, tries: 1 }; st.q5 = { first: true, done: true, right: true, tries: 1 };
+    drawMissions(); buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> The three readings are recorded automatically when each mission is completed, so they show the student actually did the setup.');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>
