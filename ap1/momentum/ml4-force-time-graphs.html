@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 4: Force–Time Graphs</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml4-force-time-graphs.html">regular lesson link</a>. · <a href="ml4-force-time-graphs-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 4</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Force–Time Graphs</h1>
+      <p class="muted">About 12 minutes · Due before class Tuesday 11/17</p>
+      <p>Real forces aren't constant. A bat's push ramps up and back down in a millisecond. Tonight you'll read impulse straight off a graph, and learn what a momentum–time graph tells you about force.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Area = impulse -->
+  <section class="step" data-title="Area = impulse">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>The area is the impulse</h2>
+      <p>A constant 20 N push lasts 3.0 s. On a force–time graph, that's a rectangle.</p>
+      <svg id="gA" viewBox="0 0 640 300" aria-label="Rectangle force-time graph, 20 newtons for 3 seconds"></svg>
+      <p>Impulse is F × Δt = (20 N)(3.0 s) = <strong>60 N·s</strong>. That's the <strong>height × width</strong> of the rectangle, which is its <strong>area</strong>.</p>
+      <div class="notes-box"><strong>Box A:</strong> The <strong>area under a force–time graph</strong> is the impulse, which equals Δp. This works for any shape, not just rectangles. Area above the axis is +; area below it is −.</div>
+    </div>
+  </section>
+
+  <!-- 2 Shapes -->
+  <section class="step" data-title="Any shape">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Triangles, trapezoids, and friends</h2>
+      <p>Tap a shape to see how to find its area.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="ghost" data-shape="rect" style="flex:1">Rectangle</button>
+        <button class="ghost" data-shape="tri" style="flex:1">Triangle</button>
+        <button class="ghost" data-shape="trap" style="flex:1">Trapezoid</button>
+      </div>
+      <svg id="gB" viewBox="0 0 640 300" aria-label="Force-time graph of the chosen shape"></svg>
+      <div class="readout" id="shapeMath" style="font-size:20px"></div>
+      <p class="hint" id="shapeNote" style="text-align:center"></p>
+      <div class="notes-box"><strong>Box B:</strong> Rectangle: F × Δt. Triangle: <strong>½ × base × height</strong>. Trapezoid: split it into a rectangle and triangles, then add. Same area means same impulse, even with different shapes.</div>
+    </div>
+  </section>
+
+  <!-- 3 Helmets -->
+  <section class="step" data-title="Same impulse, softer hit">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Same area, different peak</h2>
+      <p>Real collisions look like curves. Here a head hits the ground twice with the same Δp: once without a helmet and once with one.</p>
+      <svg id="gC" viewBox="0 0 640 300" aria-label="Two force-time curves with equal area: one tall and narrow, one short and wide"></svg>
+      <p><strong>Quick check:</strong> Which collision delivers the bigger impulse?</p>
+      <button class="big-btn" data-quick="no">No helmet (the tall one)</button>
+      <button class="big-btn" data-quick="yes">Helmet (the wide one)</button>
+      <button class="big-btn" data-quick="same">They're the same</button>
+      <div class="feedback" id="quickFb"></div>
+      <div class="notes-box"><strong>Box C:</strong> Equal areas mean equal impulse (equal Δp). The helmet <strong>stretches out the time</strong>, so the <strong>peak force</strong> is much smaller, and peak force is what causes injury.</div>
+    </div>
+  </section>
+
+  <!-- 4 p-t slope -->
+  <section class="step" data-title="Momentum–time graphs">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>The slope of p vs. t is the net force</h2>
+      <p>Remember from ML3: F<sub>net</sub> = Δp / Δt. On a <strong>momentum–time</strong> graph, Δp / Δt is the <strong>slope</strong>.</p>
+      <svg id="gD" viewBox="0 0 640 300" aria-label="Momentum-time graph with three segments"></svg>
+      <div id="ptSteps">
+        <div class="reveal step-line"><strong>0 to 2 s:</strong> p rises from 0 to 6 kg·m/s. Slope = 6 / 2 = <strong>+3 N</strong> of net force.</div>
+        <div class="reveal step-line"><strong>2 to 4 s:</strong> flat. Slope = 0, so <strong>no net force</strong>. It's still moving, just not speeding up or slowing down.</div>
+        <div class="reveal step-line"><strong>4 to 5 s:</strong> p drops from 6 to 0 in 1 s. Slope = −6 / 1 = <strong>−6 N</strong>. That's a bigger force, pointing backward.</div>
+      </div>
+      <button class="ghost" id="ptNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box D:</strong> F–t graph: <strong>area</strong> = Δp. p–t graph: <strong>slope</strong> = F<sub>net</sub>. A flat p–t graph means zero net force, <em>not</em> zero momentum.</div>
+    </div>
+  </section>
+
+  <!-- 5 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Worked example: a push on a cart</h2>
+      <p>The graph shows the net force on a 12 kg cart that starts at rest. Find the impulse and the cart's final speed.</p>
+      <svg id="gE" viewBox="0 0 640 300" aria-label="Trapezoid force-time graph: up to 60 newtons over 1 second, steady for 2 seconds, down over 1 second"></svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: Split the shape.</strong> Triangle (0–1 s), rectangle (1–3 s), triangle (3–4 s).</div>
+        <div class="reveal step-line"><strong>Step 2: Areas.</strong> ½(1 s)(60 N) = 30 · (2 s)(60 N) = 120 · ½(1 s)(60 N) = 30 N·s</div>
+        <div class="reveal step-line"><strong>Step 3: Add.</strong> J = 30 + 120 + 30 = <strong>180 N·s</strong> = Δp</div>
+        <div class="reveal step-line"><strong>Step 4: Speed.</strong> It starts at rest, so Δp = mv<sub>f</sub>: v<sub>f</sub> = 180 / 12 = <strong>15 m/s</strong>.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 6 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 1 of 3</h2>
+      <p>A golf club's force on a ball rises from 0 to a peak of 40 N at 0.10 s, then falls back to 0 at 0.20 s. What impulse does the ball get?</p>
+      <svg id="gQ1" viewBox="0 0 640 260" aria-label="Triangle force-time graph, peak 40 newtons, lasting 0.20 seconds"></svg>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q1" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q1Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">N·s</span>
+      </div>
+      <button class="primary" data-check="q1" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 2 of 3</h2>
+      <p>A cart's momentum rises steadily from 2.0 kg·m/s to 14.0 kg·m/s over 4.0 s. What net force acts on it?</p>
+      <svg id="gQ2" viewBox="0 0 640 260" aria-label="Momentum-time graph rising in a straight line from 2 to 14 over 4 seconds"></svg>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">N</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 3 of 3</h2>
+      <p><strong>Push A:</strong> 200 N for 0.010 s. <strong>Push B:</strong> 20 N for 0.10 s. Which push delivers more impulse?</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="A">Push A, because the force is 10× bigger</button>
+        <button class="big-btn" data-opt="B">Push B, because it lasts 10× longer</button>
+        <button class="big-btn" data-opt="same">They're equal</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 9 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–F on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about anything?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., splitting a trapezoid into pieces"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 4: Force–Time Graphs</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Triangle area = impulse</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Slope of p–t = force</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Equal impulses</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–F</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Next: Mastering HW 4.1</h2>
+      <p style="margin:0">Due <strong>tonight, Tue 11/17, at 11:59 PM</strong>. This lesson unlocks <strong>MC 6.13</strong> (ball bouncing on a scale) and <strong>6.24</strong> (airbag graph).</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML4';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Graph helper: draws axes, grid, and a filled polyline ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  // opts: xmax, ymax, xstep, ystep, xlabel, ylabel, series:[{pts, color, fill, label}], H
+  function graph(id, o) {
+    var svg = document.getElementById(id); while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var H = o.H || 300, L = 70, R = 610, T = 20, B = H - 50;
+    var X = function (x) { return L + (x / o.xmax) * (R - L); }, Y = function (y) { return B - (y / o.ymax) * (B - T); };
+    for (var gx = 0; gx <= o.xmax + 1e-9; gx += o.xstep) {
+      el('line', { x1: X(gx), y1: T, x2: X(gx), y2: B, stroke: 'var(--line)', 'stroke-width': 1 }, svg);
+      el('text', { x: X(gx), y: B + 22, 'text-anchor': 'middle', 'font-size': 15 }, svg, +gx.toFixed(3));
+    }
+    for (var gy = 0; gy <= o.ymax + 1e-9; gy += o.ystep) {
+      el('line', { x1: L, y1: Y(gy), x2: R, y2: Y(gy), stroke: 'var(--line)', 'stroke-width': 1 }, svg);
+      el('text', { x: L - 8, y: Y(gy) + 5, 'text-anchor': 'end', 'font-size': 15 }, svg, +gy.toFixed(3));
+    }
+    el('line', { x1: L, y1: B, x2: R, y2: B, stroke: 'var(--ink)', 'stroke-width': 2 }, svg);
+    el('line', { x1: L, y1: T, x2: L, y2: B, stroke: 'var(--ink)', 'stroke-width': 2 }, svg);
+    el('text', { x: (L + R) / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700 }, svg, o.xlabel);
+    var yl = el('text', { x: 18, y: (T + B) / 2, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, transform: 'rotate(-90 18 ' + (T + B) / 2 + ')' }, svg, o.ylabel);
+    (o.series || []).forEach(function (s) {
+      var d = s.pts.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]) + ',' + Y(p[1]); }).join(' ');
+      if (s.fill) el('path', { d: d + ' L' + X(s.pts[s.pts.length - 1][0]) + ',' + Y(0) + ' L' + X(s.pts[0][0]) + ',' + Y(0) + ' Z', fill: s.fill, 'fill-opacity': 0.35, stroke: 'none' }, svg);
+      el('path', { d: d, fill: 'none', stroke: s.color, 'stroke-width': 4, 'stroke-linejoin': 'round' }, svg);
+      if (s.label) el('text', { x: X(s.label[0]), y: Y(s.label[1]), 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, fill: s.color }, svg, s.label[2]);
+    });
+    (o.notes || []).forEach(function (n) { el('text', { x: X(n[0]), y: Y(n[1]), 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700, style: 'fill:var(--note)' }, svg, n[2]); });
+    return { X: X, Y: Y };
+  }
+  function curve(peak, center, width, n) { var pts = []; for (var i = 0; i <= n; i++) { var t = center - width + (2 * width) * i / n; var u = (t - center) / width; pts.push([t, Math.max(0, peak * Math.pow(Math.cos(u * Math.PI / 2), 2))]); } return pts; }
+
+  graph('gA', { xmax: 4, ymax: 25, xstep: 1, ystep: 5, xlabel: 'time (s)', ylabel: 'force (N)', series: [{ pts: [[0, 20], [3, 20], [3, 0]], color: 'var(--cartA)', fill: 'var(--cartA)' }], notes: [[1.5, 10, 'area = 20 × 3 = 60 N·s']] });
+  var SH = {
+    rect: { s: [[0, 40], [2, 40], [2, 0]], m: 'Area = 40 N × 2 s = 80 N·s', n: 'height × width' },
+    tri: { s: [[0, 0], [2, 40], [4, 0]], m: 'Area = ½ × 4 s × 40 N = 80 N·s', n: 'Same 80 N·s as the rectangle, so it delivers the same impulse.' },
+    trap: { s: [[0, 0], [1, 40], [3, 40], [4, 0]], m: 'Area = 20 + 80 + 20 = 120 N·s', n: 'Triangle (½·1·40) + rectangle (2·40) + triangle (½·1·40)' }
+  };
+  function showShape(k) {
+    document.querySelectorAll('[data-shape]').forEach(function (b) { b.style.borderColor = b.getAttribute('data-shape') === k ? 'var(--accent)' : ''; b.style.background = b.getAttribute('data-shape') === k ? 'var(--accent-soft)' : ''; });
+    graph('gB', { xmax: 5, ymax: 50, xstep: 1, ystep: 10, xlabel: 'time (s)', ylabel: 'force (N)', series: [{ pts: SH[k].s, color: 'var(--cartA)', fill: 'var(--cartA)' }] });
+    document.getElementById('shapeMath').textContent = SH[k].m; document.getElementById('shapeNote').textContent = SH[k].n;
+  }
+  document.querySelectorAll('[data-shape]').forEach(function (b) { b.addEventListener('click', function () { showShape(b.getAttribute('data-shape')); }); });
+  showShape('rect');
+  graph('gC', { xmax: 40, ymax: 1000, xstep: 10, ystep: 250, xlabel: 'time (ms)', ylabel: 'force (N)', series: [
+    { pts: curve(900, 12, 6, 40), color: 'var(--cartB)', fill: 'var(--cartB)', label: [12, 960, 'no helmet'] },
+    { pts: curve(270, 25, 20, 60), color: 'var(--cartA)', fill: 'var(--cartA)', label: [30, 330, 'helmet'] }] });
+  graph('gD', { xmax: 6, ymax: 8, xstep: 1, ystep: 2, xlabel: 'time (s)', ylabel: 'momentum (kg·m/s)', series: [{ pts: [[0, 0], [2, 6], [4, 6], [5, 0]], color: 'var(--note)' }] });
+  graph('gE', { xmax: 5, ymax: 80, xstep: 1, ystep: 20, xlabel: 'time (s)', ylabel: 'net force (N)', series: [{ pts: [[0, 0], [1, 60], [3, 60], [4, 0]], color: 'var(--cartA)', fill: 'var(--cartA)' }] });
+  graph('gQ1', { H: 260, xmax: 0.25, ymax: 50, xstep: 0.05, ystep: 10, xlabel: 'time (s)', ylabel: 'force (N)', series: [{ pts: [[0, 0], [0.1, 40], [0.2, 0]], color: 'var(--cartA)', fill: 'var(--cartA)' }] });
+  graph('gQ2', { H: 260, xmax: 5, ymax: 16, xstep: 1, ystep: 4, xlabel: 'time (s)', ylabel: 'p (kg·m/s)', series: [{ pts: [[0, 2], [4, 14]], color: 'var(--note)' }] });
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { type: 'num', answer: 4.0, tol: 0.05, label: '1. Triangle area',
+          good: '<strong>Correct: 4.0 N·s.</strong> It\'s a triangle: ½ × base × height = ½ × 0.20 s × 40 N = 4.0 N·s.',
+          special: [{ v: 8.0, msg: '<strong>So close: that\'s the full rectangle.</strong> The graph is a triangle, so use ½ × base × height.' },
+                    { v: 2.0, msg: '<strong>Check the base.</strong> The force lasts from 0 to 0.20 s, so the base is 0.20 s, not 0.10 s.' }],
+          wrong: '<strong>Not yet.</strong> Impulse = area under the graph. The shape is a triangle with base 0.20 s and height 40 N.' },
+    q2: { type: 'num', answer: 3.0, tol: 0.02, label: '2. Slope of p–t',
+          good: '<strong>Correct: 3.0 N.</strong> Slope = Δp / Δt = (14.0 − 2.0) / 4.0 = 3.0 N.',
+          special: [{ v: 12, msg: '<strong>That\'s Δp, not the force.</strong> Force is the slope: divide Δp by the time.' },
+                    { v: 3.5, msg: '<strong>Use the change, not the final value.</strong> Slope = (14.0 − 2.0) / 4.0, not 14.0 / 4.0.' },
+                    { v: 48, msg: '<strong>Divide, don\'t multiply.</strong> F = Δp / Δt.' }],
+          wrong: '<strong>Not yet.</strong> Net force = slope of the p–t graph = Δp / Δt.' },
+    q3: { type: 'mc', ans: 'same', label: '3. Equal impulses',
+          good: '<strong>Correct.</strong> A: 200 × 0.010 = 2.0 N·s. B: 20 × 0.10 = 2.0 N·s. Same area, different shape. A is the "no helmet" push and B is the "helmet" push.',
+          bad: { A: 'A bigger force for less time. Multiply: 200 × 0.010 = ?',
+                 B: 'A longer time with a smaller force. Multiply: 20 × 0.10 = ?' } }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-title') === 'Same impulse, softer hit') return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Quick check (helmet) ----------
+  var QUICK = { same: [true, '<strong>Right.</strong> Equal areas mean equal impulse. The difference is the peak force: about 900 N without the helmet vs. about 270 N with it.'],
+                no: [false, '<strong>Not quite.</strong> Taller isn\'t the same as more area. Compare the shaded areas: they\'re equal.'],
+                yes: [false, '<strong>Not quite.</strong> Wider isn\'t the same as more area. Compare the shaded areas: they\'re equal.'] };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (state.quick) return;
+      var r = QUICK[b.getAttribute('data-quick')];
+      document.querySelectorAll('[data-quick]').forEach(function (x) { x.classList.remove('wrong'); });
+      b.classList.add(r[0] ? 'right' : 'wrong'); fb('quickFb', r[0], r[1]);
+      if (r[0]) { state.quick = true; upd(); }
+    });
+  });
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('ptSteps', 'ptNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(val - sp.v) <= Math.max(cfg.tol, 0.02)) msg = sp.msg; });
+      if (Math.abs(val + cfg.answer) <= cfg.tol) msg = '<strong>Check the sign.</strong> The force here acts in the + direction.';
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q].right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + more(q));
+      });
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var e = document.getElementById(id), s = state[q];
+    if (s.first === true) { e.textContent = '✓ first try'; e.className = 'badge g'; }
+    else if (s.right) { e.textContent = '✓ after ' + s.tries + ' tries'; e.className = 'badge y'; }
+    else { e.textContent = '✗ review in class'; e.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    document.getElementById('ptNext').style.display = 'none'; document.getElementById('wxNext').style.display = 'none';
+    note(document.getElementById('shapeNote'), '<strong>Shape buttons:</strong> Rectangle 80 N·s, Triangle 80 N·s (same impulse, different shape), Trapezoid 120 N·s. Teacher view shows the rectangle; students tap through all three. Your class practice graphs (8 N·s and 2000 N·s) are left for Tuesday.');
+    document.querySelector('[data-quick="same"]').classList.add('right'); fb('quickFb', true, QUICK.same[1]);
+    note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Wrong-choice feedback: ' + list(['"No helmet": ' + plain(QUICK.no[1]), '"Helmet": ' + plain(QUICK.yes[1])]) + 'The curves are drawn with equal areas (peaks of about 900 N and 270 N).');
+    ['q1', 'q2'].forEach(function (q) {
+      var cfg = Q[q];
+      document.getElementById(q + 'Input').value = cfg.answer.toFixed(1);
+      fb(q + 'Fb', true, cfg.good);
+      var items = (cfg.special || []).map(function (sp) { return sp.v + ': ' + plain(sp.msg); });
+      items.push('Anything else: ' + plain(cfg.wrong));
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±' + cfg.tol + '):' + list(items));
+    });
+    var g3 = document.querySelector('[data-mc="q3"]');
+    g3.querySelector('[data-opt="same"]').classList.add('right'); fb('q3Fb', true, Q.q3.good);
+    note(document.getElementById('q3Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(Q.q3.bad).map(function (o) {
+      return '"' + g3.querySelector('[data-opt="' + o + '"]').textContent + '": ' + Q.q3.bad[o];
+    })));
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: false, done: true, right: true, tries: 2 };
+    state.q2 = { first: true, done: true, right: true, tries: 1 };
+    state.q3 = { first: true, done: true, right: true, tries: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'splitting a trapezoid into pieces';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> Tuesday is the sub day, so the opener (helmet graphs, 50 N × 0.30 s) checks Parts 3–4. Check 1\'s most common miss is 8.0 (forgetting the ½).');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>
