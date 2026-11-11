@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 3: Impulse–Momentum Theorem</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml3-impulse.html">regular lesson link</a>. · <a href="ml3-impulse-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 3</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>The Impulse–Momentum Theorem</h1>
+      <p class="muted">About 13 minutes · Due before class Monday 11/16</p>
+      <p>Momentum can change: a bat hits a ball, a car hits a wall, you catch an egg. Tonight you'll learn what changes it, why a soft landing hurts less, and why bounces change momentum the most.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Impulse = change in momentum -->
+  <section class="step" data-title="Impulse">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Impulse is a change in momentum</h2>
+      <p>Look at <strong>one object</strong>: a baseball. When the bat hits it, its velocity changes, so its momentum changes. Did that break conservation of momentum? No. The ball isn't alone; the bat pushed on it.</p>
+      <p>The change in an object's momentum is called its <strong>impulse</strong>, written <strong>J</strong>:</p>
+      <div class="eq" style="font-size:28px">J = Δp = p<sub>f</sub> − p<sub>i</sub></div>
+      <p class="muted" style="text-align:center">Δ means "final minus initial."</p>
+      <div class="notes-box"><strong>Box A:</strong> Impulse (J) is the change in momentum, Δp = p<sub>f</sub> − p<sub>i</sub>. Units: <strong>kg·m/s</strong>, which is the same as <strong>N·s</strong>.</div>
+      <p><strong>Quick check:</strong> A cart's momentum goes from +3 kg·m/s to +8 kg·m/s. What is its impulse?</p>
+      <button class="big-btn" data-quick="11">+11 kg·m/s</button>
+      <button class="big-btn" data-quick="5">+5 kg·m/s</button>
+      <button class="big-btn" data-quick="m5">−5 kg·m/s</button>
+      <div class="feedback" id="quickFb"></div>
+    </div>
+  </section>
+
+  <!-- 2 Derivation -->
+  <section class="step" data-title="Where it comes from">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>From F = ma to FΔt = Δp</h2>
+      <p>You already know what changes velocity: a net force. Watch Unit 1 and Unit 2 combine.</p>
+      <div id="dvSteps">
+        <div class="reveal step-line"><strong>Unit 2:</strong> F = ma</div>
+        <div class="reveal step-line"><strong>Unit 1:</strong> a = Δv / Δt, so F = m(Δv / Δt)</div>
+        <div class="reveal step-line"><strong>Multiply both sides by Δt:</strong> FΔt = mΔv</div>
+        <div class="reveal step-line"><strong>And mΔv is Δp,</strong> so:
+          <div class="eq" style="font-size:28px">J = F<sub>avg</sub>Δt = Δp</div>
+          This is the <strong>impulse–momentum theorem</strong>. A force acting over a time interval changes momentum.</div>
+        <div class="reveal step-line"><strong>Flip it around:</strong> F<sub>net</sub> = Δp / Δt. Net force is the <em>rate</em> momentum changes. That's Newton's 2nd law written in momentum form.</div>
+      </div>
+      <button class="ghost" id="dvNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box B:</strong> Impulse = F<sub>avg</sub> × Δt = Δp. Impulse points the same direction as the <strong>net force</strong>.</div>
+    </div>
+  </section>
+
+  <!-- 3 Force vs time trade-off sim -->
+  <section class="step" data-title="Softer landings">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Same Δp, different force</h2>
+      <p>You stop a 0.50 kg ball moving at 10 m/s. No matter how you stop it, Δp is the same: <strong>5.0 kg·m/s</strong>. What you control is <strong>how long</strong> the stop takes.</p>
+      <div class="slider-row">
+        <label for="dtS"><span>Stopping time Δt</span><span id="dtV"></span></label>
+        <input type="range" id="dtS" min="0" max="6" step="1" value="2">
+      </div>
+      <p id="dtScene" class="muted" style="text-align:center;margin:-4px 0 10px"></p>
+      <svg viewBox="0 0 640 110" aria-label="Average force bar">
+        <text x="0" y="20" font-size="16" font-weight="700">Average force on the ball</text>
+        <rect x="0" y="34" width="640" height="34" rx="8" fill="var(--line)"/>
+        <rect id="fBar" x="0" y="34" width="10" height="34" rx="8" fill="var(--cartB)"/>
+        <text id="fTxt" x="0" y="96" font-size="20" font-weight="800"></text>
+      </svg>
+      <div class="notes-box"><strong>Box C:</strong> For the same Δp, a <strong>longer</strong> stopping time means a <strong>smaller</strong> force. That's why airbags, helmets, crumple zones, and "giving" with your hands work. Doubling Δt halves F.</div>
+    </div>
+  </section>
+
+  <!-- 4 Stop vs bounce -->
+  <section class="step" data-title="Bounces">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Stopping vs. bouncing</h2>
+      <p>A 0.50 kg ball hits a wall at 10 m/s. Toward the wall is +. Compare a ball that <strong>stops</strong> with one that <strong>bounces back</strong> at 10 m/s.</p>
+      <svg viewBox="0 0 640 250" aria-label="Momentum before and after for a stopping ball and a bouncing ball">
+        <defs><marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink)"/></marker></defs>
+        <text x="160" y="22" text-anchor="middle" font-size="18" font-weight="800">Stops</text>
+        <text x="480" y="22" text-anchor="middle" font-size="18" font-weight="800">Bounces</text>
+        <line x1="320" y1="8" x2="320" y2="245" stroke="var(--line)" stroke-dasharray="6 6"/>
+        <!-- axis lines -->
+        <line x1="20" y1="130" x2="300" y2="130" stroke="var(--track)" stroke-width="2"/>
+        <line x1="340" y1="130" x2="620" y2="130" stroke="var(--track)" stroke-width="2"/>
+        <!-- stop bars -->
+        <rect x="55" y="70" width="60" height="60" fill="var(--cartA)"/><text x="85" y="62" text-anchor="middle" font-size="15">p<tspan font-size="11" dy="3">i</tspan><tspan dy="-3"> = +5</tspan></text>
+        <text x="205" y="122" text-anchor="middle" font-size="15">p<tspan font-size="11" dy="3">f</tspan><tspan dy="-3"> = 0</tspan></text>
+        <rect x="175" y="129" width="60" height="2" fill="var(--cartA)"/>
+        <text x="160" y="190" text-anchor="middle" font-size="17" font-weight="800" style="fill:var(--note)">Δp = 0 − 5 = −5</text>
+        <!-- bounce bars -->
+        <rect x="375" y="70" width="60" height="60" fill="var(--cartA)"/><text x="405" y="62" text-anchor="middle" font-size="15">p<tspan font-size="11" dy="3">i</tspan><tspan dy="-3"> = +5</tspan></text>
+        <rect x="495" y="130" width="60" height="60" fill="var(--cartB)"/><text x="525" y="210" text-anchor="middle" font-size="15">p<tspan font-size="11" dy="3">f</tspan><tspan dy="-3"> = −5</tspan></text>
+        <text x="480" y="240" text-anchor="middle" font-size="17" font-weight="800" style="fill:var(--note)">Δp = −5 − 5 = −10</text>
+      </svg>
+      <div class="notes-box"><strong>Box D:</strong> A bounce changes momentum <strong>more</strong> than a stop, because the object has to stop <em>and</em> reverse. Always do Δp = p<sub>f</sub> − p<sub>i</sub> <strong>with signs</strong>. Don't just subtract the speeds.</div>
+      <p class="hint">The negative Δp means the impulse, and the wall's force, point away from the wall, back toward where the ball came from.</p>
+    </div>
+  </section>
+
+  <!-- 5 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Worked example: bat meets ball</h2>
+      <p>A 0.150 kg baseball is pitched at <strong>30.0 m/s</strong> and hit straight back at <strong>50.0 m/s</strong>. The ball touches the bat for <strong>0.001 s</strong>. Find the impulse and the average force on the ball.</p>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: Pick +.</strong> Toward the batter is +, so v<sub>i</sub> = +30.0 m/s and v<sub>f</sub> = −50.0 m/s.</div>
+        <div class="reveal step-line"><strong>Step 2: Momenta.</strong> p<sub>i</sub> = (0.150)(+30.0) = <strong>+4.5 kg·m/s</strong>. p<sub>f</sub> = (0.150)(−50.0) = <strong>−7.5 kg·m/s</strong>.</div>
+        <div class="reveal step-line"><strong>Step 3: Impulse.</strong> J = Δp = p<sub>f</sub> − p<sub>i</sub> = −7.5 − 4.5 = <strong>−12.0 kg·m/s</strong> (N·s).</div>
+        <div class="reveal step-line"><strong>Step 4: Force.</strong> F<sub>avg</sub> = J / Δt = −12.0 / 0.001 = <strong>−12,000 N</strong>. That's about 12,000 N toward the pitcher, roughly the weight of a small car, for one millisecond.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 6 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 1 of 3</h2>
+      <p>A 0.60 kg basketball starts at rest. A player pushes it with an average force of 70 N for 0.20 s. How fast is it moving when it leaves her hands?</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q1" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q1Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q1" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 2 of 3</h2>
+      <p>A 0.20 kg ball hits a wall at 6.0 m/s and bounces straight back at 4.0 m/s. Toward the wall is +. What is the ball's Δp?</p>
+      <p class="hint">Tap ± to switch the sign.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">kg·m/s</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 3 of 3</h2>
+      <p>A van is redesigned to crumple more, so a crash into a wall takes <strong>3 times as long</strong>. The van's Δp is the same. The average force on the van…</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="third">Becomes ⅓ as big</button>
+        <button class="big-btn" data-opt="triple">Becomes 3 times as big</button>
+        <button class="big-btn" data-opt="same">Stays the same, since Δp is the same</button>
+        <button class="big-btn" data-opt="ninth">Becomes 1/9 as big</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 9 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–F on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about anything?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., why the bounce Δp is bigger"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 3: Impulse–Momentum Theorem</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Basketball speed (FΔt = mΔv)</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Bounce Δp (signs)</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Crumple zone: 3× time</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–F</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Next: Mastering HW 4.1</h2>
+      <p style="margin:0">Due <strong>Tue 11/17 at 11:59 PM</strong>. Tonight's lesson unlocks <strong>6.08</strong> (bumpers), <strong>6.10</strong> (falling apple), and <strong>Problem 6.13</strong> (van crash test).</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML3';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { type: 'num', answer: 23.3, tol: 0.15, label: '1. Basketball speed',
+          good: '<strong>Correct: about 23 m/s.</strong> J = FΔt = (70 N)(0.20 s) = 14 N·s. Since it starts at rest, Δp = mv<sub>f</sub>, so v<sub>f</sub> = 14 / 0.60 ≈ 23.3 m/s.',
+          special: [{ v: 14, msg: '<strong>That\'s the impulse (14 N·s).</strong> One more step: impulse = Δp = m × v<sub>f</sub>. Divide by the mass.' },
+                    { v: 8.4, msg: '<strong>Check your algebra.</strong> FΔt = mΔv, so Δv = FΔt / m. Did you multiply by the mass instead of dividing?' }],
+          wrong: '<strong>Not yet.</strong> Find the impulse first: J = F × Δt. Then J = Δp = m × v<sub>f</sub> (it starts at rest).' },
+    q2: { type: 'num', answer: -2.0, tol: 0.02, label: '2. Bounce Δp',
+          good: '<strong>Correct: −2.0 kg·m/s.</strong> p<sub>i</sub> = (0.20)(+6.0) = +1.2. p<sub>f</sub> = (0.20)(−4.0) = −0.8. Δp = −0.8 − 1.2 = −2.0.',
+          signWrong: '<strong>The size is right, but check the sign.</strong> Final minus initial: (−0.8) − (+1.2). Which way does the wall push?',
+          special: [{ v: -0.4, msg: '<strong>Looks like you subtracted the speeds.</strong> The ball reverses, so v<sub>f</sub> is −4.0 m/s. Do Δp = p<sub>f</sub> − p<sub>i</sub> with signs.' },
+                    { v: 0.4, msg: '<strong>Looks like you subtracted the speeds.</strong> The ball reverses, so v<sub>f</sub> is −4.0 m/s. Do Δp = p<sub>f</sub> − p<sub>i</sub> with signs.' }],
+          wrong: '<strong>Not yet.</strong> Find p<sub>i</sub> and p<sub>f</sub> with signs (the bounce is negative), then Δp = p<sub>f</sub> − p<sub>i</sub>.' },
+    q3: { type: 'mc', ans: 'third', label: '3. Crumple zone',
+          good: '<strong>Correct.</strong> F<sub>avg</sub> = Δp / Δt. Same Δp, 3× the time, so ⅓ the force. That\'s the whole point of a crumple zone (and Mastering 6.13 Part C).',
+          bad: { triple: 'Force and time trade off. F = Δp / Δt, so a bigger Δt gives a smaller F.',
+                 same: 'The impulse (Δp) is the same, but impulse = F × Δt. If Δt grows, F has to shrink.',
+                 ninth: 'Close! It\'s not squared: F = Δp / Δt is a simple inverse, so 3× the time gives ⅓ the force.' } }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (cur === 1) return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var el = document.getElementById(id); el.className = 'feedback show ' + (ok ? 'good' : 'bad'); el.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Quick check (Part 2) ----------
+  var QUICK = { '5': [true, '<strong>Yes.</strong> J = Δp = p<sub>f</sub> − p<sub>i</sub> = 8 − 3 = +5 kg·m/s.'],
+                '11': [false, '<strong>Not quite.</strong> Impulse is the <em>change</em>: final minus initial, not the sum.'],
+                'm5': [false, '<strong>Check the order.</strong> Δ is final minus initial: 8 − 3.'] };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (state.quick) return;
+      var r = QUICK[b.getAttribute('data-quick')];
+      document.querySelectorAll('[data-quick]').forEach(function (x) { x.classList.remove('wrong'); });
+      b.classList.add(r[0] ? 'right' : 'wrong'); fb('quickFb', r[0], r[1]);
+      if (r[0]) { state.quick = true; upd(); }
+    });
+  });
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('dvSteps', 'dvNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Force vs time slider ----------
+  var DT = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
+  var SCENE = ['Like hitting a brick wall', 'Hard floor', 'Catching with stiff hands', 'Catching normally', 'Giving with your hands', 'Catching into a pillow', 'Landing in a big foam pit'];
+  var dtS = document.getElementById('dtS');
+  function drawF() {
+    var i = +dtS.value, dt = DT[i], F = 5.0 / dt;
+    document.getElementById('dtV').textContent = dt + ' s';
+    document.getElementById('dtScene').textContent = SCENE[i];
+    var w = Math.max(8, 640 * F / 1000);
+    document.getElementById('fBar').setAttribute('width', w);
+    var t = document.getElementById('fTxt');
+    t.textContent = 'F = 5.0 ÷ ' + dt + ' = ' + Math.round(F).toLocaleString() + ' N';
+    t.setAttribute('x', 0);
+  }
+  dtS.addEventListener('input', drawF); drawF();
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(val - sp.v) <= Math.max(cfg.tol, 0.02)) msg = sp.msg; });
+      if (cfg.signWrong && Math.abs(val + cfg.answer) <= cfg.tol) msg = cfg.signWrong;
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q].right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + more(q));
+      });
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var el = document.getElementById(id), s = state[q];
+    if (s.first === true) { el.textContent = '✓ first try'; el.className = 'badge g'; }
+    else if (s.right) { el.textContent = '✓ after ' + s.tries + ' tries'; el.className = 'badge y'; }
+    else { el.textContent = '✗ review in class'; el.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      afterEl.parentNode.insertBefore(n, afterEl.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    document.getElementById('dvNext').style.display = 'none'; document.getElementById('wxNext').style.display = 'none';
+    // Quick check
+    document.querySelector('[data-quick="5"]').classList.add('right');
+    fb('quickFb', true, QUICK['5'][1]);
+    note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Feedback: ' + list(['"+11": ' + plain(QUICK['11'][1]), '"−5": ' + plain(QUICK['m5'][1])]));
+    note(document.getElementById('dtScene').nextElementSibling, '<strong>Slider:</strong> Δt steps through 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5 s, so F runs from 1000 N down to 10 N with Δp fixed at 5.0 kg·m/s. This previews ML4\'s "same area, different shape" idea.');
+    // Graded numeric checks
+    ['q1', 'q2'].forEach(function (q) {
+      var cfg = Q[q];
+      document.querySelector('[data-sign="' + q + '"]').textContent = cfg.answer < 0 ? '−' : '+';
+      document.getElementById(q + 'Input').value = Math.abs(cfg.answer).toFixed(1);
+      fb(q + 'Fb', true, cfg.good);
+      var items = [];
+      if (cfg.signWrong) items.push('+' + Math.abs(cfg.answer).toFixed(1) + ' (sign error): ' + plain(cfg.signWrong));
+      (cfg.special || []).forEach(function (sp) { items.push(sp.v + ': ' + plain(sp.msg)); });
+      items.push('Anything else: ' + plain(cfg.wrong));
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±' + cfg.tol + '):' + list(items));
+    });
+    var g3 = document.querySelector('[data-mc="q3"]');
+    g3.querySelector('[data-opt="third"]').classList.add('right');
+    fb('q3Fb', true, Q.q3.good);
+    note(document.getElementById('q3Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(Q.q3.bad).map(function (o) {
+      return '"' + g3.querySelector('[data-opt="' + o + '"]').textContent + '": ' + Q.q3.bad[o];
+    })));
+    // Sample results card
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: false, done: true, right: true, tries: 2 };
+    state.q3 = { first: true, done: true, right: true, tries: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'why the bounce Δp is bigger';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> Check 2 is the same idea as Monday\'s opener (0.20 kg ball, 10 → 8 m/s), so students who missed it here get a second shot first thing in class.');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>
