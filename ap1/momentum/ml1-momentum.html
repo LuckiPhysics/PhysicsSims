@@ -104,10 +104,26 @@
   .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
   section.step { display: none; }
   section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml1-momentum.html">regular lesson link</a>. · <a href="ml1-momentum-notes.pdf">Notes sheet (PDF)</a>
+  </div>
   <header class="top">
     <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 1</div>
     <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
@@ -524,6 +540,58 @@
   }
 
   render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterId, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      var a = document.getElementById(afterId); a.parentNode.insertBefore(n, a.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    // Reveal everything students unlock by tapping
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    // Hook (Part 2)
+    document.querySelector('[data-hook="bowl"]').classList.add('right');
+    fb('hookFb', true, '<strong>Correct answer: the bowling ball.</strong> At the same velocity, more mass means more momentum and it\'s harder to stop.');
+    note('hookFb', '<strong>Feedback for the other choices:</strong> "Think about catching each one. Same speed, but the bowling ball has about 100× the mass. Which would hurt more to stop?" Students must pick the right answer before Next unlocks.');
+    // Quick check (Part 4)
+    document.querySelector('[data-quick="neg"]').classList.add('right');
+    fb('quickFb', true, '<strong>Correct answer: negative.</strong> West is opposite the positive direction, so v and p are both negative.');
+    note('quickFb', '<strong>If they tap Positive:</strong> "Not quite. East is positive, so a car moving west has a negative velocity, and p points the same way as v." (Practice only, not scored.)');
+    // Check 1
+    signBtn.textContent = '−'; document.getElementById('q1Input').value = '4.5';
+    fb('q1Fb', true, '<strong>Answer: −4.5 kg·m/s.</strong> p = (0.15 kg)(−30 m/s). It\'s negative because the ball moves left.');
+    note('q1Fb', '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±0.05):' + list([
+      '+4.5 (sign error): "The size is right, but check the direction. Left is negative here. Tap ± and try again."',
+      'Anything else: "Not yet. Multiply the mass by the velocity, including its sign: p = m × v."']));
+    // Checks 2 and 3
+    ['q2', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+      fb(q + 'Fb', true, key[q].good);
+      var items = Object.keys(key[q].bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + key[q].bad[o];
+      });
+      note(q + 'Fb', '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(items));
+    });
+    // Sample results card
+    nameInput.value = 'Sample Student';
+    state.q1 = true; state.q2 = false; state.q3 = true;
+    state.q1Done = state.q2Done = state.q3Done = true; state.tries = { q1: 1, q2: 2, q3: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'why a negative momentum isn\'t smaller';
+    buildResults();
+    note('resultsCard', '<strong>Sample card</strong> showing what students screenshot for OnCampus. Each check shows "first try," "after N tries," or "review in class." The check code changes with name, score, and date, so a typed-up fake card is easy to spot.');
+    window.scrollTo(0, 0);
+  }
 })();
 </script>
 </body>
