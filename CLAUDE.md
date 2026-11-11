@@ -51,6 +51,7 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
 ## Guided-notes PDF requirements
 - One page, letter size, printable, with matching boxes A, B, C, and so on, in the same order as the lesson's notes tags.
 - Diagrams are already drawn, so students fill in key ideas in blanks instead of copying slides.
+- Each box's diagram must be the same kind of picture as the lesson part with that tag. If the lesson shows a force bar, the box shows a force bar, not a graph that a later lesson introduces. Before shipping, compare every box with its lesson part.
 - A work space for each check question, plus a "Big idea in one sentence" line.
 - A QR code in the header that opens the lesson on the iPad camera. Decode it to confirm the address is correct.
 - Also make an answer-key version (blanks filled in), saved outside this repo.
