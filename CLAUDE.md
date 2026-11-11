@@ -49,5 +49,10 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
 ## Before handing off
 - Test in Playwright with an iPad device profile in both light and dark mode: walk through every step, check that there are no console errors, and check that there is no horizontal scroll.
 - Render the notes PDF and look at it, and confirm it's exactly one page.
-- Adding a link card to `index.html` counts as editing an existing file, so ask first.
+- **Site layout.** The hub's Physics button opens `index.html`, which links to three sections:
+  - `simulations/index.html` lists the sims. The sim files themselves stay at the repo root so old links keep working.
+  - `ap1/index.html` has AP Physics 1 unit cards. Each live unit has its own page, such as `ap1/momentum/index.html`, listing that unit's mini-lessons with "Start lesson" and "Notes sheet (PDF)" buttons.
+  - `honors/index.html` has Honors Physics unit cards (Energy, Circuits, Forces, Motion, Waves). Live units have pages such as `honors/circuits/index.html`.
+- **When a new mini-lesson is ready,** turn on its card on the unit page by replacing "Opens soon" with the two buttons. When a new unit starts, turn on its card on the course page and create its unit page in the same style. These pages share the same inline CSS, so copy it from an existing page.
+- Updating these listing pages is expected when adding lessons. Any other change to existing files still needs the teacher's OK first.
 - Tell the teacher what to push in GitHub Desktop (Commit to main, then Push origin).
