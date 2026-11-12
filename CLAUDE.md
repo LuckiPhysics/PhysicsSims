@@ -54,7 +54,11 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
 - Each box's diagram must be the same kind of picture as the lesson part with that tag. If the lesson shows a force bar, the box shows a force bar, not a graph that a later lesson introduces. Before shipping, compare every box with its lesson part.
 - A work space for each check question, plus a "Big idea in one sentence" line.
 - A QR code in the header that opens the lesson on the iPad camera. Decode it to confirm the address is correct.
-- Also make an answer-key version (blanks filled in), saved outside this repo.
+- Also make an answer-key version (blanks filled in), saved outside this repo (in the private `teaching-materials` repo, in the unit's materials folder).
+- **Combined PDFs, rebuilt every time a notes sheet is added or changed:**
+  - `ap1/<unit>/<unit>-all-notes.pdf` holds every student notes sheet for the unit, in lesson order. The unit page links to it as "Print all notes sheets."
+  - `<unit>-all-notes-KEY.pdf` holds all the answer keys and lives in `teaching-materials`, next to the individual keys.
+  - One-page sheets go back to back, so double-sided printing puts two lessons on one sheet. If a sheet ever runs to an odd number of pages greater than 1, add a blank page after it so the next lesson starts on a new sheet.
 
 ## Before handing off
 - Test in Playwright with an iPad device profile in both light and dark mode: walk through every step, check that there are no console errors, and check that there is no horizontal scroll.
