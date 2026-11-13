@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz 4.1 Review · Wed 11/18</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+
+.wx td,.wx th{vertical-align:top}
+h3{font-size:19px;margin:18px 0 6px}
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="quiz41-review.html">regular link</a>.
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · In-Class Page · Wed 11/18</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Quiz 4.1 Review</h1>
+      <p class="muted">In class · Wed 11/18 · about 25 minutes · Quiz 4.1 is Thursday</p>
+      <p>Ten quick questions on what Thursday's quiz covers: <strong>Newton's third law in collisions, momentum, and impulse</strong>. Each one checks itself and tells you what to fix.</p>
+      <div class="notes-box">Do the work on paper or in your binder. Your ML1, ML3, and ML4 notes sheets are good to have out.</div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start.</p>
+    </div>
+  </section>
+
+  <section class="step" data-title="1 · Third law" data-q="q1"><div class="card">
+    <h2>1 · Truck vs. bug</h2>
+    <p>A truck hits a bug on the highway. Compare the force of the truck on the bug with the force of the bug on the truck.</p>
+    <div data-mc="q1"><button class="big-btn" data-opt="eq">Equal in size, opposite in direction</button><button class="big-btn" data-opt="truck">The truck's force on the bug is bigger</button><button class="big-btn" data-opt="bug">The bug's force on the truck is bigger</button></div>
+    <div class="feedback" id="q1Fb"></div></div></section>
+
+  <section class="step" data-title="2 · Who accelerates more?" data-q="q2"><div class="card">
+    <h2>2 · Same collision</h2>
+    <p>Which one has the bigger <strong>acceleration</strong> during the collision?</p>
+    <div data-mc="q2"><button class="big-btn" data-opt="bug">The bug</button><button class="big-btn" data-opt="truck">The truck</button><button class="big-btn" data-opt="same">Same, since the forces are equal</button></div>
+    <div class="feedback" id="q2Fb"></div></div></section>
+
+  <section class="step" data-title="3 · Momentum with a sign" data-q="q3"><div class="card">
+    <h2>3 · Momentum has a direction</h2>
+    <p>A 0.40 kg ball rolls <strong>left</strong> at 5.0 m/s. Right is positive. <strong>What is its momentum?</strong></p>
+    <div class="num-row"><button class="sign-btn" data-sign="q3">+</button><input class="num-input" id="q3Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">kg·m/s</span></div>
+    <button class="primary" data-check="q3" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q3Fb"></div></div></section>
+
+  <section class="step" data-title="4 · More momentum?" data-q="q4"><div class="card">
+    <h2>4 · Which has more momentum?</h2>
+    <p>Cart A: 2.0 kg at 3.0 m/s. Cart B: 0.50 kg at 10 m/s.</p>
+    <div data-mc="q4"><button class="big-btn" data-opt="A">Cart A</button><button class="big-btn" data-opt="B">Cart B</button><button class="big-btn" data-opt="same">They're the same</button></div>
+    <div class="feedback" id="q4Fb"></div></div></section>
+
+  <section class="step" data-title="5 · Δp of a bounce" data-q="q5"><div class="card">
+    <h2>5 · Change in momentum</h2>
+    <p>A 0.15 kg ball moving at +20 m/s is hit straight back at −30 m/s. <strong>What is the magnitude of its change in momentum?</strong></p>
+    <div class="num-row"><button class="sign-btn" data-sign="q5">+</button><input class="num-input" id="q5Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">kg·m/s</span></div>
+    <button class="primary" data-check="q5" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q5Fb"></div></div></section>
+
+  <section class="step" data-title="6 · Bounce or stop?" data-q="q6"><div class="card">
+    <h2>6 · Bounce or stop?</h2>
+    <p>Two identical balls hit a wall at the same speed. Ball 1 stops dead. Ball 2 bounces back. Which one gets the <strong>bigger impulse</strong> from the wall?</p>
+    <div data-mc="q6"><button class="big-btn" data-opt="bounce">Ball 2, the one that bounces</button><button class="big-btn" data-opt="stop">Ball 1, the one that stops</button><button class="big-btn" data-opt="same">Same, since they hit at the same speed</button></div>
+    <div class="feedback" id="q6Fb"></div></div></section>
+
+  <section class="step" data-title="7 · Push a cart" data-q="q7"><div class="card">
+    <h2>7 · Impulse → speed</h2>
+    <p>A 2.0 kg cart at rest is pushed with a steady 40 N for 0.50 s. <strong>How fast is it going afterward?</strong></p>
+    <div class="num-row"><button class="sign-btn" data-sign="q7">+</button><input class="num-input" id="q7Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
+    <button class="primary" data-check="q7" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q7Fb"></div></div></section>
+
+  <section class="step" data-title="8 · Airbags" data-q="q8"><div class="card">
+    <h2>8 · Why airbags work</h2>
+    <p>Compared with hitting the dashboard, an airbag that stops the same passenger…</p>
+    <div data-mc="q8"><button class="big-btn" data-opt="time">gives the same impulse over a longer time, so the force is smaller</button><button class="big-btn" data-opt="imp">gives a smaller impulse, so the force is smaller</button><button class="big-btn" data-opt="dp">makes the change in momentum smaller</button></div>
+    <div class="feedback" id="q8Fb"></div></div></section>
+
+  <section class="step" data-title="9 · Momentum graph" data-q="q9"><div class="card">
+    <h2>9 · Slope of a p–t graph</h2>
+    <p>A cart's momentum rises steadily from 2.0 to 8.0 kg·m/s over 3.0 s. <strong>What is the net force on it?</strong></p>
+    <svg id="g9" viewBox="0 0 640 260" aria-label="Momentum versus time: a straight line from 2 kilogram meters per second at 0 seconds to 8 at 3 seconds"></svg>
+    <div class="num-row"><button class="sign-btn" data-sign="q9">+</button><input class="num-input" id="q9Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N</span></div>
+    <button class="primary" data-check="q9" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q9Fb"></div></div></section>
+
+  <section class="step" data-title="10 · Bridge to Thursday" data-q="q10"><div class="card">
+    <h2>10 · Put it together</h2>
+    <p>Carts A and B collide. By the third law, they push on each other with equal and opposite forces, for the <strong>same amount of time</strong>. So the impulses on A and B are…</p>
+    <div data-mc="q10"><button class="big-btn" data-opt="eq">equal and opposite, so A gains exactly the momentum B loses</button><button class="big-btn" data-opt="heavy">bigger on the lighter cart</button><button class="big-btn" data-opt="dep">different, depending on which cart was moving</button></div>
+    <div class="feedback" id="q10Fb"></div></div></section>
+
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <p>Anything marked <strong>✗ review</strong> or <strong>after 2–3 tries</strong>: reread that ML's notes sheet tonight.</p>
+      <label for="confused"><strong>What do you still want to ask about before the quiz?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Quiz 4.1 Review · Wed 11/18</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div id="rRows"></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Still asking: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom"><div class="inner"><button class="ghost" id="backBtn">Back</button><button class="primary" id="nextBtn">Start</button></div></nav>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(t, a, p, x) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (x !== undefined) e.textContent = x; p.appendChild(e); return e; }
+  var svg = document.getElementById('g9'), H = 260, L = 75, R = 610, T = 20, B = H - 55;
+  var X = function (x) { return L + x / 4 * (R - L); }, Y = function (y) { return B - y / 10 * (B - T); };
+  for (var gx = 0; gx <= 4; gx++) { el('line', { x1: X(gx), y1: T, x2: X(gx), y2: B, stroke: 'var(--line)' }, svg); el('text', { x: X(gx), y: B + 22, 'text-anchor': 'middle', 'font-size': 15 }, svg, gx); }
+  for (var gy = 0; gy <= 10; gy += 2) { el('line', { x1: L, y1: Y(gy), x2: R, y2: Y(gy), stroke: 'var(--line)' }, svg); el('text', { x: L - 8, y: Y(gy) + 5, 'text-anchor': 'end', 'font-size': 15 }, svg, gy); }
+  el('line', { x1: L, y1: B, x2: R, y2: B, stroke: 'var(--ink)', 'stroke-width': 2 }, svg); el('line', { x1: L, y1: T, x2: L, y2: B, stroke: 'var(--ink)', 'stroke-width': 2 }, svg);
+  el('text', { x: (L + R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700 }, svg, 'time (s)');
+  el('text', { x: 18, y: (T + B) / 2, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, transform: 'rotate(-90 18 ' + (T + B) / 2 + ')' }, svg, 'p (kg·m/s)');
+  el('line', { x1: X(0), y1: Y(2), x2: X(3), y2: Y(8), stroke: 'var(--cartA)', 'stroke-width': 4 }, svg);
+  el('circle', { cx: X(0), cy: Y(2), r: 6, fill: 'var(--cartA)' }, svg); el('circle', { cx: X(3), cy: Y(8), r: 6, fill: 'var(--cartA)' }, svg);
+
+  window.PAGE = {
+    lesson: 'QUIZ41-REV',
+    Q: {
+      q1: { mc: true, label: '1 · Third law', ans: 'eq', good: '<strong>Correct.</strong> Newton\'s third law: the forces in an interaction pair are always equal and opposite, no matter the masses.', bad: { truck: 'It feels that way because the bug is wrecked, but the third law says the pair of forces is always equal. The bug just can\'t handle the same force.', bug: 'The third law says the two forces are equal in size.' } },
+      q2: { mc: true, label: '2 · Acceleration', ans: 'bug', good: '<strong>Correct.</strong> Same force, but a = F/m, and the bug\'s mass is tiny, so its acceleration is huge.', bad: { truck: 'Same force on each, and a = F/m. Which one has the small mass?', same: 'The forces are equal, but the masses aren\'t. a = F/m.' } },
+      q3: { label: '3 · p with a sign', answer: -2.0, tol: 0.02, signed: true, good: '<strong>Correct: −2.0 kg·m/s.</strong> p = (0.40)(−5.0). The minus sign means "to the left."', signWrong: '<strong>Right size, wrong sign.</strong> It\'s moving left, and right is +. Tap the ± button.', special: [{ v: 12.5, msg: '<strong>Multiply, don\'t divide.</strong> p = mv.' }, { v: -12.5, msg: '<strong>Multiply, don\'t divide.</strong> p = mv.' }], wrong: '<strong>Not yet.</strong> p = m × v, and v is negative because it moves left.' },
+      q4: { mc: true, label: '4 · More momentum', ans: 'A', good: '<strong>Correct.</strong> A: (2.0)(3.0) = 6.0 kg·m/s. B: (0.50)(10) = 5.0 kg·m/s. The faster one doesn\'t always win.', bad: { B: 'Faster doesn\'t mean more momentum. Work out p = mv for both: 6.0 vs. 5.0.', same: 'Work out p = mv for both: 6.0 vs. 5.0 kg·m/s.' } },
+      q5: { label: '5 · Δp of a bounce', answer: 7.5, tol: 0.05, good: '<strong>Correct: 7.5 kg·m/s.</strong> Δv = −30 − (+20) = −50 m/s. Δp = (0.15)(−50) = −7.5, magnitude 7.5.', special: [{ v: 1.5, msg: '<strong>You subtracted the speeds.</strong> The ball reverses, so Δv = −30 − (+20) = −50 m/s.' }, { v: 50, msg: '<strong>That\'s Δv.</strong> Multiply by the mass.' }], wrong: '<strong>Not yet.</strong> Δp = m(v<sub>f</sub> − v<sub>i</sub>), with the signs: v<sub>f</sub> = −30, v<sub>i</sub> = +20.' },
+      q6: { mc: true, label: '6 · Bounce vs. stop', ans: 'bounce', good: '<strong>Correct.</strong> Stopping takes away all its momentum. Bouncing takes it away <em>and</em> gives it momentum the other way, so Δp (the impulse) is bigger.', bad: { stop: 'Stopping changes p from +mv to 0. Bouncing changes it from +mv to −mv, which is a bigger change.', same: 'The impulse depends on the <em>change</em> in momentum, and the bounce changes more: +mv to −mv.' } },
+      q7: { label: '7 · Push → speed', answer: 10, tol: 0.1, good: '<strong>Correct: 10 m/s.</strong> J = FΔt = (40)(0.50) = 20 N·s = Δp. v = 20 ÷ 2.0 = 10 m/s.', special: [{ v: 20, msg: '<strong>That\'s the impulse</strong> (20 N·s). Divide by the mass for the speed.' }, { v: 40, msg: '<strong>Multiply F by Δt</strong> to get the impulse, then divide by m.' }, { v: 2.5, msg: '<strong>Multiply F × Δt,</strong> don\'t divide.' }], wrong: '<strong>Not yet.</strong> FΔt = Δp = mΔv. Start from rest.' },
+      q8: { mc: true, label: '8 · Airbags', ans: 'time', good: '<strong>Correct.</strong> The passenger goes from moving to stopped either way, so Δp and the impulse are the same. A longer Δt means a smaller F.', bad: { imp: 'The passenger stops either way, so the change in momentum (the impulse) is the same. What\'s different is the time.', dp: 'The passenger goes from the same speed to 0 either way. Δp is the same, and the airbag stretches out the time.' } },
+      q9: { label: '9 · Slope = force', answer: 2.0, tol: 0.05, good: '<strong>Correct: 2.0 N.</strong> Slope of p–t = Δp ÷ Δt = (8.0 − 2.0) ÷ 3.0 = 2.0 N.', special: [{ v: 6, msg: '<strong>That\'s Δp.</strong> The force is the slope: Δp ÷ Δt.' }, { v: 18, msg: '<strong>Divide by time, don\'t multiply.</strong> F = Δp ÷ Δt.' }, { v: 2.67, msg: '<strong>Use the change,</strong> not the final value: (8.0 − 2.0) ÷ 3.0.' }, { v: 0.5, msg: '<strong>Flip it:</strong> F = Δp ÷ Δt.' }], wrong: '<strong>Not yet.</strong> On a p–t graph, the slope is the net force.' },
+      q10: { mc: true, label: '10 · Equal impulses', ans: 'eq', good: '<strong>Correct, and that\'s Thursday\'s big idea.</strong> Equal and opposite impulses mean whatever momentum one cart loses, the other gains. The total stays the same: conservation of momentum.', bad: { heavy: 'Equal forces for equal times means equal impulses. The lighter cart has a bigger change in <em>velocity</em>, but the same change in momentum.', dep: 'The third law doesn\'t care which was moving. Same force, same time, so same-size impulse.' } }
+    },
+    teacherExtra: function (note, list) {
+      note(document.querySelector('[data-title="10 · Bridge to Thursday"] h2'), '<strong>Why this one is last:</strong> it sets up ML5 (conservation of momentum), which is due Thursday. If you\'re back, it makes a good opener question.');
+    }
+  };
+})();
+</script>
+<script>// Shared engine for in-class pages. Expects window.PAGE = {lesson, Q, gates, extraResults(), teacherExtra(note,list), sample()}
+(function () {
+  var P = window.PAGE, Q = P.Q, LESSON = P.lesson;
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() { if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode); themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1); }
+  themeBtn.addEventListener('click', function () { mode = modes[(modes.indexOf(mode) + 1) % 3]; try { localStorage.setItem('lp-theme', mode); } catch (e) {} applyTheme(); });
+  applyTheme();
+
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn'), nameInput = document.getElementById('nameInput');
+  var st = {}; Object.keys(Q).forEach(function (k) { st[k] = { first: null, done: false, right: false, tries: 0 }; });
+  P.st = st;
+  function canAdvance() {
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    var s = steps[cur], q = s.getAttribute('data-q'), g = s.getAttribute('data-gate');
+    if (g && P.gates && P.gates[g]) return P.gates[g]();
+    return q ? st[q].done : true;
+  }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+  P.upd = upd;
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    upd(); if (cur === steps.length - 1) buildResults(); window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', upd);
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function more(q) { return st[q].done && !st[q].right ? '<br>Write down the right method, then tap Next.' : ''; }
+  function record(q, ok) { var s = st[q]; s.tries++; if (s.first === null) s.first = ok; if (ok) { s.right = true; s.done = true; } if (!ok && s.tries >= 3) s.done = true; upd(); }
+  document.querySelectorAll('[data-sign]').forEach(function (b) { b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; }); });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), c = Q[q];
+    b.addEventListener('click', function () {
+      if (st[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var v = parseFloat(raw), sb = document.querySelector('[data-sign="' + q + '"]');
+      if (sb && sb.textContent === '−') v = -Math.abs(v);
+      if (!c.signed) v = Math.abs(v);
+      var ok = Math.abs(v - c.answer) <= c.tol; record(q, ok);
+      if (ok) { fb(q + 'Fb', true, c.good); return; }
+      var msg = c.wrong;
+      if (c.signed && Math.abs(-v - c.answer) <= c.tol) msg = c.signWrong;
+      (c.special || []).forEach(function (sp) { if (Math.abs(v - sp.v) <= Math.max(c.tol, Math.abs(sp.v) * 0.02)) msg = sp.msg; });
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), c = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (st[q].right) return; var o = b.getAttribute('data-opt'), ok = o === c.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); }); b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok); fb(q + 'Fb', ok, ok ? c.good : '<strong>Not quite.</strong> ' + c.bad[o] + more(q));
+      });
+    });
+  });
+  var conf = document.getElementById('confused'); if (conf) conf.addEventListener('input', buildResults);
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return st[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    document.getElementById('rRows').innerHTML = keys.map(function (q) { var s = st[q], t = s.first === true ? ['✓ first try', 'g'] : (s.right ? ['✓ after ' + s.tries, 'y'] : ['✗ review', 'r']); return '<div class="res-row" style="padding:6px 0"><span>' + Q[q].label + '</span><span class="badge ' + t[1] + '">' + t[0] + '</span></div>'; }).join('');
+    if (P.extraResults) P.extraResults();
+    if (conf) { var c = conf.value.trim(); document.getElementById('rConfRow').style.display = c ? '' : 'none'; document.getElementById('rConf').textContent = c; }
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+  P.buildResults = buildResults;
+  render();
+
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) { var l = document.createElement('div'); l.className = 'part-label'; l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title'); s.insertBefore(l, s.firstChild); });
+    function note(a, h) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = h; a.parentNode.insertBefore(n, a.nextSibling); }
+    function list(i) { return '<ul>' + i.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    Object.keys(Q).forEach(function (q) {
+      var c = Q[q];
+      if (c.mc) { var g = document.querySelector('[data-mc="' + q + '"]'); g.querySelector('[data-opt="' + c.ans + '"]').classList.add('right'); fb(q + 'Fb', true, c.good);
+        note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong choices:</strong>' + list(Object.keys(c.bad).map(function (o) { return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + plain(c.bad[o]); }))); }
+      else { document.getElementById(q + 'Input').value = Math.abs(c.answer); if (c.answer < 0) { var sb = document.querySelector('[data-sign="' + q + '"]'); if (sb) sb.textContent = '−'; } fb(q + 'Fb', true, c.good);
+        var items = (c.special || []).map(function (sp) { return sp.v + ': ' + plain(sp.msg); }); if (c.signed) items.unshift('Right size, wrong sign: ' + plain(c.signWrong));
+        note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (accepts ±' + c.tol + (c.signed ? '; sign checked' : '; signs ignored') + '):' + list(items.concat(['Anything else: ' + plain(c.wrong)]))); }
+    });
+    if (P.teacherExtra) P.teacherExtra(note, list);
+    nameInput.value = 'Sample Student';
+    Object.keys(Q).forEach(function (q, i) { st[q] = (i % 4 === 3) ? { first: false, done: true, right: true, tries: 2 } : { first: true, done: true, right: true, tries: 1 }; });
+    if (P.sample) P.sample();
+    buildResults(); window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>

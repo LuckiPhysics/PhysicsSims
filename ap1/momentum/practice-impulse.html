@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Impulse Practice · Tue 11/17</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+
+.wx td,.wx th{vertical-align:top}
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="practice-impulse.html">regular link</a>.
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · In-Class Practice · Tue 11/17</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Impulse Practice</h1>
+      <p class="muted">In class · Tue 11/17 · about 40 minutes, then whiteboards and Mastering time</p>
+      <p>Ten problems, most from your binder's "Mo'mentum Problems." Each one checks itself. <strong>Show your work in your binder</strong> for every problem, since the page only checks the final answer.</p>
+      <div class="notes-box">Stuck? Each wrong answer gives you a hint. You get 3 tries before the page moves you on.</div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start.</p>
+    </div>
+  </section>
+
+  <section class="step" data-title="Problem 1 · binder #1" data-q="q1"><div class="card">
+    <h2>Problem 1 <span class="muted" style="font-size:16px">· binder #1</span></h2>
+    <p>When the velocity of a moving object is <strong>quadrupled</strong>, which of these is also quadrupled?</p>
+    <div data-mc="q1"><button class="big-btn" data-opt="A">A. Kinetic energy</button><button class="big-btn" data-opt="B">B. Momentum</button><button class="big-btn" data-opt="C">C. Potential energy</button><button class="big-btn" data-opt="D">D. Acceleration</button></div>
+    <div class="feedback" id="q1Fb"></div></div></section>
+
+  <section class="step" data-title="Problem 2 · binder #4" data-q="q2"><div class="card">
+    <h2>Problem 2 <span class="muted" style="font-size:16px">· binder #4</span></h2>
+    <p>A hockey stick strikes a 0.50 kg puck. The puck arrives at <strong>+6.4 m/s</strong> and leaves at <strong>−3.6 m/s</strong>. Contact time: 0.050 s.</p>
+    <p><strong>What is the magnitude of the puck's change in momentum?</strong></p>
+    <div data-mc="q2"><button class="big-btn" data-opt="A">A. 2 kg·m/s</button><button class="big-btn" data-opt="B">B. 3 kg·m/s</button><button class="big-btn" data-opt="C">C. 5 kg·m/s</button><button class="big-btn" data-opt="D">D. 10 kg·m/s</button></div>
+    <div class="feedback" id="q2Fb"></div></div></section>
+
+  <section class="step" data-title="Problem 3 · binder #5" data-q="q3"><div class="card">
+    <h2>Problem 3 <span class="muted" style="font-size:16px">· binder #5</span></h2>
+    <p>Same puck: 0.50 kg, +6.4 m/s → −3.6 m/s, contact for 0.050 s.</p>
+    <p><strong>What is the magnitude of the average force on the puck?</strong></p>
+    <div data-mc="q3"><button class="big-btn" data-opt="A">A. 100 N</button><button class="big-btn" data-opt="B">B. 150 N</button><button class="big-btn" data-opt="C">C. 200 N</button><button class="big-btn" data-opt="D">D. 300 N</button></div>
+    <div class="feedback" id="q3Fb"></div></div></section>
+
+  <section class="step" data-title="Problem 4 · binder #6" data-q="q4"><div class="card">
+    <h2>Problem 4 <span class="muted" style="font-size:16px">· binder #6</span></h2>
+    <p>A 0.25 kg rubber ball hits a wall at 9.0 m/s and bounces straight back at 11 m/s.</p>
+    <p><strong>What is the magnitude of the impulse on the ball?</strong></p>
+    <div data-mc="q4"><button class="big-btn" data-opt="A">A. 0.5 kg·m/s</button><button class="big-btn" data-opt="B">B. 2 kg·m/s</button><button class="big-btn" data-opt="C">C. 5 kg·m/s</button><button class="big-btn" data-opt="D">D. 20 kg·m/s</button></div>
+    <div class="feedback" id="q4Fb"></div></div></section>
+
+  <section class="step" data-title="Problem 5 · graph" data-q="q5"><div class="card">
+    <h2>Problem 5 <span class="muted" style="font-size:16px">· force–time graph</span></h2>
+    <p>A bat's force on a 0.15 kg ball (at rest on a tee) is shown below. <strong>What impulse does the ball receive?</strong></p>
+    <svg id="g5" viewBox="0 0 640 280" aria-label="Triangle force-time graph: 0 to 300 newtons at 0.02 seconds, back to 0 at 0.05 seconds"></svg>
+    <div class="num-row"><button class="sign-btn" data-sign="q5">+</button><input class="num-input" id="q5Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N·s</span></div>
+    <button class="primary" data-check="q5" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q5Fb"></div></div></section>
+
+  <section class="step" data-title="Problem 6 · graph, part 2" data-q="q6"><div class="card">
+    <h2>Problem 6 <span class="muted" style="font-size:16px">· same graph</span></h2>
+    <p>The ball (0.15 kg) started at rest. <strong>How fast is it moving after the hit?</strong></p>
+    <svg id="g6" viewBox="0 0 640 280" aria-label="Same triangle force-time graph"></svg>
+    <div class="num-row"><button class="sign-btn" data-sign="q6">+</button><input class="num-input" id="q6Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
+    <button class="primary" data-check="q6" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q6Fb"></div></div></section>
+
+  <section class="step" data-title="Time or distance?" data-q="q7"><div class="card">
+    <h2>Time or distance? Pick your tool</h2>
+    <p>Two tools connect a force to a change in motion:</p>
+    <table class="wx" style="font-size:17px">
+      <tr><th>If the problem gives you…</th><th>Use</th></tr>
+      <tr><td>a <strong>time</strong> (Δt)</td><td><strong>Impulse:</strong> F·Δt = Δp = mΔv</td></tr>
+      <tr><td>a <strong>distance</strong> (d)</td><td><strong>Work–energy</strong> (Unit 3): F·d = ΔKE = ½mv<sub>f</sub>² − ½mv<sub>i</sub>²</td></tr>
+    </table>
+    <p style="margin-top:12px">A 1000 kg car moving at 3.0 m/s hits a barrier and stops after crumpling <strong>0.25 m</strong>. You want the average force on the car. <strong>Which tool?</strong></p>
+    <div data-mc="q7"><button class="big-btn" data-opt="work">Work–energy, because the problem gives a distance</button><button class="big-btn" data-opt="imp">Impulse, because it's a collision</button><button class="big-btn" data-opt="cons">Conservation of momentum</button></div>
+    <div class="feedback" id="q7Fb"></div></div></section>
+
+  <section class="step" data-title="Problem 8 · stopping force" data-q="q8"><div class="card">
+    <h2>Problem 8 <span class="muted" style="font-size:16px">· finish the car</span></h2>
+    <p>1000 kg car, 3.0 m/s, stops in 0.25 m. <strong>What is the magnitude of the average force on the car?</strong></p>
+    <div class="num-row"><button class="sign-btn" data-sign="q8">+</button><input class="num-input" id="q8Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N</span></div>
+    <button class="primary" data-check="q8" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q8Fb"></div>
+    <p class="hint">This is the move you need for Mastering 6.22.</p></div></section>
+
+  <section class="step" data-title="Problem 9 · dropped egg" data-q="q9"><div class="card">
+    <h2>Problem 9 <span class="muted" style="font-size:16px">· two steps</span></h2>
+    <p>A 0.060 kg egg falls 0.80 m from a counter and stops on the floor. <strong>What impulse does the floor give the egg?</strong> (g = 9.8 m/s²)</p>
+    <p class="hint">Step 1: find the egg's speed just before it hits (energy or kinematics). Step 2: impulse = Δp to stop it.</p>
+    <div class="num-row"><button class="sign-btn" data-sign="q9">+</button><input class="num-input" id="q9Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N·s</span></div>
+    <button class="primary" data-check="q9" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q9Fb"></div>
+    <p class="hint">Same idea as Mastering 6.20.</p></div></section>
+
+  <section class="step" data-title="Problem 10 · binder #14a" data-q="q10"><div class="card">
+    <h2>Problem 10 <span class="muted" style="font-size:16px">· binder #14a</span></h2>
+    <p>A <strong>46 g</strong> golf ball at rest is struck by a club and leaves at 44.0 m/s east. <strong>What impulse does the club give the ball?</strong></p>
+    <div class="num-row"><button class="sign-btn" data-sign="q10">+</button><input class="num-input" id="q10Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N·s</span></div>
+    <button class="primary" data-check="q10" style="width:100%">Check my answer</button>
+    <div class="feedback" id="q10Fb"></div>
+    <p class="hint">Parts b and c of #14 are on the whiteboards next.</p></div></section>
+
+  <section class="step" data-title="Whiteboards">
+    <div class="card">
+      <h2>Group whiteboards</h2>
+      <p>Your sub will give each group a number. Whiteboard your group's problem with <strong>a labeled picture, the equation you started from, and the answer with units</strong>. Then take a photo of the board with an iPad and submit it on OnCampus (one per group).</p>
+      <table class="wx" style="font-size:17px">
+        <tr><th>Group</th><th>Problem</th></tr>
+        <tr><td>1</td><td>Binder #14b and c: how long were the golf club and ball in contact, and what was the average force? (The ball compresses 2.0 cm while it speeds up from 0 to 44.0 m/s.)</td></tr>
+        <tr><td>2</td><td>Binder #5, fully worked: puck before and after picture, Δp, then F<sub>avg</sub></td></tr>
+        <tr><td>3</td><td>Binder #6: draw momentum bars (before, impulse, after) for the bouncing ball</td></tr>
+        <tr><td>4</td><td>The car (Problem 8): explain <em>why</em> impulse can't be used, then solve with work–energy</td></tr>
+        <tr><td>5</td><td>The egg (Problem 9): what if it lands on a pillow and stops in 0.20 s instead of 0.005 s? Compare the forces.</td></tr>
+        <tr><td>6</td><td>The bat graph (Problems 5–6): sketch a graph with the <em>same</em> impulse but a lower peak force. Label the numbers.</td></tr>
+      </table>
+      <p class="hint">Done early? Work on Mastering HW 4.1. It's due tonight at 11:59 PM.</p>
+    </div>
+  </section>
+
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <label for="groupNum"><strong>Your whiteboard group #</strong></label>
+      <input id="groupNum" class="text-input" type="text" inputmode="numeric" placeholder="1–6" style="margin-top:8px;max-width:160px">
+      <label for="confused" style="display:block;margin-top:14px"><strong>Which problem was hardest, and why?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Impulse Practice · Tue 11/17</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div id="rRows"></div>
+      <div class="res-row"><span>Whiteboard group</span><span id="rGroup" style="font-weight:700">—</span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Hardest: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom"><div class="inner"><button class="ghost" id="backBtn">Back</button><button class="primary" id="nextBtn">Start</button></div></nav>
+
+<script>
+(function () {
+  var LESSON = 'PRAC-IMP';
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() { if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode); themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1); }
+  themeBtn.addEventListener('click', function () { mode = modes[(modes.indexOf(mode) + 1) % 3]; try { localStorage.setItem('lp-theme', mode); } catch (e) {} applyTheme(); });
+  applyTheme();
+
+  // ---------- Graph ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(t, a, p, x) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (x !== undefined) e.textContent = x; p.appendChild(e); return e; }
+  function graph(id) {
+    var svg = document.getElementById(id), H = 280, L = 75, R = 610, T = 20, B = H - 55, xmax = 0.06, ymax = 350;
+    var X = function (x) { return L + x / xmax * (R - L); }, Y = function (y) { return B - y / ymax * (B - T); };
+    for (var gx = 0; gx <= 0.0601; gx += 0.01) { el('line', { x1: X(gx), y1: T, x2: X(gx), y2: B, stroke: 'var(--line)' }, svg); el('text', { x: X(gx), y: B + 22, 'text-anchor': 'middle', 'font-size': 15 }, svg, +gx.toFixed(2)); }
+    for (var gy = 0; gy <= 350; gy += 50) { el('line', { x1: L, y1: Y(gy), x2: R, y2: Y(gy), stroke: 'var(--line)' }, svg); el('text', { x: L - 8, y: Y(gy) + 5, 'text-anchor': 'end', 'font-size': 15 }, svg, gy); }
+    el('line', { x1: L, y1: B, x2: R, y2: B, stroke: 'var(--ink)', 'stroke-width': 2 }, svg); el('line', { x1: L, y1: T, x2: L, y2: B, stroke: 'var(--ink)', 'stroke-width': 2 }, svg);
+    el('text', { x: (L + R) / 2, y: H - 8, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700 }, svg, 'time (s)');
+    el('text', { x: 18, y: (T + B) / 2, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, transform: 'rotate(-90 18 ' + (T + B) / 2 + ')' }, svg, 'force (N)');
+    el('path', { d: 'M' + X(0) + ',' + Y(0) + ' L' + X(0.02) + ',' + Y(300) + ' L' + X(0.05) + ',' + Y(0) + ' Z', fill: 'var(--cartA)', 'fill-opacity': 0.3, stroke: 'var(--cartA)', 'stroke-width': 4 }, svg);
+  }
+  graph('g5'); graph('g6');
+
+  // ---------- Questions ----------
+  var Q = {
+    q1: { mc: true, label: '#1 Quadruple v', ans: 'B', good: '<strong>Correct.</strong> p = mv, so p is directly proportional to v: 4× v → 4× p.', bad: { A: 'KE = ½mv² depends on v <em>squared</em>: 4× v gives 16× KE.', C: 'Potential energy depends on height (or spring stretch), not speed.', D: 'Acceleration depends on the net force, not on how fast something is going.' } },
+    q2: { mc: true, label: '#4 Puck Δp', ans: 'C', good: '<strong>Correct: 5 kg·m/s.</strong> Δv = −3.6 − 6.4 = −10 m/s, so Δp = (0.50)(−10) = −5 kg·m/s, magnitude 5.', bad: { A: 'Did you subtract the speeds? The puck <em>reverses</em>: Δv = (−3.6) − (+6.4).', B: 'Check the signs: Δv = (−3.6) − (+6.4) = −10 m/s.', D: '10 is Δv in m/s. Multiply by the mass (0.50 kg).' } },
+    q3: { mc: true, label: '#5 Puck force', ans: 'A', good: '<strong>Correct: 100 N.</strong> F = Δp / Δt = 5 / 0.050 = 100 N.', bad: { B: 'Use F = Δp / Δt with Δp = 5 kg·m/s (from #4) and Δt = 0.050 s.', C: 'Close. Check Δp: it\'s 5 kg·m/s, not 10 (that was Δv).', D: 'Use F = Δp / Δt with Δp = 5 kg·m/s and Δt = 0.050 s.' } },
+    q4: { mc: true, label: '#6 Bouncing ball', ans: 'C', good: '<strong>Correct: 5 kg·m/s.</strong> Δv = 11 − (−9.0) = 20 m/s (it reverses), so J = (0.25)(20) = 5 kg·m/s.', bad: { A: '0.5 comes from subtracting the speeds (11 − 9). The ball <em>reverses</em>, so Δv = 11 − (−9) = 20 m/s.', B: 'Make sure you used Δv = 20 m/s and m = 0.25 kg.', D: '20 m/s is Δv. Multiply by the mass, 0.25 kg.' } },
+    q5: { label: 'Graph impulse', answer: 7.5, tol: 0.1, good: '<strong>Correct: 7.5 N·s.</strong> Triangle: ½ × 0.05 s × 300 N = 7.5 N·s.', special: [{ v: 15, msg: '<strong>That\'s the full rectangle.</strong> It\'s a triangle: ½ × base × height.' }, { v: 3, msg: '<strong>Check the base.</strong> The force lasts from 0 to 0.05 s.' }], wrong: '<strong>Not yet.</strong> Impulse = area under the graph. The shape is a triangle with base 0.05 s and height 300 N.' },
+    q6: { label: 'Graph → speed', answer: 50, tol: 0.6, good: '<strong>Correct: 50 m/s.</strong> J = Δp = mv<sub>f</sub> (starts at rest), so v<sub>f</sub> = 7.5 / 0.15 = 50 m/s.', special: [{ v: 7.5, msg: '<strong>That\'s the impulse.</strong> Now divide by the mass: v = J / m.' }, { v: 1.125, msg: '<strong>Divide, don\'t multiply.</strong> v = J / m.' }, { v: 100, msg: '<strong>Check your impulse:</strong> it should be 7.5 N·s (triangle, so ½ × base × height).' }], wrong: '<strong>Not yet.</strong> Impulse = Δp = m·v<sub>f</sub> (starts at rest). Solve for v<sub>f</sub>.' },
+    q7: { mc: true, label: 'Time or distance?', ans: 'work', good: '<strong>Correct.</strong> No time is given, only a distance, so use F·d = ΔKE.', bad: { imp: 'Impulse needs a time (F·Δt). This problem gives a distance, 0.25 m, so it\'s a work problem.', cons: 'Conservation of momentum is for two or more objects interacting. Here we want the force on one car over a distance.' } },
+    q8: { label: 'Car stopping force', answer: 18000, tol: 200, good: '<strong>Correct: 18,000 N.</strong> ΔKE = 0 − ½(1000)(3.0)² = −4500 J. F = 4500 / 0.25 = 18,000 N.', special: [{ v: 12000, msg: '<strong>Looks like p ÷ d.</strong> Momentum over distance isn\'t a force. Use F·d = ΔKE = ½mv².' }, { v: 36000, msg: '<strong>Don\'t forget the ½</strong> in KE = ½mv².' }, { v: 1125, msg: '<strong>Divide by d, don\'t multiply.</strong> F = ΔKE / d.' }], wrong: '<strong>Not yet.</strong> KE = ½mv² at the start, 0 at the end. F × d = ΔKE, so F = ΔKE / d.' },
+    q9: { label: 'Egg impulse', answer: 0.238, tol: 0.008, good: '<strong>Correct: about 0.24 N·s (upward).</strong> v = √(2gh) = √(2 × 9.8 × 0.80) ≈ 3.96 m/s. J = Δp = (0.060)(3.96) ≈ 0.24 N·s.', special: [{ v: 0.048, msg: '<strong>You multiplied mass × height.</strong> First find the speed: v = √(2gh).' }, { v: 0.47, msg: '<strong>Looks like you used 2gh without the square root,</strong> or mass × 7.84. v = √(2 × 9.8 × 0.80) ≈ 3.96 m/s.' }], wrong: '<strong>Not yet.</strong> Step 1: v = √(2gh). Step 2: J = m·Δv (it stops, so Δv is the full speed).' },
+    q10: { label: '#14a Golf impulse', answer: 2.02, tol: 0.03, good: '<strong>Correct: about 2.0 N·s east.</strong> J = mv = (0.046 kg)(44.0 m/s) = 2.02 N·s.', special: [{ v: 2024, msg: '<strong>Check your units:</strong> 46 g = 0.046 kg.' }], wrong: '<strong>Not yet.</strong> It starts at rest, so J = Δp = m·v<sub>f</sub>. Convert 46 g to kg first.' }
+  };
+
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn'), nameInput = document.getElementById('nameInput');
+  var st = {}; Object.keys(Q).forEach(function (k) { st[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() { if (cur === 0) return nameInput.value.trim().length >= 3; var q = steps[cur].getAttribute('data-q'); return q ? st[q].done : true; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    upd(); if (cur === steps.length - 1) buildResults(); window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', upd);
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function more(q) { return st[q].done && !st[q].right ? '<br>Write down the right method, then tap Next.' : ''; }
+  function record(q, ok) { var s = st[q]; s.tries++; if (s.first === null) s.first = ok; if (ok) { s.right = true; s.done = true; } if (!ok && s.tries >= 3) s.done = true; upd(); }
+  document.querySelectorAll('[data-sign]').forEach(function (b) { b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; }); });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), c = Q[q];
+    b.addEventListener('click', function () {
+      if (st[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var v = Math.abs(parseFloat(raw));   // magnitudes only on this page
+      var ok = Math.abs(v - c.answer) <= c.tol; record(q, ok);
+      if (ok) { fb(q + 'Fb', true, c.good); return; }
+      var msg = c.wrong; (c.special || []).forEach(function (sp) { if (Math.abs(v - sp.v) <= Math.max(c.tol, Math.abs(sp.v) * 0.02)) msg = sp.msg; });
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), c = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (st[q].right) return; var o = b.getAttribute('data-opt'), ok = o === c.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); }); b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok); fb(q + 'Fb', ok, ok ? c.good : '<strong>Not quite.</strong> ' + c.bad[o] + more(q));
+      });
+    });
+  });
+  ['confused', 'groupNum'].forEach(function (id) { document.getElementById(id).addEventListener('input', buildResults); });
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return st[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    document.getElementById('rRows').innerHTML = keys.map(function (q) { var s = st[q], t = s.first === true ? ['✓ first try', 'g'] : (s.right ? ['✓ after ' + s.tries, 'y'] : ['✗ review', 'r']); return '<div class="res-row" style="padding:6px 0"><span>' + Q[q].label + '</span><span class="badge ' + t[1] + '">' + t[0] + '</span></div>'; }).join('');
+    document.getElementById('rGroup').textContent = document.getElementById('groupNum').value.trim() || '—';
+    var c = document.getElementById('confused').value.trim(); document.getElementById('rConfRow').style.display = c ? '' : 'none'; document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+  render();
+
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) { var l = document.createElement('div'); l.className = 'part-label'; l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title'); s.insertBefore(l, s.firstChild); });
+    function note(a, h) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = h; a.parentNode.insertBefore(n, a.nextSibling); }
+    function list(i) { return '<ul>' + i.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    Object.keys(Q).forEach(function (q) {
+      var c = Q[q];
+      if (c.mc) { var g = document.querySelector('[data-mc="' + q + '"]'); g.querySelector('[data-opt="' + c.ans + '"]').classList.add('right'); fb(q + 'Fb', true, c.good);
+        note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong choices:</strong>' + list(Object.keys(c.bad).map(function (o) { return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + plain(c.bad[o]); }))); }
+      else { document.getElementById(q + 'Input').value = c.answer; fb(q + 'Fb', true, c.good);
+        note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (accepts ±' + c.tol + '; signs ignored):' + list((c.special || []).map(function (sp) { return sp.v + ': ' + plain(sp.msg); }).concat(['Anything else: ' + plain(c.wrong)]))); }
+    });
+    note(document.querySelector('[data-title="Whiteboards"] table'), '<strong>Whiteboard answers:</strong>' + list([
+      'G1: average speed during contact ≈ 22 m/s, so Δt = 0.020 / 22 ≈ 9.1 × 10⁻⁴ s; F = 2.02 / 9.1 × 10⁻⁴ ≈ 2200 N.',
+      'G2: Δp = −5.0 kg·m/s; F = 100 N, directed opposite the puck\'s arrival.',
+      'G3: bars: p<sub>i</sub> = +2.25, impulse = −5.0, p<sub>f</sub> = −2.75 kg·m/s (toward the wall is +).',
+      'G4: no time given → impulse can\'t be used; F = ΔKE / d = 4500 / 0.25 = 18,000 N.',
+      'G5: J = 0.24 N·s both times. Floor (0.005 s): ≈ 48 N. Pillow (0.20 s): ≈ 1.2 N.',
+      'G6: any graph with area 7.5 N·s and a lower peak, e.g. a rectangle of 75 N for 0.10 s.']) +
+      'Binder #3 isn\'t used: its graph is missing from the binder page. #2 (v = 4t²) needs calculus, so it\'s skipped.');
+    nameInput.value = 'Sample Student';
+    Object.keys(Q).forEach(function (q, i) { st[q] = (i === 3 || i === 8) ? { first: false, done: true, right: true, tries: 2 } : { first: true, done: true, right: true, tries: 1 }; });
+    document.getElementById('groupNum').value = '3'; buildResults(); window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>

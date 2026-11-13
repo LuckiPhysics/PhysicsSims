@@ -37,7 +37,11 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
      - an optional "still unsure about" note
      - a short check code
      Put the iPad screenshot instructions above the card: top button + volume up, or top button + Home on older iPads. Students turn screenshots in on **OnCampus**.
-- **Look:** match the site's slate/blue palette, with blue accents and amber for notes tags.
+- **Look:** neutral slate backgrounds with the school's maroon and gold as accents only, never full coverage (chosen look: "sample C").
+  - Buttons, links, and the progress bar are maroon (`--accent: #7a1f2e`; `#c05467` in dark mode, with light text links `#e6a3ae`).
+  - Each card gets a thin gold top edge (`--gold: #e8bf55`). Notes tags stay amber.
+  - Physics colors don't change: blue/red carts, green/red feedback.
+  - The theme block is at the end of the lesson CSS; copy it from `ap1/momentum/ml1-momentum.html`.
 - **Back link:** put a "← Unit N: Name" link at the top that goes to the unit page (`index.html` in the same folder).
 - **Teacher view:** every mini-lesson supports `?teacher` at the end of its URL (copy the block from `ml1-momentum.html`). It shows:
   - all parts on one page, labeled "Part N of M"
