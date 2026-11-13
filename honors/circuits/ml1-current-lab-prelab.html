@@ -429,7 +429,8 @@
     var over = disp === '1';
     E('text', { x: over ? 50 : 204, y: 70, 'text-anchor': over ? 'start' : 'end', 'font-size': 46, 'font-weight': 800, 'font-family': 'Menlo, Consolas, monospace', style: 'fill:#151515' }, g, disp);
     if (o.label) {
-      E('rect', { x: 70, y: -40, width: 100, height: 32, rx: 8, fill: o.labelColor || '#7a1f2e' }, g);
+      var lw = Math.max(100, o.label.length * 11.5 + 16);
+      E('rect', { x: 120 - lw / 2, y: -40, width: lw, height: 32, rx: 8, fill: o.labelColor || '#7a1f2e' }, g);
       E('text', { x: 120, y: -17, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, style: 'fill:#fff' }, g, o.label);
     }
     var cx = 120, cy = 188, R = 84;
@@ -541,29 +542,38 @@
     if (k === 'swap') EQ.ring(svg, [430, 560], 80);
   }
   function p2Scene(svg, k, two) {
-    var on = k === 'on' || k === 'repeat';
-    var ps = EQ.supply(svg, { x: 10, y: 10, s: 0.8, on: on, v: k === 'repeat' ? '2.00' : '4.00', a: on ? (k === 'repeat' ? '0.13' : '0.25') : '0.00', noGnd: k === 'chain' });
-    var am = null;
-    if (two) am = EQ.meter(svg, { x: 380, y: 50, s: 0.62, dial: '10A', display: on ? (k === 'repeat' ? '0.13' : '0.25') : '0.00', label: 'Ammeter' });
-    var showV = k !== 'chain';
-    var vm = showV ? EQ.meter(svg, { x: 690, y: 50, s: 0.62, dial: 'V20', display: on ? (k === 'repeat' ? '1.25' : '2.50') : '0.00', label: 'Voltmeter', labelColor: '#1d4ed8', dialArrow: k === 'vm' }) : null;
+    // two-meter keys: chain, vm, clip, check, on, repeat
+    // one-meter keys: a_chain, a_check, a_on, swap, v_clip, v_check, v_on
+    var one = !two;
+    var hasAm = two || /^a_/.test(k);
+    var hasVm = two ? k !== 'chain' : (k === 'swap' || /^v_/.test(k));
+    var looseV = (two && k === 'vm') || k === 'swap';
+    var on = k === 'on' || k === 'repeat' || k === 'a_on' || k === 'v_on';
+    var rep = k === 'repeat';
+    var ps = EQ.supply(svg, { x: 10, y: 10, s: 0.8, on: on, v: rep ? '2.00' : '4.00', a: on ? (rep ? '0.13' : '0.25') : '0.00', noGnd: k === 'chain' || k === 'a_chain' });
+    var am = hasAm ? EQ.meter(svg, { x: 380, y: 50, s: 0.62, dial: '10A', display: on ? (rep ? '0.13' : '0.25') : '0.00', label: 'Ammeter' }) : null;
+    var vm = hasVm ? EQ.meter(svg, { x: 690, y: 50, s: 0.62, dial: 'V20', display: on ? (rep ? '1.25' : '2.50') : '0.00', label: one ? 'Voltmeter (same meter)' : 'Voltmeter', labelColor: '#1d4ed8', dialArrow: looseV }) : null;
+    if (one && hasVm) { /* widen label box for the longer label */ }
     var u = EQ.banded(svg, { x: 330, y: 560, tag: 'unknown (color bands)' });
     var r = EQ.ceramic(svg, { x: 650, y: 560, lead: 140, tag: '10 \u03a9 resistor' });
     EQ.wire(svg, r.R, ps.minus, 'black', { endA: 'clip', d: 'M' + r.R[0] + ',' + r.R[1] + ' C860,560 870,650 790,650 L110,650 C55,650 40,625 40,580 L40,300 C40,230 ' + ps.minus[0] + ',240 ' + ps.minus[0] + ',' + ps.minus[1] });
     EQ.wire(svg, ps.plus, u.L, 'red', { c1: [212, 380], c2: [190, 560], endB: 'clip' });
-    if (two) {
+    if (hasAm) {
       EQ.wire(svg, u.R, am.A10, 'red', { c1: [470, 560], c2: [600, 300], endA: 'clip' });
       EQ.wire(svg, am.COM, r.L, 'black', { c1: [470, 420], c2: [470, 560], endB: 'clip' });
     } else EQ.wire(svg, u.R, r.L, 'yellow', { c1: [440, 630], c2: [480, 630], endA: 'clip', endB: 'clip' });
     var vL = [650 - 95, 560], vR = [650 + 95, 560];
-    if (k === 'vm') { EQ.wire(svg, vm.VmA, [760, 450], 'red', { c1: [880, 330], c2: [800, 450], endB: 'clip' }); EQ.wire(svg, vm.COM, [830, 470], 'black', { c1: [870, 400], c2: [860, 470], endB: 'clip' }); EQ.ring(svg, vm.VmA, 18); EQ.ring(svg, vm.COM, 18); EQ.ring(svg, vm.dial, 50); }
-    if (showV && k !== 'vm') {
+    if (looseV) { EQ.wire(svg, vm.VmA, [760, 450], 'red', { c1: [880, 330], c2: [800, 450], endB: 'clip' }); EQ.wire(svg, vm.COM, [830, 470], 'black', { c1: [870, 400], c2: [860, 470], endB: 'clip' }); EQ.ring(svg, vm.VmA, 18); EQ.ring(svg, vm.COM, 18); EQ.ring(svg, vm.dial, 50); }
+    else if (hasVm) {
       EQ.wire(svg, vm.VmA, vL, 'red', { c1: [880, 400], c2: [560, 450], endB: 'clip' });
       EQ.wire(svg, vm.COM, vR, 'black', { c1: [850, 420], c2: [745, 470], endB: 'clip' });
     }
-    if (k === 'clip') { EQ.ring(svg, vL, 22); EQ.ring(svg, vR, 22); }
-    if (k === 'chain') { EQ.ring(svg, [330, 555], 70); EQ.ring(svg, [650, 560], 90); if (!two) EQ.box(svg, 10 + 150 * .8, 10 + 26 * .8, 96, 59, '#1d9bf0'); }
-    if (on) { EQ.box(svg, 10 + 18 * .8, 10 + 26 * .8, 105, 59); if (!two) EQ.box(svg, 10 + 150 * .8, 10 + 26 * .8, 96, 59, '#1d9bf0'); }
+    if (k === 'swap') EQ.ring(svg, [460, 600], 50);
+    if (k === 'clip' || k === 'v_clip') { EQ.ring(svg, vL, 22); EQ.ring(svg, vR, 22); }
+    if (k === 'chain' || k === 'a_chain') { EQ.ring(svg, [330, 555], 70); EQ.ring(svg, [650, 560], 90); EQ.box(svg, 380 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62); }
+    if (on) EQ.box(svg, 10 + 18 * .8, 10 + 26 * .8, 105, 59);
+    if (k === 'a_on') EQ.box(svg, 380 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62);
+    if (k === 'v_on') EQ.box(svg, 690 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62, '#1d9bf0');
   }
 
   function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }

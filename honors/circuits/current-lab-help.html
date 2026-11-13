@@ -358,7 +358,8 @@
     var over = disp === '1';
     E('text', { x: over ? 50 : 204, y: 70, 'text-anchor': over ? 'start' : 'end', 'font-size': 46, 'font-weight': 800, 'font-family': 'Menlo, Consolas, monospace', style: 'fill:#151515' }, g, disp);
     if (o.label) {
-      E('rect', { x: 70, y: -40, width: 100, height: 32, rx: 8, fill: o.labelColor || '#7a1f2e' }, g);
+      var lw = Math.max(100, o.label.length * 11.5 + 16);
+      E('rect', { x: 120 - lw / 2, y: -40, width: lw, height: 32, rx: 8, fill: o.labelColor || '#7a1f2e' }, g);
       E('text', { x: 120, y: -17, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, style: 'fill:#fff' }, g, o.label);
     }
     var cx = 120, cy = 188, R = 84;
@@ -473,29 +474,38 @@
     if (k === 'swap') EQ.ring(svg, [430, 560], 80);
   }
   function p2Scene(svg, k, two) {
-    var on = k === 'on' || k === 'repeat';
-    var ps = EQ.supply(svg, { x: 10, y: 10, s: 0.8, on: on, v: k === 'repeat' ? '2.00' : '4.00', a: on ? (k === 'repeat' ? '0.13' : '0.25') : '0.00', noGnd: k === 'chain' });
-    var am = null;
-    if (two) am = EQ.meter(svg, { x: 380, y: 50, s: 0.62, dial: '10A', display: on ? (k === 'repeat' ? '0.13' : '0.25') : '0.00', label: 'Ammeter' });
-    var showV = k !== 'chain';
-    var vm = showV ? EQ.meter(svg, { x: 690, y: 50, s: 0.62, dial: 'V20', display: on ? (k === 'repeat' ? '1.25' : '2.50') : '0.00', label: 'Voltmeter', labelColor: '#1d4ed8', dialArrow: k === 'vm' }) : null;
+    // two-meter keys: chain, vm, clip, check, on, repeat
+    // one-meter keys: a_chain, a_check, a_on, swap, v_clip, v_check, v_on
+    var one = !two;
+    var hasAm = two || /^a_/.test(k);
+    var hasVm = two ? k !== 'chain' : (k === 'swap' || /^v_/.test(k));
+    var looseV = (two && k === 'vm') || k === 'swap';
+    var on = k === 'on' || k === 'repeat' || k === 'a_on' || k === 'v_on';
+    var rep = k === 'repeat';
+    var ps = EQ.supply(svg, { x: 10, y: 10, s: 0.8, on: on, v: rep ? '2.00' : '4.00', a: on ? (rep ? '0.13' : '0.25') : '0.00', noGnd: k === 'chain' || k === 'a_chain' });
+    var am = hasAm ? EQ.meter(svg, { x: 380, y: 50, s: 0.62, dial: '10A', display: on ? (rep ? '0.13' : '0.25') : '0.00', label: 'Ammeter' }) : null;
+    var vm = hasVm ? EQ.meter(svg, { x: 690, y: 50, s: 0.62, dial: 'V20', display: on ? (rep ? '1.25' : '2.50') : '0.00', label: one ? 'Voltmeter (same meter)' : 'Voltmeter', labelColor: '#1d4ed8', dialArrow: looseV }) : null;
+    if (one && hasVm) { /* widen label box for the longer label */ }
     var u = EQ.banded(svg, { x: 330, y: 560, tag: 'unknown (color bands)' });
     var r = EQ.ceramic(svg, { x: 650, y: 560, lead: 140, tag: '10 \u03a9 resistor' });
     EQ.wire(svg, r.R, ps.minus, 'black', { endA: 'clip', d: 'M' + r.R[0] + ',' + r.R[1] + ' C860,560 870,650 790,650 L110,650 C55,650 40,625 40,580 L40,300 C40,230 ' + ps.minus[0] + ',240 ' + ps.minus[0] + ',' + ps.minus[1] });
     EQ.wire(svg, ps.plus, u.L, 'red', { c1: [212, 380], c2: [190, 560], endB: 'clip' });
-    if (two) {
+    if (hasAm) {
       EQ.wire(svg, u.R, am.A10, 'red', { c1: [470, 560], c2: [600, 300], endA: 'clip' });
       EQ.wire(svg, am.COM, r.L, 'black', { c1: [470, 420], c2: [470, 560], endB: 'clip' });
     } else EQ.wire(svg, u.R, r.L, 'yellow', { c1: [440, 630], c2: [480, 630], endA: 'clip', endB: 'clip' });
     var vL = [650 - 95, 560], vR = [650 + 95, 560];
-    if (k === 'vm') { EQ.wire(svg, vm.VmA, [760, 450], 'red', { c1: [880, 330], c2: [800, 450], endB: 'clip' }); EQ.wire(svg, vm.COM, [830, 470], 'black', { c1: [870, 400], c2: [860, 470], endB: 'clip' }); EQ.ring(svg, vm.VmA, 18); EQ.ring(svg, vm.COM, 18); EQ.ring(svg, vm.dial, 50); }
-    if (showV && k !== 'vm') {
+    if (looseV) { EQ.wire(svg, vm.VmA, [760, 450], 'red', { c1: [880, 330], c2: [800, 450], endB: 'clip' }); EQ.wire(svg, vm.COM, [830, 470], 'black', { c1: [870, 400], c2: [860, 470], endB: 'clip' }); EQ.ring(svg, vm.VmA, 18); EQ.ring(svg, vm.COM, 18); EQ.ring(svg, vm.dial, 50); }
+    else if (hasVm) {
       EQ.wire(svg, vm.VmA, vL, 'red', { c1: [880, 400], c2: [560, 450], endB: 'clip' });
       EQ.wire(svg, vm.COM, vR, 'black', { c1: [850, 420], c2: [745, 470], endB: 'clip' });
     }
-    if (k === 'clip') { EQ.ring(svg, vL, 22); EQ.ring(svg, vR, 22); }
-    if (k === 'chain') { EQ.ring(svg, [330, 555], 70); EQ.ring(svg, [650, 560], 90); if (!two) EQ.box(svg, 10 + 150 * .8, 10 + 26 * .8, 96, 59, '#1d9bf0'); }
-    if (on) { EQ.box(svg, 10 + 18 * .8, 10 + 26 * .8, 105, 59); if (!two) EQ.box(svg, 10 + 150 * .8, 10 + 26 * .8, 96, 59, '#1d9bf0'); }
+    if (k === 'swap') EQ.ring(svg, [460, 600], 50);
+    if (k === 'clip' || k === 'v_clip') { EQ.ring(svg, vL, 22); EQ.ring(svg, vR, 22); }
+    if (k === 'chain' || k === 'a_chain') { EQ.ring(svg, [330, 555], 70); EQ.ring(svg, [650, 560], 90); EQ.box(svg, 380 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62); }
+    if (on) EQ.box(svg, 10 + 18 * .8, 10 + 26 * .8, 105, 59);
+    if (k === 'a_on') EQ.box(svg, 380 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62);
+    if (k === 'v_on') EQ.box(svg, 690 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62, '#1d9bf0');
   }
 
   var P1 = [
@@ -517,18 +527,21 @@
     { k: 'on', t: 'Power ON, pick a voltage, read three numbers', h: '<ol><li>Power <strong>ON</strong>. Turn the bottom <strong>VOLTAGE</strong> knobs to any value between <strong>1.25 V and 5 V</strong>.</li><li>Record:<br>• <strong>V<sub>PS</sub></strong> = the supply\'s VOLT display<br>• <strong>V<sub>R</sub></strong> = the voltmeter<br>• <strong>Current</strong> = the ammeter</li></ol><p class="hint">V<sub>R</sub> is smaller than V<sub>PS</sub>. The unknown resistor uses the rest of the voltage.</p>' },
     { k: 'repeat', t: 'Change the voltage and repeat', h: '<p>Turn the VOLTAGE knobs to a new value and record all three numbers again. Spread your values between 1.25 V and 5 V until your table is full.</p><p class="warn">Never turn a meter\'s dial while the power is on.</p><p class="hint">Done? Power OFF, then see <strong>When you\'re done</strong>.</p>' }
   ];
+  var CHK_A = ['Power supply is <strong>OFF</strong>', 'Meter dial on <strong>10A</strong>, red lead in <strong>10ADC</strong>, black in <strong>COM</strong>', 'One loop: + → unknown → <strong>ammeter</strong> → 10 Ω → −', 'Nothing is on the green GND post'];
+  var CHK_V = ['Power supply is <strong>OFF</strong>', 'The gap where the ammeter was is closed with a plain wire', 'Meter dial on <strong>DCV 20</strong>', 'Red lead <strong>moved to VΩmA</strong> (not 10ADC!), black in <strong>COM</strong>', 'The meter clips touch <strong>only</strong> the two ends of the 10 Ω resistor'];
   var P2one = [
-    { k: 'chain', t: 'Build the loop (power OFF)', h: '<p>Take out the Part 1 resistor and the meter. Make one loop with a plain wire (yellow) between the two resistors:</p><p class="loop">+ post → <strong>unknown resistor</strong> → wire → <strong>10 Ω resistor</strong> → − post</p><p class="hint">With one meter, the <strong>current</strong> comes from the power supply\'s <strong>AMP</strong> display (blue ring).</p>' },
-    { k: 'vm', t: 'Switch your meter to a voltmeter', h: '<ol><li>Meter out of the circuit. Turn its dial to <strong>20</strong> in the <strong>DCV</strong> section (left side).</li><li><strong>Move the red lead</strong> from 10ADC to <strong>VΩmA</strong> (middle jack). This is the step people forget.</li><li>Black lead stays in <strong>COM</strong>.</li></ol>' },
-    { k: 'clip', t: 'Clip the voltmeter across the 10 Ω resistor', h: '<p>Clip one voltmeter lead on <strong>each side</strong> of the 10 Ω resistor: red on the side toward the + post, black on the side toward the − post. Don\'t unclip anything else. The voltmeter sits <strong>across</strong> the resistor (in parallel).</p>' },
-    { k: 'check', t: 'Partner check (power still OFF)', h: '<div class="pchk"></div>' },
-    { k: 'on', t: 'Power ON, pick a voltage, read three numbers', h: '<ol><li>Power <strong>ON</strong>. Turn the bottom <strong>VOLTAGE</strong> knobs to any value between <strong>1.25 V and 5 V</strong>.</li><li>Record:<br>• <strong>V<sub>PS</sub></strong> = the supply\'s VOLT display<br>• <strong>V<sub>R</sub></strong> = your voltmeter<br>• <strong>Current</strong> = the supply\'s <strong>AMP</strong> display</li></ol><p class="hint">V<sub>R</sub> is smaller than V<sub>PS</sub>. The unknown resistor uses the rest of the voltage.</p>' },
-    { k: 'repeat', t: 'Change the voltage and repeat', h: '<p>Turn the VOLTAGE knobs to a new value and record all three numbers again. Spread your values between 1.25 V and 5 V until your table is full.</p><p class="warn">Never turn the meter\'s dial while the power is on.</p><p class="hint">Done? Power OFF, then see <strong>When you\'re done</strong>.</p>' }
+    { k: 'a_chain', t: 'Round 1 (current): build the loop with the ammeter in it', h: '<p>With one meter, you\'ll do Part 2 in <strong>two rounds</strong>: first measure every <strong>current</strong>, then switch the meter and measure every <strong>voltage</strong>.</p><p>Power OFF. Take out the Part 1 resistor. Break the loop open and put the meter in the gap, in this order:</p><p class="loop">+ post → <strong>unknown resistor</strong> → <strong>ammeter</strong> → <strong>10 Ω resistor</strong> → − post</p><p class="hint">Keep the meter set up exactly as in Part 1: 10A, red lead in 10ADC.</p>' },
+    { k: 'a_check', t: 'Partner check (power still OFF)', h: '<div class="pchk"></div>', chk: CHK_A },
+    { k: 'a_on', t: 'Round 1: record V<sub>PS</sub> and current for every row', h: '<ol><li>Power <strong>ON</strong>. Turn the bottom <strong>VOLTAGE</strong> knobs to a value between <strong>1.25 V and 5 V</strong>.</li><li>Record <strong>V<sub>PS</sub></strong> (the supply\'s VOLT display) and the <strong>current</strong> (the ammeter). Leave the V<sub>R</sub> column blank for now.</li><li>Pick a new voltage and repeat until every row has V<sub>PS</sub> and current.</li><li>Power <strong>OFF</strong>.</li></ol><p class="hint">Pick voltages that are easy to land on again, like 1.50, 2.50, 3.50, 4.50. You\'ll need them in Round 2.</p>' },
+    { k: 'swap', t: 'Switch the meter to a voltmeter', h: '<ol><li>Power OFF. Unclip the meter and <strong>close the gap with a plain wire</strong> (yellow). The loop must still be complete without the meter.</li><li>Turn the dial to <strong>20</strong> in the <strong>DCV</strong> section (left side).</li><li><strong>Move the red lead</strong> from 10ADC to <strong>V\u03a9mA</strong> (middle jack). This is the step people forget.</li><li>Black lead stays in <strong>COM</strong>.</li></ol>' },
+    { k: 'v_clip', t: 'Clip the voltmeter across the 10 \u03a9 resistor', h: '<p>Clip one lead on <strong>each side</strong> of the 10 Ω resistor: red on the side toward the + post, black on the side toward the − post. Don\'t unclip anything else. The voltmeter sits <strong>across</strong> the resistor (in parallel).</p>' },
+    { k: 'v_check', t: 'Partner check (power still OFF)', h: '<div class="pchk"></div>', chk: CHK_V },
+    { k: 'v_on', t: 'Round 2: record V<sub>R</sub> for every row', h: '<ol><li>Power <strong>ON</strong>. Turn the VOLTAGE knobs until VOLT matches the <strong>first V<sub>PS</sub></strong> in your table, as close as you can.</li><li>Record <strong>V<sub>R</sub></strong> (the voltmeter) in that row.</li><li>Repeat for each row, then power OFF.</li></ol><p class="hint">Can\'t land exactly on your old V<sub>PS</sub>? Get within about 0.02 V. V<sub>R</sub> is smaller than V<sub>PS</sub> because the unknown resistor uses the rest. Done? See <strong>When you\'re done</strong>.</p>' }
   ];
   var CHECKS = {
     p1: ['Power supply is <strong>OFF</strong>', 'Meter dial is on <strong>10A</strong>', 'Red lead is in <strong>10ADC</strong>, black in <strong>COM</strong>', 'One loop: + → meter → resistor → −', 'Nothing is on the green GND post'],
     two: ['Power supply is <strong>OFF</strong>', 'Ammeter: dial <strong>10A</strong>, red lead in <strong>10ADC</strong>', 'Voltmeter: dial <strong>DCV 20</strong>, red lead in <strong>VΩmA</strong>', 'The ammeter is <strong>in</strong> the loop', 'The voltmeter clips touch <strong>only</strong> the two ends of the 10 Ω resistor'],
-    one: ['Power supply is <strong>OFF</strong>', 'Meter dial on <strong>DCV 20</strong>', 'Red lead in <strong>VΩmA</strong> (not 10ADC!), black in <strong>COM</strong>', 'One loop: + → unknown → wire → 10 Ω → −', 'The meter clips touch <strong>only</strong> the two ends of the 10 Ω resistor']
+    one: CHK_V
   };
   function checklist(el, items) {
     el.innerHTML = items.map(function (t) { return '<button class="check-row"><span class="box"></span><span>' + t + '</span></button>'; }).join('') + '<p class="hint pready">Tap each one as your partner confirms it.</p>';
@@ -542,9 +555,9 @@
     var i = 0, svg = document.getElementById(pre + 'Svg');
     function draw() {
       var s = list[i]; clear(svg); scene(svg, s.k);
-      document.getElementById(pre + 'Title').textContent = 'Step ' + (i + 1) + ' of ' + list.length + ': ' + s.t;
+      document.getElementById(pre + 'Title').innerHTML = 'Step ' + (i + 1) + ' of ' + list.length + ': ' + s.t;
       var tx = document.getElementById(pre + 'Text'); tx.innerHTML = s.h;
-      var pc = tx.querySelector('.pchk'); if (pc) checklist(pc, chk);
+      var pc = tx.querySelector('.pchk'); if (pc) checklist(pc, s.chk || chk);
       document.getElementById(pre + 'Dots').innerHTML = list.map(function (x, j) { return '<span class="' + (j === i ? 'on' : (j < i ? 'past' : '')) + '"></span>'; }).join('');
       document.getElementById(pre + 'Back').style.visibility = i === 0 ? 'hidden' : 'visible';
       var nx = document.getElementById(pre + 'Next'); nx.disabled = i === list.length - 1; nx.textContent = i === list.length - 1 ? 'Last step' : 'Next step ▶';
@@ -562,7 +575,7 @@
     meters = m;
     if (save) try { localStorage.setItem('lp-dmm-count', m); } catch (e) {}
     document.querySelectorAll('#meterPick .big-btn').forEach(function (b) { b.classList.toggle('selected', b.getAttribute('data-m') === m); });
-    document.getElementById('meterHint').innerHTML = m === '2' ? '<strong>Two meters:</strong> in Part 2, one measures current and one measures voltage.' : '<strong>One meter:</strong> in Part 2, it measures voltage and the power supply\'s AMP display gives the current.';
+    document.getElementById('meterHint').innerHTML = m === '2' ? '<strong>Two meters:</strong> in Part 2, one measures current and one measures voltage.' : '<strong>One meter:</strong> in Part 2 you measure all the currents first, then switch the meter and measure all the voltages.';
     document.getElementById('p2Route').textContent = m === '2' ? 'Two-meter route' : 'One-meter route';
     var two = m === '2';
     if (!p2) p2 = viewer('p2', two ? P2two : P2one, function (svg, k) { p2Scene(svg, k, meters === '2'); }, two ? CHECKS.two : CHECKS.one);
@@ -632,20 +645,20 @@
     list.forEach(function (s, j) {
       var d = document.createElement('div'); d.className = 'tv-step';
       d.innerHTML = '<h4>Step ' + (j + 1) + ': ' + s.t + '</h4>'; var sv = E('svg', { viewBox: '0 0 900 ' + (panelId === 'p2' ? 680 : 640) }, d); scene(sv, s.k);
-      var t = document.createElement('div'); t.className = 'steptext'; t.innerHTML = s.h; d.appendChild(t); var pc = t.querySelector('.pchk'); if (pc) checklist(pc, chk);
+      var t = document.createElement('div'); t.className = 'steptext'; t.innerHTML = s.h; d.appendChild(t); var pc = t.querySelector('.pchk'); if (pc) checklist(pc, s.chk || chk);
       box.appendChild(d);
     });
   }
   ['p1', 'p2'].forEach(function (p) { var c = document.querySelector('#' + p + ' .card'); Array.prototype.slice.call(c.children).forEach(function (ch) { if (!ch.classList.contains('pill')) ch.style.display = 'none'; }); });
   allSteps('p1', 'All Part 1 steps', P1, p1Scene, CHECKS.p1);
   allSteps('p2', 'Two-meter route', P2two, function (s, k) { p2Scene(s, k, true); }, CHECKS.two);
-  allSteps('p2', 'One-meter route (current from the supply\'s AMP display)', P2one, function (s, k) { p2Scene(s, k, false); }, CHECKS.one);
+  allSteps('p2', 'One-meter route (two rounds: currents, then voltages)', P2one, function (s, k) { p2Scene(s, k, false); }, CHECKS.one);
   var tk = document.getElementById('teacherKey'); tk.style.display = 'block';
   tk.innerHTML = '<h2>For Mr. Lucki: expected results</h2><ul>' +
     '<li><strong>Part 1 (3.00 V):</strong> I ≈ 3 V ÷ R (10 Ω → 0.30 A, 20 Ω → 0.15 A, 30 Ω → 0.10 A). An inverse relationship: double R, half the current. Q2 (78 Ω): about 0.038 A.</li>' +
     '<li><strong>Current limit:</strong> set it above 3 V ÷ (smallest Part 1 resistor), or the supply goes into constant-current mode and VOLT drops below 3.00. The "Stuck?" section tells students to record the actual voltage if that happens.</li>' +
     '<li><strong>Part 2:</strong> I vs. V<sub>R</sub> is linear through the origin with slope ≈ 1 ÷ 10 Ω = 0.10 A/V. Model: I = (0.10 A/V)·V<sub>R</sub>. Q5 (144 V): about 14.4 A. Challenge: double R and double V → same current.</li>' +
-    '<li><strong>One-meter groups</strong> read Part 2 current from the supply\'s AMP display, so they never need to move the meter between ammeter and voltmeter.</li>' +
+    '<li><strong>One-meter groups</strong> do Part 2 in two rounds: ammeter in the loop for every V<sub>PS</sub>, then close the gap with a wire, switch to voltmeter (red lead to VΩmA), and repeat the same V<sub>PS</sub> values for V<sub>R</sub>.</li>' +
     '<li>Drawn example readings (0.30 A at 10 Ω; 4.00 V / 2.50 V / 0.25 A in Part 2) are illustrations only.</li></ul>';
   window.scrollTo(0, 0);
 })();
