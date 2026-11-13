@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 5: Conservation of Momentum</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml5-conservation.html">regular lesson link</a>. · <a href="ml5-conservation-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 5</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Conservation of Momentum</h1>
+      <p class="muted">About 13 minutes · Due before class Thursday 11/19</p>
+      <p>In Lab 4.1 the total momentum of the two carts barely changed, whether they bounced, stuck, or exploded apart. Tonight you'll see <em>why</em>, and learn a 5-step method that solves almost every collision and explosion problem.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Why -->
+  <section class="step" data-title="Why it's conserved">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Why the total doesn't change</h2>
+      <p>While the carts touch, red pushes on blue and blue pushes back on red.</p>
+      <svg viewBox="0 0 640 170" aria-label="Red and blue carts touching. Blue pushes red to the left with force F, red pushes blue to the right with an equal force F.">
+        <line x1="20" y1="140" x2="620" y2="140" style="stroke:var(--track)" stroke-width="4"/>
+        <rect x="180" y="92" width="130" height="44" rx="8" style="fill:var(--cartB)"/>
+        <circle cx="210" cy="140" r="9" style="fill:var(--ink)"/><circle cx="280" cy="140" r="9" style="fill:var(--ink)"/>
+        <rect x="312" y="92" width="130" height="44" rx="8" style="fill:var(--cartA)"/>
+        <circle cx="342" cy="140" r="9" style="fill:var(--ink)"/><circle cx="412" cy="140" r="9" style="fill:var(--ink)"/>
+        <line x1="300" y1="70" x2="190" y2="70" style="stroke:var(--cartB)" stroke-width="5"/><path d="M190,60 L170,70 L190,80 Z" style="fill:var(--cartB)"/>
+        <line x1="322" y1="70" x2="432" y2="70" style="stroke:var(--cartA)" stroke-width="5"/><path d="M432,60 L452,70 L432,80 Z" style="fill:var(--cartA)"/>
+        <text x="235" y="52" text-anchor="middle" font-size="18" font-weight="700">F on red</text>
+        <text x="387" y="52" text-anchor="middle" font-size="18" font-weight="700">F on blue</text>
+        <text x="245" y="120" text-anchor="middle" font-size="17" font-weight="700" style="fill:#fff">red</text>
+        <text x="377" y="120" text-anchor="middle" font-size="17" font-weight="700" style="fill:#fff">blue</text>
+      </svg>
+      <div id="whySteps">
+        <div class="reveal step-line"><strong>1. Third law:</strong> the two forces are equal in size and opposite in direction.</div>
+        <div class="reveal step-line"><strong>2. Same time:</strong> they touch for the same Δt (red can't touch blue without blue touching red).</div>
+        <div class="reveal step-line"><strong>3. Equal and opposite impulses:</strong> FΔt is the same size for each, in opposite directions.</div>
+        <div class="reveal step-line"><strong>4. So Δp<sub>red</sub> = −Δp<sub>blue</sub>.</strong> Whatever momentum red loses, blue gains. The <strong>total</strong> doesn't change.</div>
+      </div>
+      <button class="ghost" id="whyNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box A:</strong> Newton's 3rd law gives <strong>equal and opposite forces</strong> for the <strong>same time</strong>, so the impulses are equal and opposite. Δp<sub>red</sub> = −Δp<sub>blue</sub>, and the <strong>total momentum stays the same</strong>.</div>
+    </div>
+  </section>
+
+  <!-- 2 Sim -->
+  <section class="step" data-title="Before and after">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Total before = total after</h2>
+      <p>Pick a type of interaction and move the sliders. Watch the momentum bars.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="ghost" data-mode="stick" style="flex:1">Stick</button>
+        <button class="ghost" data-mode="bounce" style="flex:1">Bounce</button>
+        <button class="ghost" data-mode="explode" style="flex:1">Explode</button>
+      </div>
+      <svg id="simSvg" viewBox="0 0 640 300" aria-label="Momentum bars for red, blue, and total, before and after"></svg>
+      <div class="slider-row"><label for="sMr">Red mass: <strong id="vMr"></strong></label><input type="range" id="sMr" min="0.5" max="2" step="0.25" value="1"></div>
+      <div class="slider-row"><label for="sMb">Blue mass: <strong id="vMb"></strong></label><input type="range" id="sMb" min="0.5" max="2" step="0.25" value="1"></div>
+      <div class="slider-row"><label for="sV" id="sVLab">Red's speed before: <strong id="vV"></strong></label><input type="range" id="sV" min="0.5" max="2" step="0.25" value="1"></div>
+      <p class="hint" id="simNote" style="text-align:center"></p>
+      <p><strong>Quick check:</strong> Which bar is always the same before and after?</p>
+      <button class="big-btn" data-quick="red">Red's momentum</button>
+      <button class="big-btn" data-quick="blue">Blue's momentum</button>
+      <button class="big-btn" data-quick="total">The total</button>
+      <div class="feedback" id="quickFb"></div>
+      <div class="notes-box"><strong>Box B:</strong> <strong>Σp<sub>before</sub> = Σp<sub>after</sub></strong> (Σ means "add them all up"). This holds for any <strong>isolated system</strong>: one with no net outside force. Stick = <strong>collision</strong> (inelastic). Bounce = <strong>collision</strong> (elastic). Start together, fly apart = <strong>explosion</strong>.</div>
+    </div>
+  </section>
+
+  <!-- 3 Five steps -->
+  <section class="step" data-title="The 5-step method">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>The 5-step method</h2>
+      <p>This is the method from class. Step 2 alone earns a point on AP free-response questions.</p>
+      <div id="fiveSteps">
+        <div class="reveal step-line"><strong>Step 1: Draw a picture.</strong> Before and after, with masses, velocities, and arrows. Pick which way is +.</div>
+        <div class="reveal step-line"><strong>Step 2: Write conservation of momentum.</strong> Σp<sub>before</sub> = Σp<sub>after</sub></div>
+        <div class="reveal step-line"><strong>Step 3: List the objects.</strong> p<sub>A</sub> + p<sub>B</sub> = p<sub>A</sub>′ + p<sub>B</sub>′. If they stick, the "after" side is one object: (m<sub>A</sub> + m<sub>B</sub>).</div>
+        <div class="reveal step-line"><strong>Step 4: Change p into mv.</strong> m<sub>A</sub>v<sub>A</sub> + m<sub>B</sub>v<sub>B</sub> = m<sub>A</sub>v<sub>A</sub>′ + m<sub>B</sub>v<sub>B</sub>′</div>
+        <div class="reveal step-line"><strong>Step 5: Plug in and solve.</strong> Leftward velocities are negative. Something at rest has v = 0.</div>
+      </div>
+      <button class="ghost" id="fiveNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box C:</strong> 1. Draw before/after. 2. Σp<sub>before</sub> = Σp<sub>after</sub>. 3. List the objects. 4. Change p to mv. 5. Plug in (with signs) and solve.</div>
+    </div>
+  </section>
+
+  <!-- 4 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example: the tackle</h2>
+      <p>Adrian (80 kg) runs at +5.5 m/s and tackles an 88 kg running back moving at −3.2 m/s. They hold on together. How fast do they move, and which way?</p>
+      <svg viewBox="0 0 640 210" aria-label="Before: Adrian moving right at 5.5 meters per second, running back moving left at 3.2. After: the two together, velocity unknown.">
+        <text x="20" y="28" font-size="17" font-weight="800">Before</text>
+        <circle cx="150" cy="70" r="30" style="fill:var(--cartA)"/><text x="150" y="76" text-anchor="middle" font-size="16" font-weight="700" style="fill:#fff">80 kg</text>
+        <line x1="185" y1="70" x2="255" y2="70" style="stroke:var(--ink)" stroke-width="4"/><path d="M255,61 L273,70 L255,79 Z" style="fill:var(--ink)"/>
+        <text x="228" y="52" text-anchor="middle" font-size="16">+5.5 m/s</text>
+        <circle cx="470" cy="70" r="32" style="fill:var(--cartB)"/><text x="470" y="76" text-anchor="middle" font-size="16" font-weight="700" style="fill:#fff">88 kg</text>
+        <line x1="433" y1="70" x2="383" y2="70" style="stroke:var(--ink)" stroke-width="4"/><path d="M383,61 L365,70 L383,79 Z" style="fill:var(--ink)"/>
+        <text x="405" y="52" text-anchor="middle" font-size="16">−3.2 m/s</text>
+        <line x1="20" y1="112" x2="620" y2="112" style="stroke:var(--line)" stroke-width="2" stroke-dasharray="6 6"/>
+        <text x="20" y="140" font-size="17" font-weight="800">After</text>
+        <circle cx="290" cy="170" r="30" style="fill:var(--cartA)"/><circle cx="345" cy="170" r="32" style="fill:var(--cartB)"/>
+        <text x="245" y="176" text-anchor="end" font-size="18" font-weight="700">together: 168 kg</text>
+        <text x="440" y="176" font-size="18" font-weight="700">v′ = ?</text>
+      </svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Steps 1–2:</strong> Picture above (right is +). Σp<sub>before</sub> = Σp<sub>after</sub></div>
+        <div class="reveal step-line"><strong>Step 3:</strong> p<sub>Adrian</sub> + p<sub>RB</sub> = p<sub>together</sub></div>
+        <div class="reveal step-line"><strong>Step 4:</strong> (80)(5.5) + (88)(−3.2) = (80 + 88)v′</div>
+        <div class="reveal step-line"><strong>Step 5:</strong> 440 − 281.6 = 168v′, so 158.4 = 168v′ and <strong>v′ ≈ +0.94 m/s</strong>.</div>
+        <div class="reveal step-line"><strong>Which way?</strong> The answer is +, so they move in <strong>Adrian's direction</strong>. He had more momentum (440 vs. 281.6 kg·m/s).</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 5 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3 · Stick</h2>
+      <p>A 2.0 kg cart moving at +3.0 m/s hits a 1.0 kg cart at rest. They stick together. What is their velocity?</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q1" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q1Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q1" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 6 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3 · Explode</h2>
+      <p>Two skaters stand still, facing each other: a 60 kg skater and a 40 kg skater. They push apart, and the 60 kg skater moves at −2.0 m/s. What is the 40 kg skater's velocity? Include the sign.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3 · Bounce</h2>
+      <p>A 0.50 kg cart moving at +4.0 m/s hits a 1.5 kg cart at rest. The small cart bounces <strong>back</strong> at −2.0 m/s. What is the big cart's velocity?</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q3" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q3Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q3" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–E on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about anything?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., when to add the masses together"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 5: Conservation of Momentum</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Stick together</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Push apart (explosion)</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Bounce back</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–E</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Coming up</h2>
+      <p style="margin:0">Quiz 4.1 is at the start of class Thursday. This lesson sets you up for <strong>Mastering HW 4.2</strong> (due Tue 12/1): the cannon on the ship (6.36), the sled (6.37), the coal car (6.38), and the "isolated system" question (Conceptual 6.17).</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML5';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Momentum bar sim ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  var simMode = 'stick';
+  var NOTES = {
+    stick: 'They stick and move together. Red loses exactly the momentum blue gains.',
+    bounce: 'A perfectly bouncy collision. Red can even end up moving backward, but the total stays put.',
+    explode: 'They start together at rest (total = 0), then fly apart with equal and opposite momentum.'
+  };
+  function fmt(x) { var r = Math.round(x * 100) / 100; return (r < 0 ? '−' : (r > 0 ? '+' : '')) + Math.abs(r).toFixed(2); }
+  function drawSim() {
+    var mr = +document.getElementById('sMr').value, mb = +document.getElementById('sMb').value, v = +document.getElementById('sV').value;
+    document.getElementById('vMr').textContent = mr.toFixed(2) + ' kg';
+    document.getElementById('vMb').textContent = mb.toFixed(2) + ' kg';
+    document.getElementById('vV').textContent = v.toFixed(2) + ' m/s';
+    document.getElementById('sVLab').firstChild.textContent = simMode === 'explode' ? "Red's speed after (to the left): " : "Red's speed before: ";
+    var before, after;
+    if (simMode === 'stick') { var vf = mr * v / (mr + mb); before = [mr * v, 0]; after = [mr * vf, mb * vf]; }
+    else if (simMode === 'bounce') { var vr = (mr - mb) / (mr + mb) * v, vb = 2 * mr / (mr + mb) * v; before = [mr * v, 0]; after = [mr * vr, mb * vb]; }
+    else { before = [0, 0]; after = [-mr * v, mr * v]; }
+    var svg = document.getElementById('simSvg'); while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var big = Math.max(0.5, Math.abs(before[0]), Math.abs(after[0]), Math.abs(after[1]), Math.abs(before[0] + before[1]));
+    var Y0 = 160, S = 105 / big, colW = 64;
+    el('line', { x1: 20, y1: Y0, x2: 620, y2: Y0, style: 'stroke:var(--ink)', 'stroke-width': 2 }, svg);
+    el('line', { x1: 320, y1: 20, x2: 320, y2: 290, style: 'stroke:var(--line)', 'stroke-width': 2, 'stroke-dasharray': '6 6' }, svg);
+    el('text', { x: 165, y: 22, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 800 }, svg, 'Before');
+    el('text', { x: 475, y: 22, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 800 }, svg, 'After');
+    function group(x0, vals) {
+      var items = [[vals[0], 'var(--cartB)', 'red'], [vals[1], 'var(--cartA)', 'blue'], [vals[0] + vals[1], 'var(--note)', 'total']];
+      items.forEach(function (it, i) {
+        var x = x0 + i * (colW + 18), h = it[0] * S;
+        el('rect', { x: x, y: h >= 0 ? Y0 - h : Y0, width: colW, height: Math.max(Math.abs(h), 1.5), rx: 4, style: 'fill:' + it[1] }, svg);
+        el('text', { x: x + colW / 2, y: h >= 0 ? Y0 - h - 8 : Y0 - h + 20, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700 }, svg, fmt(it[0]));
+        el('text', { x: x + colW / 2, y: 284, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700 }, svg, it[2]);
+      });
+    }
+    group(50, before); group(360, after);
+    document.getElementById('simNote').textContent = NOTES[simMode] + ' (Bars in kg·m/s; right is +.)';
+  }
+  document.querySelectorAll('[data-mode]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      simMode = b.getAttribute('data-mode');
+      document.querySelectorAll('[data-mode]').forEach(function (x) { var on = x === b; x.style.borderColor = on ? 'var(--accent)' : ''; x.style.background = on ? 'var(--accent-soft)' : ''; });
+      drawSim();
+    });
+  });
+  ['sMr', 'sMb', 'sV'].forEach(function (id) { document.getElementById(id).addEventListener('input', drawSim); });
+  document.querySelector('[data-mode="stick"]').click();
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { answer: 2.0, tol: 0.03, label: '1. Stick together',
+          good: '<strong>Correct: +2.0 m/s.</strong> (2.0)(3.0) + (1.0)(0) = (2.0 + 1.0)v′, so 6.0 = 3.0v′ and v′ = 2.0 m/s.',
+          special: [{ v: 3.0, msg: '<strong>They stick, so they move as one 3.0 kg object.</strong> Divide by the total mass.' },
+                    { v: 6.0, msg: '<strong>That\'s the total momentum.</strong> Now divide by the total mass to get velocity.' },
+                    { v: 1.5, msg: '<strong>Check your masses.</strong> The total is 2.0 + 1.0 = 3.0 kg, and p<sub>before</sub> = (2.0)(3.0).' }],
+          signMsg: '<strong>Check the sign.</strong> Only one cart was moving, toward +, so the pair keeps moving toward +.',
+          wrong: '<strong>Not yet.</strong> Use m<sub>A</sub>v<sub>A</sub> + m<sub>B</sub>v<sub>B</sub> = (m<sub>A</sub> + m<sub>B</sub>)v′.' },
+    q2: { answer: 3.0, tol: 0.03, label: '2. Push apart',
+          good: '<strong>Correct: +3.0 m/s.</strong> Total before = 0. So 0 = (60)(−2.0) + (40)v′, and v′ = 120 / 40 = +3.0 m/s. The lighter skater moves faster.',
+          special: [{ v: 2.0, msg: '<strong>Equal momentum, not equal speed.</strong> The 40 kg skater is lighter, so it moves faster.' },
+                    { v: 1.33, msg: '<strong>Flip the fraction.</strong> (60)(2.0) = (40)v′, so v′ = 120 / 40.' },
+                    { v: 1.2, msg: '<strong>Total mass isn\'t used here.</strong> They fly apart, so each skater gets its own term: 0 = (60)(−2.0) + (40)v′.' }],
+          signMsg: '<strong>Right size, wrong sign.</strong> The total starts at 0. If one skater goes −, the other must go +.',
+          wrong: '<strong>Not yet.</strong> Before: both at rest, so Σp = 0. After: (60)(−2.0) + (40)v′ = 0.' },
+    q3: { answer: 2.0, tol: 0.03, label: '3. Bounce back',
+          good: '<strong>Correct: +2.0 m/s.</strong> Before: (0.50)(4.0) = 2.0. After: (0.50)(−2.0) + (1.5)v′ = 2.0, so −1.0 + 1.5v′ = 2.0, 1.5v′ = 3.0, v′ = 2.0 m/s.',
+          special: [{ v: 0.67, msg: '<strong>Watch the sign on the bounce.</strong> The small cart goes backward, so its momentum after is (0.50)(<strong>−</strong>2.0) = −1.0.' },
+                    { v: 3.0, msg: '<strong>That\'s blue\'s momentum.</strong> Divide by its mass, 1.5 kg.' },
+                    { v: 1.0, msg: '<strong>Did you add the masses?</strong> They bounce apart, so each cart has its own term after.' }],
+          signMsg: '<strong>Check the sign.</strong> The big cart gets pushed forward, toward +.',
+          wrong: '<strong>Not yet.</strong> (0.50)(4.0) + 0 = (0.50)(−2.0) + (1.5)v′. Solve for v′.' }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-title') === 'Before and after') return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Quick check (which bar stays the same) ----------
+  var QUICK = { total: [true, '<strong>Right.</strong> Red and blue each change, but the total is the same before and after, in every mode. That\'s conservation of momentum.'],
+                red: [false, '<strong>Not quite.</strong> Try "Bounce": red\'s bar changes a lot, and can even flip negative.'],
+                blue: [false, '<strong>Not quite.</strong> Blue starts at 0 and ends up moving. Look at the orange bars instead.'] };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (state.quick) return;
+      var r = QUICK[b.getAttribute('data-quick')];
+      document.querySelectorAll('[data-quick]').forEach(function (x) { x.classList.remove('wrong'); });
+      b.classList.add(r[0] ? 'right' : 'wrong'); fb('quickFb', r[0], r[1]);
+      if (r[0]) { state.quick = true; upd(); }
+    });
+  });
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('whySteps', 'whyNext'); stepper('fiveSteps', 'fiveNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(Math.abs(val) - sp.v) <= Math.max(cfg.tol, 0.02)) msg = sp.msg; });
+      if (Math.abs(val + cfg.answer) <= cfg.tol) msg = cfg.signMsg;
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var e = document.getElementById(id), s = state[q];
+    if (s.first === true) { e.textContent = '✓ first try'; e.className = 'badge g'; }
+    else if (s.right) { e.textContent = '✓ after ' + s.tries + ' tries'; e.className = 'badge y'; }
+    else { e.textContent = '✗ review in class'; e.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    ['whyNext', 'fiveNext', 'wxNext'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
+    note(document.getElementById('simNote'), '<strong>Bar sim:</strong> Stick uses v′ = m<sub>r</sub>v / (m<sub>r</sub> + m<sub>b</sub>); Bounce uses the elastic-collision results (red reverses when it\'s lighter than blue); Explode starts at rest and gives each cart equal and opposite momentum. Teacher view shows Stick with 1 kg carts. Elastic vs. inelastic (the KE check) is saved for ML7.');
+    document.querySelector('[data-quick="total"]').classList.add('right'); fb('quickFb', true, QUICK.total[1]);
+    note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Wrong-choice feedback: ' + list(['"Red": ' + plain(QUICK.red[1]), '"Blue": ' + plain(QUICK.blue[1])]));
+    note(document.getElementById('fiveNext'), '<strong>From your slides</strong> (Day 58, "Collision Problem" build). The worked example is the linebacker slide.');
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var cfg = Q[q];
+      document.getElementById(q + 'Input').value = cfg.answer.toFixed(1);
+      fb(q + 'Fb', true, cfg.good);
+      var items = (cfg.special || []).map(function (sp) { return sp.v + ': ' + plain(sp.msg); });
+      items.push('Right size, wrong sign: ' + plain(cfg.signMsg));
+      items.push('Anything else: ' + plain(cfg.wrong));
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±' + cfg.tol + '):' + list(items));
+    });
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: false, done: true, right: true, tries: 2 };
+    state.q3 = { first: false, done: true, right: true, tries: 3 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'the sign when something bounces back';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> Quiz 4.1 runs first on Thursday, so this lesson feeds the ~40 minutes of collisions after it. The most common miss on Check 3 is 0.67 (forgetting the bounce is negative); on Check 2 it\'s 2.0 (equal speeds instead of equal momentum).');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>
