@@ -631,7 +631,7 @@
   function fb(id, ok, html) { var el = document.getElementById(id); el.className = 'feedback show ' + (ok ? 'good' : 'bad'); el.innerHTML = html; }
 
   // ---------- Box A: road ----------
-  var road = document.getElementById('roadSvg'), dots = [], rVal = 1, NAMES = ['', 'low', 'medium-low', 'medium', 'medium-high', 'high'];
+  var road = document.getElementById('roadSvg'), dots = [], phase = 0, rVal = 1, NAMES = ['', 'low', 'medium-low', 'medium', 'medium-high', 'high'];
   function drawRoad() {
     clear(road); dots = [];
     var w = 110 - (rVal - 1) * 20; // road width in the middle
@@ -639,25 +639,26 @@
     E('rect', { x: 260, y: 85 - w / 2 - 6, width: 120, height: 6, fill: 'var(--accent)' }, road);
     E('rect', { x: 260, y: 85 + w / 2, width: 120, height: 6, fill: 'var(--accent)' }, road);
     E('text', { x: 320, y: 165, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 700 }, road, 'resistor = narrow part of the road');
-    for (var i = 0; i < 14; i++) dots.push({ x: i * 48, y: 85 + ((i * 37) % 60 - 30) * 0.7, el: E('circle', { r: 7, fill: '#e0b100', stroke: '#7a5b00', 'stroke-width': 1.5 }, road) });
+    for (var i = 0; i < 14; i++) { var dx = i * 48 + (phase % 48), dy = 85 + ((i * 37) % 60 - 30) * 0.7; dots.push({ x: dx, y: dy, el: E('circle', { r: 7, cx: dx, cy: dy, fill: '#e0b100', stroke: '#7a5b00', 'stroke-width': 1.5 }, road) }); }
     document.getElementById('rLabel').textContent = NAMES[rVal];
   }
   document.getElementById('rSlider').addEventListener('input', function () { rVal = +this.value; drawRoad();
     document.getElementById('roadHint').innerHTML = rVal >= 4 ? 'More resistance: the charges flow <strong>slower</strong>. Fewer pass each second, so there\'s less <strong>current</strong>.' : 'Keep going. Make the resistance high.'; });
   drawRoad();
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches, last = 0;
+  var last = 0;
   function tick(t) {
     var dt = Math.min(50, t - (last || t)); last = t;
     var w = 110 - (rVal - 1) * 20, sp = 0.09 * (w / 110) * (w / 110) + 0.006;
+    phase += sp * dt;
     dots.forEach(function (d) {
       d.x += sp * dt; if (d.x > 660) d.x -= 680;
       var half = (d.x > 260 && d.x < 380) ? w / 2 - 9 : 46, yy = 85 + Math.max(-half, Math.min(half, d.y - 85));
       d.el.setAttribute('cx', d.x); d.el.setAttribute('cy', yy);
     });
-    if (!reduce) requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
   }
   dots.forEach(function (d) { d.el.setAttribute('cx', d.x); d.el.setAttribute('cy', d.y); });
-  if (!reduce) requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
   (function () { var s = document.getElementById('resSvg'); EQ.ceramic(s, { x: 320, y: 50, s: 1.6, hi: true, lead: 120 }); })();
 
   // ---------- Box B: power supply ----------
