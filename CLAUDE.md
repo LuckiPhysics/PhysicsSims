@@ -64,6 +64,16 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
   - `<unit>-all-notes-KEY.pdf` holds all the answer keys and lives in `teaching-materials`, next to the individual keys.
   - One-page sheets go back to back, so double-sided printing puts two lessons on one sheet. If a sheet ever runs to an odd number of pages greater than 1, add a blank page after it so the next lesson starts on a new sheet.
 
+## Unit workflow (how Unit 4: Momentum was run; repeat it)
+- **Tools:** the build scripts live in the private `teaching-materials/tools/` folder (see its README): shared lesson CSS and engine, notes-PDF builder, combined-PDF script, listing-page generator, smoke test, openers deck, sub-plan template. Use them instead of rebuilding, so every unit looks and feels the same.
+- **Unit map:** a living doc with a day-by-day table (date, class activity, what's due), then a short section per mini-lesson. Keep it updated when the calendar shifts.
+- **Mini-lesson days:** a lesson can be due on a quiz day (quizzes take ~30 min of the block) or a lab day (as a pre-lab or tie-in to an earlier unit). None is due on a unit test day. Optional lessons are marked "Optional."
+- **Mastering Physics:** check each lesson against that unit's assigned Mastering problems so the lessons prepare students for the homework. Practice problems use new numbers, not Mastering's.
+- **Slides:** the teacher keeps the class Google Slides deck (with its date slides for pacing). Give a list of slides the lessons now cover, so he can fly over them in class. Openers and "Tonight" closers for each day go in a separate deck (pptx imported to Google Slides), with answers in the speaker notes, plus a list of where to place each one.
+- **In-class pages:** for practice days and sub days, add self-checking pages to the unit folder (for example `practice-impulse.html`), built on the shared engine, with a results card, a back link, and `?teacher`. List them under "In-class pages" on the unit page and on the teacher page. Pages for a sub who doesn't know physics must run themselves.
+- **Sub plans:** one printable page per day (timed plan, what goes on OnCampus, a backup if the site is down, answer key). Save in `teaching-materials`, never in this repo.
+- **Syncing:** the teacher commits and pushes with GitHub Desktop and works from more than one computer, so remind him to Fetch/Pull first. When saving into his folders, check file sizes afterward.
+
 ## Before handing off
 - Test in Playwright with an iPad device profile in both light and dark mode: walk through every step, check that there are no console errors, and check that there is no horizontal scroll.
 - Render the notes PDF and look at it, and confirm it's exactly one page.
