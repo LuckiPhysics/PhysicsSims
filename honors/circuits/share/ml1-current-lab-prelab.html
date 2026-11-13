@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 1: Current Lab Pre-Lab</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+  /* ---- Honors ML1 extras ---- */
+  .knob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .kl { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .kr { display: flex; gap: 8px; } .kr .ghost { flex: 1; padding: 0 8px; font-size: 17px; }
+  @media (max-width: 520px) { .knob-grid { grid-template-columns: 1fr; } }
+  .choice-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .choice-row .big-btn { margin: 0; text-align: center; font-weight: 700; padding: 10px 6px; }
+  svg.meter-svg { max-width: 260px; margin: 0 auto; }
+  .pulse { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Circuits</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml1-current-lab-prelab.html">regular lesson link</a>. · <a href="ml1-current-lab-prelab-notes.pdf">Notes sheet (PDF)</a> · <a href="current-lab-help.html?teacher">Lab help page</a>
+  </div>
+  <header class="top">
+    <div class="kicker">Honors Physics · Circuits · Mini-Lesson 1</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Pre-Lab: The Current Lab</h1>
+      <p class="muted">About 10 minutes · Do this before the Current Lab</p>
+      <p>In the Current Lab you'll use a power supply and a multimeter by yourselves. Tonight you'll learn what each knob and jack does, so lab time goes to collecting data.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag. Bring it to lab.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Resistance -->
+  <section class="step" data-title="Resistance">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>What is resistance?</h2>
+      <p><strong>Resistance (R)</strong> is how hard it is for charge to flow through something. It's measured in <strong>ohms (Ω)</strong>.</p>
+      <p>Think of a road: a wide road lets lots of cars through, and a narrow road slows them down.</p>
+      <svg id="roadSvg" viewBox="0 0 640 170" role="img" aria-label="A road that gets narrower as resistance increases, with dots for moving charges"></svg>
+      <div class="slider-row"><label for="rSlider"><span>Resistance</span><span id="rLabel">low</span></label>
+        <input type="range" id="rSlider" min="1" max="5" step="1" value="1" aria-label="Resistance"></div>
+      <p class="hint" id="roadHint">Drag the slider. Watch how the charges flow.</p>
+      <div class="notes-box" style="margin-bottom:0"><strong>Reading a resistor:</strong> on the white block, the resistance is the number right before the <strong>Ω</strong>. "5W" is something else (how much power it can handle).
+        <svg id="resSvg" viewBox="0 0 640 110" style="margin-top:8px" role="img" aria-label="White ceramic resistor labeled XICON 5W 10 ohm, with 10 ohm boxed"></svg></div>
+    </div>
+  </section>
+
+  <!-- 2 Power supply -->
+  <section class="step" data-title="The power supply" data-gate="ps">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>The power supply</h2>
+      <p>The power supply replaces the battery. Its VOLT display shows the voltage it's giving the circuit, and its AMP display shows the current.</p>
+      <svg id="psSvg" viewBox="0 0 440 250" role="img" aria-label="Power supply with VOLT and AMP displays, covered CURRENT knobs, and VOLTAGE knobs"></svg>
+      <p style="margin-top:12px"><strong>Your turn:</strong> set the supply to <strong>3.00 V</strong>, like Part 1 of the lab. Use only the bottom VOLTAGE knobs.</p>
+      <div class="knob-grid">
+        <div><div class="kl">Big-step knob</div><div class="kr"><button class="ghost" data-k="-0.5">↺ down</button><button class="ghost" data-k="0.5">up ↻</button></div></div>
+        <div><div class="kl">Small-step knob</div><div class="kr"><button class="ghost" data-k="-0.05">↺ down</button><button class="ghost" data-k="0.05">up ↻</button></div></div>
+      </div>
+      <button class="ghost" id="curTouch" style="width:100%;margin-top:10px">Turn a top CURRENT knob</button>
+      <div class="feedback" id="psFb"></div>
+    </div>
+  </section>
+
+  <!-- 3 Ammeter setup -->
+  <section class="step" data-title="Meter as an ammeter" data-gate="am">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Set up the multimeter to measure current</h2>
+      <p>A multimeter measuring current is called an <strong>ammeter</strong>. Set it up <em>before</em> it goes in the circuit.</p>
+      <svg id="amSvg" viewBox="0 0 240 468" class="meter-svg" role="img" aria-label="DT-830B multimeter with your dial and lead choices"></svg>
+      <p style="margin:12px 0 4px"><strong>1. Turn the dial to:</strong></p>
+      <div class="choice-row" data-choose="dial"><button class="big-btn" data-v="V20">DCV 20</button><button class="big-btn" data-v="A200m">DCA 200m</button><button class="big-btn" data-v="10A">10A</button></div>
+      <p style="margin:12px 0 4px"><strong>2. Plug the red lead into:</strong></p>
+      <div class="choice-row" data-choose="jack"><button class="big-btn" data-v="A10">10ADC</button><button class="big-btn" data-v="VmA">VΩmA</button><button class="big-btn" data-v="COM">COM</button></div>
+      <p class="hint">The black lead always goes in <strong>COM</strong>.</p>
+      <div class="feedback" id="amFb"></div>
+    </div>
+  </section>
+
+  <!-- 4 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example: build the Part 1 circuit</h2>
+      <p>The binder drawing shows one loop: <strong>+ post → ammeter → resistor → − post</strong>. Here's how that looks with the real equipment. Power stays <strong>OFF</strong> while you build.</p>
+      <svg id="wxSvg" viewBox="0 0 900 640" role="img" aria-label="Power supply, ammeter, and resistor being wired one step at a time"></svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Wire 1:</strong> red <strong>+</strong> post → the meter's red lead (in <strong>10ADC</strong>).</div>
+        <div class="reveal step-line"><strong>Wire 2:</strong> the meter's black lead (<strong>COM</strong>) → one end of the resistor.</div>
+        <div class="reveal step-line"><strong>Wire 3:</strong> other end of the resistor → black <strong>−</strong> post. Not the green GND!</div>
+        <div class="reveal step-line"><strong>Power ON:</strong> the meter reads <strong>0.30</strong>. On the 10A setting that means <strong>0.30 A</strong>. The supply's AMP display agrees, since it's the same current. Then you'd record it and power OFF.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 5 Voltmeter -->
+  <section class="step" data-title="Meter as a voltmeter">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Part 2: measuring voltage</h2>
+      <p>In Part 2 a meter measures the voltage <strong>across</strong> the 10 Ω resistor. That makes it a <strong>voltmeter</strong>.</p>
+      <svg id="vmSvg" viewBox="0 0 900 680" role="img" aria-label="Part 2 circuit: unknown resistor, ammeter, and 10 ohm resistor in one loop, with a voltmeter clipped across the 10 ohm resistor"></svg>
+      <table class="wx" style="font-size:17px;margin-top:10px">
+        <tr><th></th><th>Ammeter (current)</th><th>Voltmeter (voltage)</th></tr>
+        <tr><td><strong>Dial</strong></td><td>10A</td><td>DCV 20</td></tr>
+        <tr><td><strong>Red lead</strong></td><td>10ADC</td><td>VΩmA</td></tr>
+        <tr><td><strong>Hook-up</strong></td><td><strong>In</strong> the loop (series)</td><td><strong>Across</strong> a part (parallel)</td></tr>
+      </table>
+      <div id="vmSteps">
+        <div class="reveal step-line"><strong>Why the red lead matters:</strong> in the 10ADC jack, the meter is basically a plain wire. Clip that across a resistor and the current skips the resistor: a <strong>short circuit</strong>. So for voltage, the red lead must be in <strong>VΩmA</strong>.</div>
+        <div class="reveal step-line"><strong>Voltages in a loop add up.</strong> The supply's voltage is shared by the two resistors: V<sub>PS</sub> = V<sub>unknown</sub> + V<sub>R</sub>. If the supply reads 4.00 V and the voltmeter reads 2.50 V across the 10 Ω resistor, the unknown resistor uses 4.00 − 2.50 = <strong>1.50 V</strong>.</div>
+      </div>
+      <button class="ghost" id="vmNext" style="width:100%;margin-top:12px">Tap to show the next idea</button>
+    </div>
+  </section>
+
+  <!-- 6 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 1 of 3</h2>
+      <p>Your partner set the meter's dial to <strong>10A</strong> to measure current. Where does the <strong>red</strong> lead go?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="a10">10ADC</button>
+        <button class="big-btn" data-opt="vma">VΩmA</button>
+        <button class="big-btn" data-opt="com">COM</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 2 of 3</h2>
+      <p>How does the ammeter connect in Part 1?</p>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="series">In the loop, so all the charge has to flow through it (series)</button>
+        <button class="big-btn" data-opt="across">Clipped across the resistor (parallel)</button>
+        <button class="big-btn" data-opt="gnd">From the green GND post to the resistor</button>
+        <button class="big-btn" data-opt="any">Anywhere, as long as it touches the circuit</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 3 of 3</h2>
+      <p>Part 2: the supply's VOLT display reads <strong>4.50 V</strong>. The voltmeter across the 10 Ω resistor reads <strong>3.00 V</strong>. How many volts does the <strong>unknown</strong> resistor use?</p>
+      <div class="num-row">
+        <input class="num-input" id="q3Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">V</span>
+      </div>
+      <button class="primary" data-check="q3" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 9 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–F on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about…</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="Anything about the meter or the power supply…"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 1: Current Lab Pre-Lab</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Ammeter red lead</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Ammeter goes in series</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Voltages add in a loop</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Set up supply + meter</span><span class="badge" id="rSet"></span></div>
+      <div class="res-row"><span>Notes sheet A–F</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Still unsure: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">At the lab</h2>
+      <p style="margin:0">Open the <a href="current-lab-help.html" style="color:var(--accent);font-weight:700">Current Lab help page</a> on your iPad. It has every build step, drawn with the real equipment, plus a "Stuck?" section.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+<script>(function () {
+  var LESSON = 'H-ML1';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ================= Equipment drawings (BK Precision supply, DT-830B meter, resistors, leads) =================
+  var NS = 'http://www.w3.org/2000/svg';
+  function E(tag, a, p, txt) { var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); if (txt !== undefined) e.textContent = txt; if (p) p.appendChild(e); return e; }
+  var EQ = {};
+  // ---- Power supply: blue case, red LED readouts, CURRENT knobs (top), VOLTAGE knobs (bottom) ----
+  EQ.supply = function (svg, o) {
+    var x = o.x, y = o.y, s = o.s || 1, g = E('g', { transform: 'translate(' + x + ',' + y + ') scale(' + s + ')' }, svg);
+    E('rect', { x: 0, y: 0, width: 440, height: 250, rx: 12, fill: '#3d6fbf', stroke: '#22457e', 'stroke-width': 3 }, g);
+    E('rect', { x: 6, y: 6, width: 428, height: 10, rx: 5, fill: '#5d8bd6' }, g);
+    // display window
+    E('rect', { x: 18, y: 26, width: 252, height: 74, rx: 6, fill: '#0b0b0b', stroke: '#9fb3d6', 'stroke-width': 2 }, g);
+    var on = o.on !== false;
+    [[30, '8.88', o.v], [150, '8.88', o.a]].forEach(function (d) {
+      E('text', { x: d[0] + 108, y: 80, 'text-anchor': 'end', 'font-size': 42, 'font-weight': 800, 'font-family': 'Menlo, Consolas, monospace', style: 'fill:#3a0d0d' }, g, d[1]);
+      if (on) E('text', { x: d[0] + 108, y: 80, 'text-anchor': 'end', 'font-size': 42, 'font-weight': 800, 'font-family': 'Menlo, Consolas, monospace', style: 'fill:#ff3b30' }, g, d[2]);
+    });
+    E('text', { x: 84, y: 118, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, style: 'fill:#fff' }, g, 'VOLT');
+    E('text', { x: 204, y: 118, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, style: 'fill:#fff' }, g, 'AMP');
+    if (o.cc) { E('circle', { cx: 262, cy: 92, r: 5, fill: '#ff3b30' }, g); E('text', { x: 262, y: 118, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, style: 'fill:#ffd6d3' }, g, 'C.C.'); }
+    E('text', { x: 425, y: 38, 'text-anchor': 'end', 'font-size': 19, 'font-weight': 900, 'font-style': 'italic', style: 'fill:#fff' }, g, 'BK PRECISION');
+    E('text', { x: 425, y: 52, 'text-anchor': 'end', 'font-size': 9, 'font-weight': 700, style: 'fill:#dbe6fb' }, g, 'DC REGULATED POWER SUPPLY');
+    function knob(cx, cy, ang, id) {
+      var k = E('g', { id: id || null }, g);
+      E('circle', { cx: cx, cy: cy, r: 23, fill: '#f4f4f4', stroke: '#8a8f98', 'stroke-width': 2.5 }, k);
+      E('circle', { cx: cx, cy: cy, r: 16, fill: '#ffffff', stroke: '#c9ccd2', 'stroke-width': 1.5 }, k);
+      var a = (ang || 0) * Math.PI / 180;
+      E('line', { x1: cx + 8 * Math.sin(a), y1: cy - 8 * Math.cos(a), x2: cx + 19 * Math.sin(a), y2: cy - 19 * Math.cos(a), stroke: '#444', 'stroke-width': 3, 'stroke-linecap': 'round' }, k);
+      return k;
+    }
+    E('text', { x: 365, y: 76, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, style: 'fill:#fff' }, g, 'CURRENT');
+    knob(332, 104, -30); knob(398, 104, 20);
+    if (o.lock) { // teacher has set these
+      E('rect', { x: 300, y: 70, width: 130, height: 64, rx: 10, fill: 'rgba(0,0,0,.45)' }, g);
+      E('text', { x: 365, y: 100, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800, style: 'fill:#fff' }, g, 'DON’T TOUCH');
+      E('text', { x: 365, y: 120, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, style: 'fill:#fff' }, g, 'set by teacher');
+    }
+    knob(332, 176, o.k1 || 0); knob(398, 176, o.k2 || 0);
+    E('text', { x: 365, y: 216, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, style: 'fill:#fff' }, g, 'VOLTAGE');
+    if (o.hiV) E('rect', { x: 300, y: 146, width: 130, height: 78, rx: 8, fill: 'none', stroke: '#ff2d2d', 'stroke-width': 4 }, g);
+    // power switch
+    E('text', { x: 46, y: 146, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, style: 'fill:#fff' }, g, 'POWER');
+    E('rect', { x: 24, y: 154, width: 44, height: 40, rx: 4, fill: '#111' }, g);
+    E('rect', { x: 29, y: 158, width: 34, height: 32, rx: 3, fill: on ? '#39d353' : '#1f6b2c' }, g);
+    E('text', { x: 46, y: 212, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, style: 'fill:#fff' }, g, on ? 'ON' : 'OFF');
+    // output terminals
+    E('rect', { x: 96, y: 138, width: 190, height: 92, rx: 8, fill: '#d9dde4', stroke: '#8a8f98', 'stroke-width': 2 }, g);
+    E('text', { x: 191, y: 154, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, style: 'fill:#333' }, g, 'OUTPUT');
+    var T = { minus: [130, 196, '#111', '−'], gnd: [191, 196, '#1f9d3a', 'GND'], plus: [252, 196, '#d11', '+'] };
+    Object.keys(T).forEach(function (k) {
+      var t = T[k];
+      E('text', { x: t[0], y: 174, 'text-anchor': 'middle', 'font-size': k === 'gnd' ? 11 : 20, 'font-weight': 900, style: 'fill:#222' }, g, t[3]);
+      E('circle', { cx: t[0], cy: t[1], r: 15, fill: t[2], stroke: '#333', 'stroke-width': 2 }, g);
+      E('circle', { cx: t[0], cy: t[1], r: 6, fill: '#e5e5e5', stroke: '#555' }, g);
+    });
+    if (o.noGnd) { E('line', { x1: 175, y1: 180, x2: 207, y2: 212, stroke: '#ff2d2d', 'stroke-width': 5, 'stroke-linecap': 'round' }, g); E('line', { x1: 207, y1: 180, x2: 175, y2: 212, stroke: '#ff2d2d', 'stroke-width': 5, 'stroke-linecap': 'round' }, g); }
+    function P(px, py) { return [x + px * s, y + py * s]; }
+    return { plus: P(252, 196), minus: P(130, 196), gnd: P(191, 196), g: g };
+  };
+  // ---- DT-830B style meter: black body, dial with DCV / ACV / DCA / 10A / ohm sections, jacks 10ADC, VΩmA, COM ----
+  var DIAL = { 'OFF': 0, 'ACV750': 22, 'ACV200': 38, 'A200u': 56, 'A2000u': 70, 'A20m': 84, 'A200m': 98, '10A': 116, 'hFE': 134, 'diode': 150,
+               'R200': 166, 'R2000': -178, 'R20k': -162, 'R200k': -146, 'R2000k': -130, 'V200m': -112, 'V2000m': -96, 'V20': -80, 'V200': -60, 'V1000': -24 };
+  var DLAB = { 'OFF': 'OFF', 'ACV750': '750', 'ACV200': '200', 'A200u': '200μ', 'A2000u': '2000μ', 'A20m': '20m', 'A200m': '200m', '10A': '10A', 'hFE': 'hFE', 'diode': '▶|',
+               'R200': '200', 'R2000': '2000', 'R20k': '20k', 'R200k': '200k', 'R2000k': '2000k', 'V200m': '200m', 'V2000m': '2000m', 'V20': '20', 'V200': '200', 'V1000': '1000' };
+  EQ.DIAL = DIAL; EQ.DLAB = DLAB;
+  EQ.meter = function (svg, o) {
+    var x = o.x, y = o.y, s = o.s || 1, g = E('g', { transform: 'translate(' + x + ',' + y + ') scale(' + s + ')' }, svg);
+    E('rect', { x: 0, y: 0, width: 240, height: 420, rx: 24, fill: '#1d1f22', stroke: '#000', 'stroke-width': 3 }, g);
+    E('rect', { x: 18, y: 14, width: 204, height: 72, rx: 8, fill: '#2c2f33' }, g);
+    E('rect', { x: 28, y: 22, width: 184, height: 56, rx: 4, fill: '#b8c4a3', stroke: '#111', 'stroke-width': 1.5 }, g);
+    var disp = o.display === undefined ? '000' : o.display;
+    var over = disp === '1';
+    E('text', { x: over ? 50 : 204, y: 70, 'text-anchor': over ? 'start' : 'end', 'font-size': 46, 'font-weight': 800, 'font-family': 'Menlo, Consolas, monospace', style: 'fill:#151515' }, g, disp);
+    if (o.label) {
+      var lw = Math.max(100, o.label.length * 11.5 + 16);
+      E('rect', { x: 120 - lw / 2, y: -40, width: lw, height: 32, rx: 8, fill: o.labelColor || '#7a1f2e' }, g);
+      E('text', { x: 120, y: -17, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, style: 'fill:#fff' }, g, o.label);
+    }
+    var cx = 120, cy = 188, R = 84;
+    // section arcs
+    function arc(a0, a1, col) {
+      var r = 104, p0 = [cx + r * Math.sin(a0 * Math.PI / 180), cy - r * Math.cos(a0 * Math.PI / 180)], p1 = [cx + r * Math.sin(a1 * Math.PI / 180), cy - r * Math.cos(a1 * Math.PI / 180)];
+      E('path', { d: 'M' + p0[0] + ',' + p0[1] + ' A' + r + ',' + r + ' 0 0 1 ' + p1[0] + ',' + p1[1], fill: 'none', stroke: col, 'stroke-width': 3 }, g);
+    }
+    arc(-120, -16, '#3aa65a'); arc(14, 46, '#3aa65a'); arc(48, 124, '#3aa65a'); arc(158, 222, '#3aa65a');
+    E('text', { x: 30, y: 98, 'font-size': 13, 'font-weight': 800, style: 'fill:#fff' }, g, 'DCV');
+    E('text', { x: 172, y: 98, 'font-size': 13, 'font-weight': 800, style: 'fill:#fff' }, g, 'ACV');
+    E('text', { x: 206, y: 150, 'font-size': 13, 'font-weight': 800, style: 'fill:#fff' }, g, 'DCA');
+    E('text', { x: 100, y: 300, 'font-size': 15, 'font-weight': 800, style: 'fill:#fff' }, g, 'Ω');
+    Object.keys(DIAL).forEach(function (k) {
+      var a = DIAL[k] * Math.PI / 180, lx = cx + R * Math.sin(a), ly = cy - R * Math.cos(a) + 4, on = k === o.dial;
+      var col = k === 'OFF' ? '#ff5a5a' : (k === '10A' ? '#ff6b6b' : '#f2f2f2');
+      E('text', { x: lx, y: ly, 'text-anchor': 'middle', 'font-size': on ? 13 : 11, 'font-weight': on ? 900 : 600, style: 'fill:' + (on ? '#ffd23f' : col) }, g, DLAB[k]);
+    });
+    E('circle', { cx: cx, cy: cy, r: 64, fill: '#0e0f10', stroke: '#3a3d42', 'stroke-width': 2 }, g);
+    var a = (DIAL[o.dial || 'OFF']) * Math.PI / 180;
+    var kn = E('g', { transform: 'rotate(' + DIAL[o.dial || 'OFF'] + ' ' + cx + ' ' + cy + ')' }, g);
+    E('rect', { x: cx - 15, y: cy - 60, width: 30, height: 120, rx: 14, fill: '#2a2c30', stroke: '#4a4e55', 'stroke-width': 2 }, kn);
+    E('path', { d: 'M' + cx + ',' + (cy - 58) + ' l-8,16 l16,0 z', fill: '#fff' }, kn);
+    if (o.dialArrow) {
+      var ex = cx + 52 * Math.sin(a), ey = cy - 52 * Math.cos(a);
+      E('line', { x1: cx - 30 * Math.sin(a), y1: cy + 30 * Math.cos(a), x2: ex, y2: ey, stroke: '#39d353', 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    }
+    // jacks
+    var J = { A10: [204, 318, '10ADC'], VmA: [204, 356, 'VΩmA'], COM: [204, 394, 'COM'] };
+    Object.keys(J).forEach(function (k) {
+      var j = J[k];
+      E('text', { x: j[0] - 22, y: j[1] + 5, 'text-anchor': 'end', 'font-size': 13, 'font-weight': 800, style: 'fill:' + (k === 'A10' ? '#ff8a8a' : '#fff') }, g, j[2]);
+      E('circle', { cx: j[0], cy: j[1], r: 13, fill: '#050505', stroke: '#6b6f76', 'stroke-width': 2.5 }, g);
+      E('circle', { cx: j[0], cy: j[1], r: 5, fill: '#333' }, g);
+    });
+    E('text', { x: 22, y: 330, 'font-size': 20, 'font-weight': 900, style: 'fill:#fff' }, g, 'DT-830B');
+    E('text', { x: 22, y: 348, 'font-size': 10, 'font-weight': 700, style: 'fill:#cfd3d9' }, g, 'DIGITAL');
+    E('text', { x: 22, y: 361, 'font-size': 10, 'font-weight': 700, style: 'fill:#cfd3d9' }, g, 'MULTIMETER');
+    function P(px, py) { return [x + px * s, y + py * s]; }
+    return { A10: P(204, 318), VmA: P(204, 356), COM: P(204, 394), g: g, dial: P(cx, cy) };
+  };
+  // ---- Ceramic power resistor (the white "XICON 5W 10Ω" block) ----
+  EQ.ceramic = function (svg, o) {
+    var x = o.x, y = o.y, s = o.s || 1, g = E('g', { transform: 'translate(' + x + ',' + y + ') scale(' + s + ')' }, svg);
+    var LL = o.lead || 110;
+    E('line', { x1: -LL, y1: 0, x2: -60, y2: 0, stroke: '#8d8d8d', 'stroke-width': 4 }, g);
+    E('line', { x1: 60, y1: 0, x2: LL, y2: 0, stroke: '#8d8d8d', 'stroke-width': 4 }, g);
+    E('rect', { x: -62, y: -22, width: 124, height: 44, rx: 4, fill: '#f3f1ea', stroke: '#9c9a92', 'stroke-width': 2 }, g);
+    E('text', { x: -50, y: -6, 'font-size': 11, 'font-weight': 800, style: 'fill:#555' }, g, 'XICON');
+    E('text', { x: -50, y: 13, 'font-size': 13, 'font-weight': 800, style: 'fill:#333' }, g, '5W');
+    E('text', { x: -8, y: 14, 'font-size': 20, 'font-weight': 900, style: 'fill:#111' }, g, o.ohms || '10Ω');
+    if (o.hi) E('rect', { x: -14, y: -6, width: 70, height: 26, fill: 'none', stroke: '#ff2d2d', 'stroke-width': 3 }, g);
+    if (o.tag) E('text', { x: 0, y: 46, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700, style: 'fill:var(--muted)' }, g, o.tag);
+    function P(px, py) { return [x + px * s, y + py * s]; }
+    return { L: P(-LL, 0), R: P(LL, 0) };
+  };
+  // ---- Small color-banded "unknown" resistor ----
+  EQ.banded = function (svg, o) {
+    var x = o.x, y = o.y, s = o.s || 1, g = E('g', { transform: 'translate(' + x + ',' + y + ') scale(' + s + ')' }, svg);
+    E('line', { x1: -80, y1: 0, x2: 80, y2: 0, stroke: '#8d8d8d', 'stroke-width': 4 }, g);
+    E('rect', { x: -38, y: -15, width: 76, height: 30, rx: 13, fill: '#d9c08f', stroke: '#9b8251', 'stroke-width': 2 }, g);
+    ['#7a4a1d', '#111', '#d22', '#c9a227'].forEach(function (c, i) { E('rect', { x: -26 + i * 14 + (i === 3 ? 8 : 0), y: -15, width: 7, height: 30, fill: c }, g); });
+    E('text', { x: 0, y: -24, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 800 }, g, o.label || 'R??');
+    if (o.tag) E('text', { x: 0, y: 40, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700, style: 'fill:var(--muted)' }, g, o.tag);
+    function P(px, py) { return [x + px * s, y + py * s]; }
+    return { L: P(-80, 0), R: P(80, 0) };
+  };
+  // ---- Test lead / wire: banana plug or alligator clip ends ----
+  EQ.wire = function (svg, a, b, col, o) {
+    o = o || {}; var c1 = o.c1 || [a[0], a[1] + 120], c2 = o.c2 || [b[0], b[1] + 120];
+    var COL = col === 'red' ? '#d61f1f' : (col === 'black' ? '#141414' : (col === 'yellow' ? '#e0b100' : col));
+    var g = E('g', { 'class': o.cls || '' }, svg);
+    var D = o.d || ('M' + a[0] + ',' + a[1] + ' C' + c1[0] + ',' + c1[1] + ' ' + c2[0] + ',' + c2[1] + ' ' + b[0] + ',' + b[1]);
+    E('path', { d: D, fill: 'none', stroke: '#fff', 'stroke-width': 12, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: .55 }, g);
+    E('path', { d: D, fill: 'none', stroke: COL, 'stroke-width': 8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, g);
+    [a, b].forEach(function (p, i) {
+      var clip = (i === 0 ? o.endA : o.endB) === 'clip';
+      if (clip) { E('rect', { x: p[0] - 13, y: p[1] - 9, width: 26, height: 18, rx: 4, fill: COL, stroke: '#fff', 'stroke-width': 2 }, g); E('path', { d: 'M' + (p[0] - 9) + ',' + (p[1] - 2) + ' h18', stroke: '#fff', 'stroke-width': 2 }, g); }
+      else E('circle', { cx: p[0], cy: p[1], r: 11, fill: COL, stroke: '#fff', 'stroke-width': 3 }, g);
+    });
+    return g;
+  };
+  EQ.ring = function (svg, p, r, col) { return E('circle', { cx: p[0], cy: p[1], r: r || 26, fill: 'none', stroke: col || '#ffb000', 'stroke-width': 6, 'class': 'pulse' }, svg); };
+  EQ.box = function (svg, x, y, w, h, col) { return E('rect', { x: x - 6, y: y - 6, width: w + 12, height: h + 12, rx: 12, fill: 'none', stroke: col || '#ffb000', 'stroke-width': 6, 'class': 'pulse' }, svg); };
+  EQ.num = function (svg, p, n) { var g = E('g', {}, svg); E('circle', { cx: p[0], cy: p[1], r: 17, fill: '#7a1f2e', stroke: '#fff', 'stroke-width': 3 }, g); E('text', { x: p[0], y: p[1] + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 900, style: 'fill:#fff' }, g, n); return g; };
+
+  function p1Scene(svg, k, o) {
+    o = o || {};
+    var on = k === 'on', psv = k === 'set' ? '3.00' : (on ? '3.00' : '3.00');
+    var ps = EQ.supply(svg, { x: 20, y: 30, on: k === 'set' || on, v: psv, a: on ? '0.30' : '0.00', lock: true, hiV: k === 'set', noGnd: k === 'w3' });
+    var dial = (k === 'set') ? 'OFF' : '10A';
+    var m = EQ.meter(svg, { x: 640, y: 70, s: 0.85, dial: dial, display: on ? '0.30' : (dial === 'OFF' ? '' : '0.00'), dialArrow: k === 'meter', label: k === 'set' ? null : 'Ammeter' });
+    var r = EQ.ceramic(svg, { x: 430, y: 560, ohms: k === 'swap' ? '20Ω' : '10Ω', hi: k === 'swap', tag: 'resistor' });
+    var n = { meter: 0, w1: 1, w2: 2, w3: 3, check: 3, on: 3, swap: 3 }[k] || 0;
+    if (k === 'meter') {
+      EQ.wire(svg, m.A10, [720, 600], 'red', { c1: [880, 420], c2: [760, 600], endB: 'clip' });
+      EQ.wire(svg, m.COM, [640, 610], 'black', { c1: [860, 500], c2: [680, 610], endB: 'clip' });
+      EQ.ring(svg, m.A10, 22); EQ.ring(svg, m.COM, 22); EQ.ring(svg, m.dial, 72);
+    }
+    if (n >= 1) EQ.wire(svg, ps.plus, m.A10, 'red', { d: 'M' + ps.plus[0] + ',' + ps.plus[1] + ' C272,470 600,470 860,470 C905,470 905,' + m.A10[1] + ' ' + m.A10[0] + ',' + m.A10[1] });
+    if (n >= 2) EQ.wire(svg, m.COM, r.R, 'black', { c1: [870, 540], c2: [620, 560], endB: 'clip' }); else if (n === 1) EQ.wire(svg, m.COM, [640, 610], 'black', { c1: [860, 500], c2: [680, 610], endB: 'clip' });
+    if (n >= 3) EQ.wire(svg, r.L, ps.minus, 'black', { c1: [220, 560], c2: [150, 420], endA: 'clip' });
+    if (k === 'set') EQ.box(svg, 20 + 18, 30 + 26, 132, 74);
+    if (k === 'w1') { EQ.ring(svg, ps.plus); EQ.ring(svg, m.A10, 22); }
+    if (k === 'w2') { EQ.ring(svg, m.COM, 22); EQ.ring(svg, r.R); }
+    if (k === 'w3') { EQ.ring(svg, r.L); EQ.ring(svg, ps.minus); }
+    if (k === 'check') { EQ.num(svg, [420, 300], '1'); EQ.num(svg, [740, 520], '2'); EQ.num(svg, [430, 505], '3'); EQ.num(svg, [205, 470], '4'); }
+    if (k === 'on') { EQ.box(svg, 20 + 150, 30 + 26, 120, 74); EQ.box(svg, 640 + 28 * .85, 70 + 22 * .85, 184 * .85, 56 * .85); }
+    if (k === 'swap') EQ.ring(svg, [430, 560], 80);
+  }
+  function p2Scene(svg, k, two) {
+    // two-meter keys: chain, vm, clip, check, on, repeat
+    // one-meter keys: a_chain, a_check, a_on, swap, v_clip, v_check, v_on
+    var one = !two;
+    var hasAm = two || /^a_/.test(k);
+    var hasVm = two ? k !== 'chain' : (k === 'swap' || /^v_/.test(k));
+    var looseV = (two && k === 'vm') || k === 'swap';
+    var on = k === 'on' || k === 'repeat' || k === 'a_on' || k === 'v_on';
+    var rep = k === 'repeat';
+    var ps = EQ.supply(svg, { x: 10, y: 10, s: 0.8, on: on, v: rep ? '2.00' : '4.00', a: on ? (rep ? '0.13' : '0.25') : '0.00', noGnd: k === 'chain' || k === 'a_chain' });
+    var am = hasAm ? EQ.meter(svg, { x: 380, y: 50, s: 0.62, dial: '10A', display: on ? (rep ? '0.13' : '0.25') : '0.00', label: 'Ammeter' }) : null;
+    var vm = hasVm ? EQ.meter(svg, { x: 690, y: 50, s: 0.62, dial: 'V20', display: on ? (rep ? '1.25' : '2.50') : '0.00', label: one ? 'Voltmeter (same meter)' : 'Voltmeter', labelColor: '#1d4ed8', dialArrow: looseV }) : null;
+    if (one && hasVm) { /* widen label box for the longer label */ }
+    var u = EQ.banded(svg, { x: 330, y: 560, tag: 'unknown (color bands)' });
+    var r = EQ.ceramic(svg, { x: 650, y: 560, lead: 140, tag: '10 \u03a9 resistor' });
+    EQ.wire(svg, r.R, ps.minus, 'black', { endA: 'clip', d: 'M' + r.R[0] + ',' + r.R[1] + ' C860,560 870,650 790,650 L110,650 C55,650 40,625 40,580 L40,300 C40,230 ' + ps.minus[0] + ',240 ' + ps.minus[0] + ',' + ps.minus[1] });
+    EQ.wire(svg, ps.plus, u.L, 'red', { c1: [212, 380], c2: [190, 560], endB: 'clip' });
+    if (hasAm) {
+      EQ.wire(svg, u.R, am.A10, 'red', { c1: [470, 560], c2: [600, 300], endA: 'clip' });
+      EQ.wire(svg, am.COM, r.L, 'black', { c1: [470, 420], c2: [470, 560], endB: 'clip' });
+    } else EQ.wire(svg, u.R, r.L, 'yellow', { c1: [440, 630], c2: [480, 630], endA: 'clip', endB: 'clip' });
+    var vL = [650 - 95, 560], vR = [650 + 95, 560];
+    if (looseV) { EQ.wire(svg, vm.VmA, [760, 450], 'red', { c1: [880, 330], c2: [800, 450], endB: 'clip' }); EQ.wire(svg, vm.COM, [830, 470], 'black', { c1: [870, 400], c2: [860, 470], endB: 'clip' }); EQ.ring(svg, vm.VmA, 18); EQ.ring(svg, vm.COM, 18); EQ.ring(svg, vm.dial, 50); }
+    else if (hasVm) {
+      EQ.wire(svg, vm.VmA, vL, 'red', { c1: [880, 400], c2: [560, 450], endB: 'clip' });
+      EQ.wire(svg, vm.COM, vR, 'black', { c1: [850, 420], c2: [745, 470], endB: 'clip' });
+    }
+    if (k === 'swap') EQ.ring(svg, [460, 600], 50);
+    if (k === 'clip' || k === 'v_clip') { EQ.ring(svg, vL, 22); EQ.ring(svg, vR, 22); }
+    if (k === 'chain' || k === 'a_chain') { EQ.ring(svg, [330, 555], 70); EQ.ring(svg, [650, 560], 90); EQ.box(svg, 380 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62); }
+    if (on) EQ.box(svg, 10 + 18 * .8, 10 + 26 * .8, 105, 59);
+    if (k === 'a_on') EQ.box(svg, 380 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62);
+    if (k === 'v_on') EQ.box(svg, 690 + 24 * .62, 50 + 18 * .62, 192 * .62, 64 * .62, '#1d9bf0');
+  }
+
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { type: 'mc', ans: 'a10', label: '1. Ammeter red lead',
+          good: '<strong>Correct: 10ADC.</strong> The dial and the red lead have to match: 10A on the dial, red lead in 10ADC. Black always goes in COM.',
+          bad: { vma: 'VΩmA is the jack for <em>voltage</em>. With the dial on 10A and the red lead there, the meter reads 0.',
+                 com: 'COM is where the <em>black</em> lead goes. Both leads in one jack means no path through the meter.' } },
+    q2: { type: 'mc', ans: 'series', label: '2. Ammeter goes in series',
+          good: '<strong>Correct.</strong> An ammeter counts the charge flowing <em>through</em> it, so it has to be part of the one loop: + → ammeter → resistor → −.',
+          bad: { across: 'Across a part (parallel) is how a <em>voltmeter</em> connects. An ammeter across a resistor makes a short circuit, since the current skips the resistor.',
+                 gnd: 'The green GND post is never used in this lab. Only the red + and black − posts.',
+                 any: 'Where it connects matters. All the charge has to flow through the ammeter, so it must be <em>in</em> the loop.' } },
+    q3: { type: 'num', answer: 1.50, tol: 0.02, label: '3. Voltages add in a loop',
+          good: '<strong>Correct: 1.50 V.</strong> The two resistors share the supply\'s 4.50 V: 4.50 − 3.00 = 1.50 V for the unknown resistor.',
+          special: [{ v: 7.50, msg: '<strong>Close, but don\'t add them.</strong> The 4.50 V is the total. The two resistors <em>share</em> it, so subtract: 4.50 − 3.00.' },
+                    { v: 3.00, msg: '<strong>That\'s the 10 Ω resistor\'s voltage.</strong> What\'s left of the 4.50 V for the other resistor?' },
+                    { v: 4.50, msg: '<strong>That\'s the whole supply.</strong> The 10 Ω resistor already uses 3.00 V of it. How much is left?' }],
+          wrong: '<strong>Not yet.</strong> V<sub>PS</sub> = V<sub>unknown</sub> + V<sub>R</sub>. Subtract the voltmeter reading from the supply\'s voltage.' }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, ps: false, am: false, v: 0, dial: null, jack: null, psTries: 0, amTries: 0 };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    var g = s.getAttribute('data-gate');
+    if (g === 'ps') return state.ps;
+    if (g === 'am') return state.am;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    upd();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', upd);
+  function fb(id, ok, html) { var el = document.getElementById(id); el.className = 'feedback show ' + (ok ? 'good' : 'bad'); el.innerHTML = html; }
+
+  // ---------- Box A: road ----------
+  var road = document.getElementById('roadSvg'), dots = [], rVal = 1, NAMES = ['', 'low', 'medium-low', 'medium', 'medium-high', 'high'];
+  function drawRoad() {
+    clear(road); dots = [];
+    var w = 110 - (rVal - 1) * 20; // road width in the middle
+    E('path', { d: 'M0,' + (85 - 55) + ' L200,30 L260,' + (85 - w / 2) + ' L380,' + (85 - w / 2) + ' L440,30 L640,30 L640,140 L440,140 L380,' + (85 + w / 2) + ' L260,' + (85 + w / 2) + ' L200,140 L0,140 Z', fill: 'var(--line)' }, road);
+    E('rect', { x: 260, y: 85 - w / 2 - 6, width: 120, height: 6, fill: 'var(--accent)' }, road);
+    E('rect', { x: 260, y: 85 + w / 2, width: 120, height: 6, fill: 'var(--accent)' }, road);
+    E('text', { x: 320, y: 165, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 700 }, road, 'resistor = narrow part of the road');
+    for (var i = 0; i < 14; i++) dots.push({ x: i * 48, y: 85 + ((i * 37) % 60 - 30) * 0.7, el: E('circle', { r: 7, fill: '#e0b100', stroke: '#7a5b00', 'stroke-width': 1.5 }, road) });
+    document.getElementById('rLabel').textContent = NAMES[rVal];
+  }
+  document.getElementById('rSlider').addEventListener('input', function () { rVal = +this.value; drawRoad();
+    document.getElementById('roadHint').innerHTML = rVal >= 4 ? 'More resistance: the charges flow <strong>slower</strong>. Fewer pass each second, so there\'s less <strong>current</strong>.' : 'Keep going. Make the resistance high.'; });
+  drawRoad();
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches, last = 0;
+  function tick(t) {
+    var dt = Math.min(50, t - (last || t)); last = t;
+    var w = 110 - (rVal - 1) * 20, sp = 0.09 * (w / 110) * (w / 110) + 0.006;
+    dots.forEach(function (d) {
+      d.x += sp * dt; if (d.x > 660) d.x -= 680;
+      var half = (d.x > 260 && d.x < 380) ? w / 2 - 9 : 46, yy = 85 + Math.max(-half, Math.min(half, d.y - 85));
+      d.el.setAttribute('cx', d.x); d.el.setAttribute('cy', yy);
+    });
+    if (!reduce) requestAnimationFrame(tick);
+  }
+  dots.forEach(function (d) { d.el.setAttribute('cx', d.x); d.el.setAttribute('cy', d.y); });
+  if (!reduce) requestAnimationFrame(tick);
+  (function () { var s = document.getElementById('resSvg'); EQ.ceramic(s, { x: 320, y: 50, s: 1.6, hi: true, lead: 120 }); })();
+
+  // ---------- Box B: power supply ----------
+  var psSvg = document.getElementById('psSvg'), turns = [0, 0];
+  function drawPS() { clear(psSvg); EQ.supply(psSvg, { x: 0, y: 0, v: state.v.toFixed(2), a: '0.00', lock: true, hiV: true, k1: turns[0], k2: turns[1] }); }
+  drawPS();
+  document.querySelectorAll('[data-k]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = parseFloat(b.getAttribute('data-k')), big = Math.abs(d) > 0.1;
+      state.v = Math.max(0, Math.min(18, Math.round((state.v + d) * 100) / 100));
+      turns[big ? 0 : 1] += (d > 0 ? 25 : -25); drawPS();
+      if (Math.abs(state.v - 3) < 0.001) { state.ps = true; fb('psFb', true, '<strong>3.00 V. Nice.</strong> In lab: set this with nothing plugged in, then turn the power OFF while you build.'); }
+      else if (!state.ps) fb('psFb', state.v < 3, state.v < 3 ? 'VOLT reads ' + state.v.toFixed(2) + ' V. Keep going up.' : 'VOLT reads ' + state.v.toFixed(2) + ' V. That\'s past 3.00, so turn it back down. The small-step knob helps you land on it.');
+      else if (state.ps) fb('psFb', true, 'VOLT reads ' + state.v.toFixed(2) + ' V. (You already hit 3.00, so you can tap Next.)');
+      upd();
+    });
+  });
+  document.getElementById('curTouch').addEventListener('click', function () {
+    fb('psFb', false, '<strong>Hands off!</strong> The top CURRENT knobs limit how much current can flow. Your teacher set them to keep the equipment safe. Use only the VOLTAGE knobs.');
+  });
+
+  // ---------- Box C: ammeter setup ----------
+  var amSvg = document.getElementById('amSvg');
+  function drawAM() {
+    clear(amSvg);
+    var m = EQ.meter(amSvg, { x: 0, y: 0, dial: state.dial || 'OFF', display: state.dial ? '0.00' : '', dialArrow: !!state.dial });
+    if (state.jack) EQ.wire(amSvg, m[state.jack], [150, 452], 'red', { c1: [235, m[state.jack][1] + 40], c2: [180, 452], endB: 'clip' });
+    EQ.wire(amSvg, m.COM, [60, 452], 'black', { c1: [210, 445], c2: [90, 452], endB: 'clip' });
+  }
+  drawAM();
+  document.querySelectorAll('[data-choose]').forEach(function (g) {
+    var k = g.getAttribute('data-choose');
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('selected', 'right', 'wrong'); });
+        b.classList.add('selected'); state[k] = b.getAttribute('data-v'); drawAM();
+        if (!state.dial || !state.jack) { fb('amFb', true, 'Now pick the ' + (state.dial ? 'red lead\'s jack.' : 'dial setting.')); document.getElementById('amFb').className = 'feedback show'; return; }
+        state.amTries++;
+        var ok = state.dial === '10A' && state.jack === 'A10';
+        if (ok) { state.am = true; g.parentNode.querySelectorAll('.selected').forEach(function (x) { x.classList.add('right'); });
+          fb('amFb', true, '<strong>Ready to measure current.</strong> Dial on 10A, red lead in 10ADC, black lead in COM. Set it up like this before it goes in the circuit, and don\'t turn the dial while it\'s connected.'); }
+        else {
+          var msg = [];
+          if (state.dial === 'V20') msg.push('DCV 20 measures <em>voltage</em>, not current.');
+          if (state.dial === 'A200m') msg.push('DCA 200m only goes up to 0.2 A, and our currents can be bigger than that. Use 10A.');
+          if (state.jack === 'VmA') msg.push('For the 10A setting, the red lead goes in 10ADC. VΩmA is for voltage (and tiny currents).');
+          if (state.jack === 'COM') msg.push('COM is the black lead\'s jack.');
+          fb('amFb', false, '<strong>Not quite.</strong> ' + msg.join(' '));
+        }
+        upd();
+      });
+    });
+  });
+
+  // ---------- Worked example ----------
+  var wxSvg = document.getElementById('wxSvg'), WXK = ['meter', 'w1', 'w2', 'w3', 'on'], wxI = 0, wxBtn = document.getElementById('wxNext');
+  function drawWX() { clear(wxSvg); p1Scene(wxSvg, WXK[wxI]); }
+  drawWX();
+  var wxParts = document.querySelectorAll('#wxSteps .reveal');
+  wxBtn.addEventListener('click', function () {
+    if (wxI < wxParts.length) { wxParts[wxI].classList.add('show'); wxI++; drawWX(); }
+    if (wxI >= wxParts.length) wxBtn.style.display = 'none';
+  });
+  // ---------- Voltmeter ----------
+  p2Scene(document.getElementById('vmSvg'), 'on', true);
+  var vmParts = document.querySelectorAll('#vmSteps .reveal'), vmI = 0, vmBtn = document.getElementById('vmNext');
+  vmBtn.addEventListener('click', function () { if (vmI < vmParts.length) { vmParts[vmI].classList.add('show'); vmI++; } if (vmI >= vmParts.length) vmBtn.style.display = 'none'; });
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(val - sp.v) <= cfg.tol) msg = sp.msg; });
+      if (state[q].done) msg += '<br>Answer: <strong>1.50 V</strong> (4.50 − 3.00).';
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q].right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + more(q));
+      });
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var el = document.getElementById(id), s = state[q];
+    if (s.first === true) { el.textContent = '✓ first try'; el.className = 'badge g'; }
+    else if (s.right) { el.textContent = '✓ after ' + s.tries + ' tries'; el.className = 'badge y'; }
+    else { el.textContent = '✗ review in class'; el.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var rs = document.getElementById('rSet'), first = state.amTries <= 1;
+    rs.textContent = state.am ? (first ? '✓ first try' : '✓ after ' + state.amTries + ' tries') : '✗ review'; rs.className = 'badge ' + (state.am ? (first ? 'g' : 'y') : 'r');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    wxI = WXK.length - 1; drawWX();
+    rVal = 4; document.getElementById('rSlider').value = 4; drawRoad();
+    // Power supply
+    state.v = 3; state.ps = true; drawPS(); fb('psFb', true, '<strong>3.00 V.</strong> (Students tap the knob buttons until VOLT reads 3.00; the page won\'t move on until they hit it.)');
+    note(document.getElementById('psFb'), '<strong>Interactive.</strong> Big-step knob ±0.50 V, small-step knob ±0.05 V. Tapping "Turn a top CURRENT knob" shows a "Hands off" warning. The drawing doesn\'t say which physical knob is coarse, since that varies by model.');
+    // Ammeter setup
+    state.dial = '10A'; state.jack = 'A10'; state.am = true; drawAM();
+    document.querySelector('[data-choose="dial"] [data-v="10A"]').classList.add('right');
+    document.querySelector('[data-choose="jack"] [data-v="A10"]').classList.add('right');
+    fb('amFb', true, '<strong>Ready to measure current.</strong> Dial on 10A, red lead in 10ADC, black lead in COM.');
+    note(document.getElementById('amFb'), '<strong>Feedback for wrong picks:</strong>' + list(['DCV 20: measures voltage, not current.', 'DCA 200m: only goes to 0.2 A; use 10A.', 'Red in VΩmA: that\'s for voltage.', 'Red in COM: that\'s the black lead\'s jack.']) + 'Students must get both right to continue. The results card shows whether they did it on the first try.');
+    // MC checks
+    ['q1', 'q2'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]'); g.querySelector('[data-opt="' + Q[q].ans + '"]').classList.add('right'); fb(q + 'Fb', true, Q[q].good);
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(Q[q].bad).map(function (o) { return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + plain(Q[q].bad[o]); })));
+    });
+    document.getElementById('q3Input').value = '1.50'; fb('q3Fb', true, Q.q3.good);
+    note(document.getElementById('q3Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±0.02):' + list(Q.q3.special.map(function (sp) { return sp.v.toFixed(2) + ': ' + plain(sp.msg); }).concat(['Anything else: ' + plain(Q.q3.wrong)])));
+    // Sample results card
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: true, done: true, right: true, tries: 1 };
+    state.q3 = { first: false, done: true, right: true, tries: 2 };
+    state.amTries = 2;
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'Which knob is the big-step one?';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> "Set up supply + meter" shows whether the student set up the ammeter correctly on the first try. That\'s a quick way to spot who may need help at the lab.');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
