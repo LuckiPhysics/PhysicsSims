@@ -189,7 +189,7 @@
     <button data-tab="p1">Part 1 build</button>
     <button data-tab="p2">Part 2 build</button>
     <button data-tab="stuck">🛟 Stuck?</button>
-    <button data-tab="graph">Graphing (TAILS)</button>
+    <button data-tab="graph">📈 Graph hints</button>
     <button data-tab="done">✅ When you're done</button>
   </nav>
 
@@ -244,19 +244,15 @@
   <!-- GRAPH -->
   <section class="panel" id="graph">
     <div class="card">
-      <h2>Graph it properly: TAILS</h2>
-      <table class="wx tails">
-        <tr><th>T</th><td><strong>Title:</strong> "y vs. x." Part 1: <em>Current vs. Resistance</em>. Part 2: <em>Current vs. Voltage</em> (use the 10 Ω resistor's voltage, V<sub>R</sub>).</td></tr>
-        <tr><th>A</th><td><strong>Axes:</strong> what you <em>changed</em> goes across the bottom (x). What you <em>measured</em> goes up the side (y). Label both, with units: <em>Resistance (Ω)</em>, <em>Voltage (V)</em>, <em>Current (A)</em>.</td></tr>
-        <tr><th>I</th><td><strong>Interval:</strong> every box is worth the same amount, and the numbers spread over most of the grid. Use the helper below.</td></tr>
-        <tr><th>L</th><td><strong>Line of best fit:</strong> one smooth line through the <em>middle</em> of your points. Some points end up above it and some below. Don't connect the dots. If the points bend, draw a smooth <em>curve</em>.</td></tr>
-        <tr><th>S</th><td><strong>Scale:</strong> number the gridlines evenly, starting at 0.</td></tr>
-      </table>
-      <h3 style="margin:18px 0 6px">Interval helper</h3>
-      <p class="hint" style="margin-top:0">Type your largest value and count the boxes on that axis of the binder grid.</p>
-      <div class="num-row"><input class="num-input" id="ivMax" type="text" inputmode="decimal" placeholder="largest value" autocomplete="off"><span class="units">largest</span></div>
-      <div class="num-row"><input class="num-input" id="ivBoxes" type="text" inputmode="decimal" placeholder="number of boxes" autocomplete="off"><span class="units">boxes</span></div>
-      <div class="feedback show" id="ivOut">Type both numbers.</div>
+      <h2>Graph hints: a new shape</h2>
+      <p>You know TAILS. What's new is the <strong>Part 1</strong> graph: it's your first <strong>inverse</strong> graph.</p>
+      <svg id="shapeSvg" viewBox="0 0 660 200" role="img" aria-label="Three sketch graphs: a straight line, a curve that gets steeper, and a curve that drops steeply then flattens"></svg>
+      <details class="stuck"><summary>My points don't make a straight line</summary><div class="ans"><p>That's expected. Don't force a straight line, and don't connect the dots. Draw one <strong>smooth curve</strong> through the middle of your points.</p></div></details>
+      <details class="stuck"><summary>How is this different from the graphs I've made?</summary><div class="ans"><ul><li><strong>GPE vs. height:</strong> a straight line. Double the height, double the energy.</li><li><strong>KE vs. speed:</strong> curves <em>up</em> and gets steeper.</li><li><strong>Current vs. resistance:</strong> starts <em>high</em>, drops fast, then <strong>flattens out</strong>. Bigger resistance → smaller current, but the drop gets smaller each time.</li></ul></div></details>
+      <details class="stuck"><summary>How do I describe the pattern with numbers?</summary><div class="ans"><p>Find two resistors where one is <strong>double</strong> the other (like 10 Ω and 20 Ω). What happened to the current? Try another pair. Then try <strong>triple</strong>. Question 1 asks for exactly this kind of ratio.</p></div></details>
+      <details class="stuck"><summary>Should my curve hit zero?</summary><div class="ans"><p>Think about it: could any resistor make the current <em>exactly</em> zero, or just smaller and smaller? Let your curve get close to the axis without crossing it.</p></div></details>
+      <details class="stuck"><summary>Question 2 (the 78 Ω resistor)</summary><div class="ans"><p>Two ways to check yourself: read the value off your curve at 78 Ω, <em>and</em> use the pattern you found with the doubling pairs. Do the two answers agree?</p></div></details>
+      <details class="stuck"><summary>Part 2 graph</summary><div class="ans"><p>Back to a familiar shape. Graph current vs. V<sub>R</sub> (the 10 Ω resistor's voltage). Does your line go through the origin? Use two points <em>on your line</em>, not data points, for the slope.</p></div></details>
     </div>
   </section>
 
@@ -265,11 +261,12 @@
     <div class="card">
       <h2>When you finish collecting data</h2>
       <button class="check-row" data-done><span class="box"></span><span>Power OFF. Turn the meter dial to <strong>OFF</strong>. Put the leads and resistors back the way you found them.</span></button>
-      <button class="check-row" data-done><span class="box"></span><span><strong>Graph Part 1, properly</strong> (TAILS). You'll do math with it, so it needs to be well made.</span></button>
-      <button class="check-row" data-done><span class="box"></span><span>Answer the Part 1 questions. Use numbers, ratios, and patterns from <em>your</em> data.</span></button>
-      <button class="check-row" data-done><span class="box"></span><span>Did Part 2? Graph it and do questions 1–6 (slope, intercept, model).</span></button>
-      <button class="check-row" data-done><span class="box"></span><span>Watch the two videos from the QR codes on binder page 69.</span></button>
-      <button class="check-row" data-done><span class="box"></span><span>Start the homework on <strong>binder pages 87–88</strong>.</span></button>
+      <button class="check-row" data-done><span class="box"></span><span>Data tables for <strong>Part 1 and Part 2</strong> are complete.</span></button>
+      <button class="check-row" data-done><span class="box"></span><span><strong>Both graphs</strong> are done (TAILS), with a best-fit line or curve.</span></button>
+      <button class="check-row" data-done><span class="box"></span><span>All <strong>Part 1 questions</strong> are answered, using numbers and ratios from <em>your</em> data.</span></button>
+      <button class="check-row" data-done><span class="box"></span><span>All <strong>Part 2 questions</strong> (1–6) are answered.</span></button>
+      <button class="check-row" data-done><span class="box"></span><span>Watch the <strong>two videos</strong> from the QR codes on binder page 69.</span></button>
+      <p class="hint" style="margin-top:12px"><strong>Finished early?</strong> Part 3 isn't required yet, but if you're clever, see if you can figure it out.</p>
       <p class="hint">These checkboxes are just for you. They aren't saved or turned in.</p>
     </div>
   </section>
@@ -517,7 +514,7 @@
     { k: 'w3', t: 'Wire 3: resistor back to the black post', h: '<p>Connect the <strong>other end</strong> of the resistor to the supply\'s <strong>black − post</strong>.</p><p class="warn">Not the green GND post in the middle.</p>' },
     { k: 'check', t: 'Partner check (power still OFF)', h: '<p>Trace the loop with your finger: <strong>① + post → ② meter → ③ resistor → ④ − post</strong>. That\'s one loop, so the meter is <strong>in series</strong>, like the binder drawing.</p><div class="pchk"></div>' },
     { k: 'on', t: 'Power ON and read', h: '<ol><li>Turn the power <strong>ON</strong>. Check that VOLT still says <strong>3.00</strong>.</li><li>Read the <strong>meter</strong>. On the 10A setting the number is already in <strong>amps</strong>, so 0.30 means 0.30 A.</li><li>Record the resistance (the number before Ω on the white block) and the current in your table.</li><li>Turn the power <strong>OFF</strong>.</li></ol><p class="hint">Double check: the supply\'s AMP display should show about the same current as the meter.</p>' },
-    { k: 'swap', t: 'Next resistor, and repeat', h: '<ol><li>With the power <strong>OFF</strong>, unclip <strong>only the resistor</strong> and clip in the next one. Leave everything else alone.</li><li>Power ON, check for 3.00 V, read, record, power OFF.</li><li>Repeat until your table is full (6 rows).</li></ol><p class="hint">Done? Go to <strong>Part 2</strong> if there\'s time, or see <strong>When you\'re done</strong>.</p>' }
+    { k: 'swap', t: 'Next resistor, and repeat', h: '<ol><li>With the power <strong>OFF</strong>, unclip <strong>only the resistor</strong> and clip in the next one. Leave everything else alone.</li><li>Power ON, check for 3.00 V, read, record, power OFF.</li><li>Repeat until your table is full (6 rows).</li></ol><p class="hint">Done? Go to <strong>Part 2</strong>.</p>' }
   ];
   // ---------- Part 2 scenes ----------
   var P2two = [
@@ -611,20 +608,22 @@
     ['Part 2: the voltmeter reads 0.00', '<ul><li>Dial on <strong>DCV 20</strong>, red lead in <strong>VΩmA</strong>?</li><li>Are the two clips on <strong>opposite ends</strong> of the 10 Ω resistor? If they\'re on the same side, the meter reads 0.</li><li>Is the loop complete, with current showing?</li></ul>'],
     ['The meter and the AMP display don\'t match exactly', '<p>A small difference (like 0.30 vs. 0.29) is normal: they\'re two different instruments. Record the one the steps tell you to use, and use it every time.</p>'],
     ['The meter screen is blank or faint', '<p>Is the dial on OFF? If not, the meter\'s battery may be dead. Tell your sub and swap meters. For current only, you can use the supply\'s <strong>AMP</strong> display.</p>'],
-    ['Someone turned the top CURRENT knobs', '<p class="lol"><strong>Mr. Lucki is disappointed and his day has been ruined…</strong> but here\'s how you fix it.</p><ol><li>Power <strong>OFF</strong>. Unplug everything from the + and − posts.</li><li>Turn <strong>both</strong> CURRENT knobs all the way <strong>counterclockwise</strong> ↺ until they stop.</li><li>Plug <strong>one wire straight from the red + post to the black − post</strong>. (Yes, a short circuit on purpose. This is the only time.)</li><li>Power <strong>ON</strong>. Slowly turn the CURRENT knobs clockwise ↻ until the <strong>AMP</strong> display reads between <strong>2.50 and 3.00</strong>.</li><li>As soon as it\'s in that range, <strong>unplug the wire</strong> so it doesn\'t get hot. Power <strong>OFF</strong>.</li><li>Rebuild your circuit. Check that VOLT still reads what you need (3.00 for Part 1). Fix it with the VOLTAGE knobs if not.</li></ol>']
+    ['Someone turned the top CURRENT knobs', '<p class="lol"><strong>Mr. Lucki is disappointed and his day has been ruined…</strong> but here\'s how you fix it.</p><p class="warn">Read every step before you start. Once the power is ON with the wire shorting + to −, you have <strong>5 seconds</strong> to get AMP to 2.50–3.00 and unplug the wire. Any longer and the wire can get very hot. Missed it? Power OFF, let the wire cool, and try again.</p><ol><li>Power <strong>OFF</strong>. Unplug everything from the + and − posts.</li><li>Turn <strong>both</strong> CURRENT knobs all the way <strong>counterclockwise</strong> ↺ until they stop.</li><li>Plug <strong>one wire straight from the red + post to the black − post</strong>. (Yes, a short circuit on purpose. This is the only time.)</li><li>Power <strong>ON</strong>. <strong>Quickly</strong> turn the CURRENT knobs clockwise ↻ until the <strong>AMP</strong> display reads between <strong>2.50 and 3.00</strong>.</li><li>As soon as it\'s in that range, <strong>unplug the wire</strong> so it doesn\'t get hot. Power <strong>OFF</strong>.</li><li>Rebuild your circuit. Check that VOLT still reads what you need (3.00 for Part 1). Fix it with the VOLTAGE knobs if not.</li></ol>']
   ];
   document.getElementById('stuckList').innerHTML = STUCK.map(function (s) { return '<details class="stuck"><summary>' + s[0] + '</summary><div class="ans">' + s[1] + '</div></details>'; }).join('') +
     '<details class="stuck"><summary>Something else / nothing here helps</summary><div class="ans"><p>Turn the power OFF. Compare your setup, wire by wire, with the drawings in the build steps. Still stuck? Ask another group that\'s collecting data to look at it. Then tell your sub.</p></div></details>';
   // ---------- Interval helper ----------
-  function nice(x) { var p = Math.pow(10, Math.floor(Math.log10(x))), c = [1, 2, 2.5, 5, 10]; for (var i = 0; i < c.length; i++) if (c[i] * p >= x - 1e-12) return c[i] * p; return 10 * p; }
-  function iv() {
-    var mx = parseFloat(document.getElementById('ivMax').value), bx = parseFloat(document.getElementById('ivBoxes').value), out = document.getElementById('ivOut');
-    if (!(mx > 0) || !(bx > 0)) { out.className = 'feedback show'; out.textContent = 'Type both numbers.'; return; }
-    var n = nice(mx / bx), used = Math.ceil(mx / n - 1e-9);
-    out.className = 'feedback show good';
-    out.innerHTML = 'Make each box worth <strong>' + (+n.toPrecision(3)) + '</strong>. Your largest value lands near box <strong>' + used + '</strong> of ' + bx + '. Count by ' + (+n.toPrecision(3)) + 's: 0, ' + (+n.toPrecision(3)) + ', ' + (+(2 * n).toPrecision(3)) + ', ' + (+(3 * n).toPrecision(3)) + '…';
-  }
-  document.getElementById('ivMax').addEventListener('input', iv); document.getElementById('ivBoxes').addEventListener('input', iv);
+  (function () { var s = document.getElementById('shapeSvg');
+    function mini(x0, title, pts) {
+      E('line', { x1: x0 + 20, y1: 160, x2: x0 + 200, y2: 160, stroke: 'var(--ink)', 'stroke-width': 2 }, s);
+      E('line', { x1: x0 + 20, y1: 20, x2: x0 + 20, y2: 160, stroke: 'var(--ink)', 'stroke-width': 2 }, s);
+      E('path', { d: pts, fill: 'none', stroke: '#7a1f2e', 'stroke-width': 4, 'stroke-linecap': 'round', style: 'stroke:var(--accent)' }, s);
+      E('text', { x: x0 + 110, y: 188, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700 }, s, title); }
+    mini(0, 'GPE vs. height', 'M20,160 L200,40');
+    mini(220, 'KE vs. speed', 'M240,160 Q340,158 420,30');
+    mini(440, 'I vs. R (new!)', 'M470,25 Q490,140 640,148');
+  })();
+
   document.querySelectorAll('[data-done]').forEach(function (b) { b.addEventListener('click', function () { b.classList.toggle('on'); b.querySelector('.box').textContent = b.classList.contains('on') ? '✓' : ''; }); });
 
   // ---------- Start ----------
