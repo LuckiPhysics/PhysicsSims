@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Science Sub Coverage – Demo</title>
 <meta name="robots" content="noindex">
+<meta name="color-scheme" content="light only">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -15,20 +16,7 @@
   --need:#2F5E9E; --can:#2E7D4F; --classfill:#C9CED7; --stripe:#9AA2AF;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-    --bg:#14161B; --surface:#1E222A; --ink:#E8EBF0; --muted:#9AA3B2; --line:#323846;
-    --maroon:#E08494; --maroon-soft:#3A2329; --gold:#E0B84F; --gold-soft:#3A3220;
-    --ok:#73C69A; --ok-soft:#1F3328; --warn:#F2A84B; --cell:#AEB7C6;
-    --need:#6F9DE3; --can:#5DBB85; --classfill:#4A5262; --stripe:#7D8696;
-    color-scheme:dark;
-  } }
-:root[data-theme="dark"]{
-    --bg:#14161B; --surface:#1E222A; --ink:#E8EBF0; --muted:#9AA3B2; --line:#323846;
-    --maroon:#E08494; --maroon-soft:#3A2329; --gold:#E0B84F; --gold-soft:#3A3220;
-    --ok:#73C69A; --ok-soft:#1F3328; --warn:#F2A84B; --cell:#AEB7C6;
-    --need:#6F9DE3; --can:#5DBB85; --classfill:#4A5262; --stripe:#7D8696;
-    color-scheme:dark;
-  }
+/* Light mode only, on purpose */
 *{box-sizing:border-box}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
