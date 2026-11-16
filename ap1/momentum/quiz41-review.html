@@ -116,9 +116,6 @@
   body.teacher section.step { display: block; }
   body.teacher .teacher-banner, body.teacher .part-label { display: block; }
   body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
-
-.wx td,.wx th{vertical-align:top}
-h3{font-size:19px;margin:18px 0 6px}
   /* ---- School theme: maroon & gold accents (sample C) ---- */
   :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
   @media (prefers-color-scheme: dark) {
@@ -128,6 +125,9 @@ h3{font-size:19px;margin:18px 0 6px}
   .card { border-top: 5px solid var(--gold); }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
   :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+
+.wx td,.wx th{vertical-align:top}
+h3{font-size:19px;margin:18px 0 6px}
 </style>
 </head>
 <body>
@@ -148,7 +148,7 @@ h3{font-size:19px;margin:18px 0 6px}
     <div class="card">
       <h1>Quiz 4.1 Review</h1>
       <p class="muted">In class · Wed 11/18 · about 25 minutes · Quiz 4.1 is Thursday</p>
-      <p>Ten quick questions on what Thursday's quiz covers: <strong>Newton's third law in collisions, momentum, and impulse</strong>. Each one checks itself and tells you what to fix.</p>
+      <p>Eleven quick questions on what Thursday's quiz covers: <strong>Newton's third law in collisions, momentum, and impulse</strong>. Each one checks itself and tells you what to fix.</p>
       <div class="notes-box">Do the work on paper or in your binder. Your ML1, ML3, and ML4 notes sheets are good to have out.</div>
       <label for="nameInput"><strong>Your first and last name</strong></label>
       <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
@@ -168,55 +168,61 @@ h3{font-size:19px;margin:18px 0 6px}
     <div data-mc="q2"><button class="big-btn" data-opt="bug">The bug</button><button class="big-btn" data-opt="truck">The truck</button><button class="big-btn" data-opt="same">Same, since the forces are equal</button></div>
     <div class="feedback" id="q2Fb"></div></div></section>
 
-  <section class="step" data-title="3 · Momentum with a sign" data-q="q3"><div class="card">
-    <h2>3 · Momentum has a direction</h2>
+  <section class="step" data-title="3 · Third-law pairs?" data-q="qp"><div class="card">
+    <h2>3 · Is it a third-law pair?</h2>
+    <p>A box sits at rest on the floor. Gravity pulls it down with 50 N, and the floor pushes it up with 50 N. Are these two forces a Newton's third-law pair?</p>
+    <div data-mc="qp"><button class="big-btn" data-opt="no">No. They both act on the box; a third-law pair acts on two different objects.</button><button class="big-btn" data-opt="yes">Yes, because they're equal in size and opposite in direction.</button><button class="big-btn" data-opt="rest">Yes, because the box isn't moving.</button></div>
+    <div class="feedback" id="qpFb"></div></div></section>
+
+  <section class="step" data-title="4 · Momentum with a sign" data-q="q3"><div class="card">
+    <h2>4 · Momentum has a direction</h2>
     <p>A 0.40 kg ball rolls <strong>left</strong> at 5.0 m/s. Right is positive. <strong>What is its momentum?</strong></p>
     <div class="num-row"><button class="sign-btn" data-sign="q3">+</button><input class="num-input" id="q3Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">kg·m/s</span></div>
     <button class="primary" data-check="q3" style="width:100%">Check my answer</button>
     <div class="feedback" id="q3Fb"></div></div></section>
 
-  <section class="step" data-title="4 · More momentum?" data-q="q4"><div class="card">
-    <h2>4 · Which has more momentum?</h2>
+  <section class="step" data-title="5 · More momentum?" data-q="q4"><div class="card">
+    <h2>5 · Which has more momentum?</h2>
     <p>Cart A: 2.0 kg at 3.0 m/s. Cart B: 0.50 kg at 10 m/s.</p>
     <div data-mc="q4"><button class="big-btn" data-opt="A">Cart A</button><button class="big-btn" data-opt="B">Cart B</button><button class="big-btn" data-opt="same">They're the same</button></div>
     <div class="feedback" id="q4Fb"></div></div></section>
 
-  <section class="step" data-title="5 · Δp of a bounce" data-q="q5"><div class="card">
-    <h2>5 · Change in momentum</h2>
+  <section class="step" data-title="6 · Δp of a bounce" data-q="q5"><div class="card">
+    <h2>6 · Change in momentum</h2>
     <p>A 0.15 kg ball moving at +20 m/s is hit straight back at −30 m/s. <strong>What is the magnitude of its change in momentum?</strong></p>
     <div class="num-row"><button class="sign-btn" data-sign="q5">+</button><input class="num-input" id="q5Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">kg·m/s</span></div>
     <button class="primary" data-check="q5" style="width:100%">Check my answer</button>
     <div class="feedback" id="q5Fb"></div></div></section>
 
-  <section class="step" data-title="6 · Bounce or stop?" data-q="q6"><div class="card">
-    <h2>6 · Bounce or stop?</h2>
+  <section class="step" data-title="7 · Bounce or stop?" data-q="q6"><div class="card">
+    <h2>7 · Bounce or stop?</h2>
     <p>Two identical balls hit a wall at the same speed. Ball 1 stops dead. Ball 2 bounces back. Which one gets the <strong>bigger impulse</strong> from the wall?</p>
     <div data-mc="q6"><button class="big-btn" data-opt="bounce">Ball 2, the one that bounces</button><button class="big-btn" data-opt="stop">Ball 1, the one that stops</button><button class="big-btn" data-opt="same">Same, since they hit at the same speed</button></div>
     <div class="feedback" id="q6Fb"></div></div></section>
 
-  <section class="step" data-title="7 · Push a cart" data-q="q7"><div class="card">
-    <h2>7 · Impulse → speed</h2>
+  <section class="step" data-title="8 · Push a cart" data-q="q7"><div class="card">
+    <h2>8 · Impulse → speed</h2>
     <p>A 2.0 kg cart at rest is pushed with a steady 40 N for 0.50 s. <strong>How fast is it going afterward?</strong></p>
     <div class="num-row"><button class="sign-btn" data-sign="q7">+</button><input class="num-input" id="q7Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
     <button class="primary" data-check="q7" style="width:100%">Check my answer</button>
     <div class="feedback" id="q7Fb"></div></div></section>
 
-  <section class="step" data-title="8 · Airbags" data-q="q8"><div class="card">
-    <h2>8 · Why airbags work</h2>
+  <section class="step" data-title="9 · Airbags" data-q="q8"><div class="card">
+    <h2>9 · Why airbags work</h2>
     <p>Compared with hitting the dashboard, an airbag that stops the same passenger…</p>
     <div data-mc="q8"><button class="big-btn" data-opt="time">gives the same impulse over a longer time, so the force is smaller</button><button class="big-btn" data-opt="imp">gives a smaller impulse, so the force is smaller</button><button class="big-btn" data-opt="dp">makes the change in momentum smaller</button></div>
     <div class="feedback" id="q8Fb"></div></div></section>
 
-  <section class="step" data-title="9 · Momentum graph" data-q="q9"><div class="card">
-    <h2>9 · Slope of a p–t graph</h2>
+  <section class="step" data-title="10 · Momentum graph" data-q="q9"><div class="card">
+    <h2>10 · Slope of a p–t graph</h2>
     <p>A cart's momentum rises steadily from 2.0 to 8.0 kg·m/s over 3.0 s. <strong>What is the net force on it?</strong></p>
     <svg id="g9" viewBox="0 0 640 260" aria-label="Momentum versus time: a straight line from 2 kilogram meters per second at 0 seconds to 8 at 3 seconds"></svg>
     <div class="num-row"><button class="sign-btn" data-sign="q9">+</button><input class="num-input" id="q9Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N</span></div>
     <button class="primary" data-check="q9" style="width:100%">Check my answer</button>
     <div class="feedback" id="q9Fb"></div></div></section>
 
-  <section class="step" data-title="10 · Bridge to Thursday" data-q="q10"><div class="card">
-    <h2>10 · Put it together</h2>
+  <section class="step" data-title="11 · Bridge to Thursday" data-q="q10"><div class="card">
+    <h2>11 · Put it together</h2>
     <p>Carts A and B collide. By the third law, they push on each other with equal and opposite forces, for the <strong>same amount of time</strong>. So the impulses on A and B are…</p>
     <div data-mc="q10"><button class="big-btn" data-opt="eq">equal and opposite, so A gains exactly the momentum B loses</button><button class="big-btn" data-opt="heavy">bigger on the lighter cart</button><button class="big-btn" data-opt="dep">different, depending on which cart was moving</button></div>
     <div class="feedback" id="q10Fb"></div></div></section>
@@ -265,17 +271,18 @@ h3{font-size:19px;margin:18px 0 6px}
     Q: {
       q1: { mc: true, label: '1 · Third law', ans: 'eq', good: '<strong>Correct.</strong> Newton\'s third law: the forces in an interaction pair are always equal and opposite, no matter the masses.', bad: { truck: 'It feels that way because the bug is wrecked, but the third law says the pair of forces is always equal. The bug just can\'t handle the same force.', bug: 'The third law says the two forces are equal in size.' } },
       q2: { mc: true, label: '2 · Acceleration', ans: 'bug', good: '<strong>Correct.</strong> Same force, but a = F/m, and the bug\'s mass is tiny, so its acceleration is huge.', bad: { truck: 'Same force on each, and a = F/m. Which one has the small mass?', same: 'The forces are equal, but the masses aren\'t. a = F/m.' } },
-      q3: { label: '3 · p with a sign', answer: -2.0, tol: 0.02, signed: true, good: '<strong>Correct: −2.0 kg·m/s.</strong> p = (0.40)(−5.0). The minus sign means "to the left."', signWrong: '<strong>Right size, wrong sign.</strong> It\'s moving left, and right is +. Tap the ± button.', special: [{ v: 12.5, msg: '<strong>Multiply, don\'t divide.</strong> p = mv.' }, { v: -12.5, msg: '<strong>Multiply, don\'t divide.</strong> p = mv.' }], wrong: '<strong>Not yet.</strong> p = m × v, and v is negative because it moves left.' },
-      q4: { mc: true, label: '4 · More momentum', ans: 'A', good: '<strong>Correct.</strong> A: (2.0)(3.0) = 6.0 kg·m/s. B: (0.50)(10) = 5.0 kg·m/s. The faster one doesn\'t always win.', bad: { B: 'Faster doesn\'t mean more momentum. Work out p = mv for both: 6.0 vs. 5.0.', same: 'Work out p = mv for both: 6.0 vs. 5.0 kg·m/s.' } },
-      q5: { label: '5 · Δp of a bounce', answer: 7.5, tol: 0.05, good: '<strong>Correct: 7.5 kg·m/s.</strong> Δv = −30 − (+20) = −50 m/s. Δp = (0.15)(−50) = −7.5, magnitude 7.5.', special: [{ v: 1.5, msg: '<strong>You subtracted the speeds.</strong> The ball reverses, so Δv = −30 − (+20) = −50 m/s.' }, { v: 50, msg: '<strong>That\'s Δv.</strong> Multiply by the mass.' }], wrong: '<strong>Not yet.</strong> Δp = m(v<sub>f</sub> − v<sub>i</sub>), with the signs: v<sub>f</sub> = −30, v<sub>i</sub> = +20.' },
-      q6: { mc: true, label: '6 · Bounce vs. stop', ans: 'bounce', good: '<strong>Correct.</strong> Stopping takes away all its momentum. Bouncing takes it away <em>and</em> gives it momentum the other way, so Δp (the impulse) is bigger.', bad: { stop: 'Stopping changes p from +mv to 0. Bouncing changes it from +mv to −mv, which is a bigger change.', same: 'The impulse depends on the <em>change</em> in momentum, and the bounce changes more: +mv to −mv.' } },
-      q7: { label: '7 · Push → speed', answer: 10, tol: 0.1, good: '<strong>Correct: 10 m/s.</strong> J = FΔt = (40)(0.50) = 20 N·s = Δp. v = 20 ÷ 2.0 = 10 m/s.', special: [{ v: 20, msg: '<strong>That\'s the impulse</strong> (20 N·s). Divide by the mass for the speed.' }, { v: 40, msg: '<strong>Multiply F by Δt</strong> to get the impulse, then divide by m.' }, { v: 2.5, msg: '<strong>Multiply F × Δt,</strong> don\'t divide.' }], wrong: '<strong>Not yet.</strong> FΔt = Δp = mΔv. Start from rest.' },
-      q8: { mc: true, label: '8 · Airbags', ans: 'time', good: '<strong>Correct.</strong> The passenger goes from moving to stopped either way, so Δp and the impulse are the same. A longer Δt means a smaller F.', bad: { imp: 'The passenger stops either way, so the change in momentum (the impulse) is the same. What\'s different is the time.', dp: 'The passenger goes from the same speed to 0 either way. Δp is the same, and the airbag stretches out the time.' } },
-      q9: { label: '9 · Slope = force', answer: 2.0, tol: 0.05, good: '<strong>Correct: 2.0 N.</strong> Slope of p–t = Δp ÷ Δt = (8.0 − 2.0) ÷ 3.0 = 2.0 N.', special: [{ v: 6, msg: '<strong>That\'s Δp.</strong> The force is the slope: Δp ÷ Δt.' }, { v: 18, msg: '<strong>Divide by time, don\'t multiply.</strong> F = Δp ÷ Δt.' }, { v: 2.67, msg: '<strong>Use the change,</strong> not the final value: (8.0 − 2.0) ÷ 3.0.' }, { v: 0.5, msg: '<strong>Flip it:</strong> F = Δp ÷ Δt.' }], wrong: '<strong>Not yet.</strong> On a p–t graph, the slope is the net force.' },
-      q10: { mc: true, label: '10 · Equal impulses', ans: 'eq', good: '<strong>Correct, and that\'s Thursday\'s big idea.</strong> Equal and opposite impulses mean whatever momentum one cart loses, the other gains. The total stays the same: conservation of momentum.', bad: { heavy: 'Equal forces for equal times means equal impulses. The lighter cart has a bigger change in <em>velocity</em>, but the same change in momentum.', dep: 'The third law doesn\'t care which was moving. Same force, same time, so same-size impulse.' } }
+      qp: { mc: true, label: '3 · Third-law pairs', ans: 'no', good: '<strong>Correct.</strong> Third-law pairs always act on <em>two different</em> objects and are the same type of force. Gravity on the box (Earth pulls box) pairs with the box pulling up on Earth. The floor pushing up on the box pairs with the box pushing down on the floor. The 50 N and 50 N here balance because of Newton\'s <em>second</em> law (the box isn\'t accelerating).', bad: { yes: 'Equal and opposite isn\'t enough. A third-law pair acts on two <em>different</em> objects. Both of these forces act on the box. What does the box push or pull on in return?', rest: 'Balanced forces on a resting box come from the <em>second</em> law (zero acceleration means zero net force), not the third. Third-law pairs act on two different objects.' } },
+      q3: { label: '4 · p with a sign', answer: -2.0, tol: 0.02, signed: true, good: '<strong>Correct: −2.0 kg·m/s.</strong> p = (0.40)(−5.0). The minus sign means "to the left."', signWrong: '<strong>Right size, wrong sign.</strong> It\'s moving left, and right is +. Tap the ± button.', special: [{ v: 12.5, msg: '<strong>Multiply, don\'t divide.</strong> p = mv.' }, { v: -12.5, msg: '<strong>Multiply, don\'t divide.</strong> p = mv.' }], wrong: '<strong>Not yet.</strong> p = m × v, and v is negative because it moves left.' },
+      q4: { mc: true, label: '5 · More momentum', ans: 'A', good: '<strong>Correct.</strong> A: (2.0)(3.0) = 6.0 kg·m/s. B: (0.50)(10) = 5.0 kg·m/s. The faster one doesn\'t always win.', bad: { B: 'Faster doesn\'t mean more momentum. Work out p = mv for both: 6.0 vs. 5.0.', same: 'Work out p = mv for both: 6.0 vs. 5.0 kg·m/s.' } },
+      q5: { label: '6 · Δp of a bounce', answer: 7.5, tol: 0.05, good: '<strong>Correct: 7.5 kg·m/s.</strong> Δv = −30 − (+20) = −50 m/s. Δp = (0.15)(−50) = −7.5, magnitude 7.5.', special: [{ v: 1.5, msg: '<strong>You subtracted the speeds.</strong> The ball reverses, so Δv = −30 − (+20) = −50 m/s.' }, { v: 50, msg: '<strong>That\'s Δv.</strong> Multiply by the mass.' }], wrong: '<strong>Not yet.</strong> Δp = m(v<sub>f</sub> − v<sub>i</sub>), with the signs: v<sub>f</sub> = −30, v<sub>i</sub> = +20.' },
+      q6: { mc: true, label: '7 · Bounce vs. stop', ans: 'bounce', good: '<strong>Correct.</strong> Stopping takes away all its momentum. Bouncing takes it away <em>and</em> gives it momentum the other way, so Δp (the impulse) is bigger.', bad: { stop: 'Stopping changes p from +mv to 0. Bouncing changes it from +mv to −mv, which is a bigger change.', same: 'The impulse depends on the <em>change</em> in momentum, and the bounce changes more: +mv to −mv.' } },
+      q7: { label: '8 · Push → speed', answer: 10, tol: 0.1, good: '<strong>Correct: 10 m/s.</strong> J = FΔt = (40)(0.50) = 20 N·s = Δp. v = 20 ÷ 2.0 = 10 m/s.', special: [{ v: 20, msg: '<strong>That\'s the impulse</strong> (20 N·s). Divide by the mass for the speed.' }, { v: 40, msg: '<strong>Multiply F by Δt</strong> to get the impulse, then divide by m.' }, { v: 2.5, msg: '<strong>Multiply F × Δt,</strong> don\'t divide.' }], wrong: '<strong>Not yet.</strong> FΔt = Δp = mΔv. Start from rest.' },
+      q8: { mc: true, label: '9 · Airbags', ans: 'time', good: '<strong>Correct.</strong> The passenger goes from moving to stopped either way, so Δp and the impulse are the same. A longer Δt means a smaller F.', bad: { imp: 'The passenger stops either way, so the change in momentum (the impulse) is the same. What\'s different is the time.', dp: 'The passenger goes from the same speed to 0 either way. Δp is the same, and the airbag stretches out the time.' } },
+      q9: { label: '10 · Slope = force', answer: 2.0, tol: 0.05, good: '<strong>Correct: 2.0 N.</strong> Slope of p–t = Δp ÷ Δt = (8.0 − 2.0) ÷ 3.0 = 2.0 N.', special: [{ v: 6, msg: '<strong>That\'s Δp.</strong> The force is the slope: Δp ÷ Δt.' }, { v: 18, msg: '<strong>Divide by time, don\'t multiply.</strong> F = Δp ÷ Δt.' }, { v: 2.67, msg: '<strong>Use the change,</strong> not the final value: (8.0 − 2.0) ÷ 3.0.' }, { v: 0.5, msg: '<strong>Flip it:</strong> F = Δp ÷ Δt.' }], wrong: '<strong>Not yet.</strong> On a p–t graph, the slope is the net force.' },
+      q10: { mc: true, label: '11 · Equal impulses', ans: 'eq', good: '<strong>Correct, and that\'s Thursday\'s big idea.</strong> Equal and opposite impulses mean whatever momentum one cart loses, the other gains. The total stays the same: conservation of momentum.', bad: { heavy: 'Equal forces for equal times means equal impulses. The lighter cart has a bigger change in <em>velocity</em>, but the same change in momentum.', dep: 'The third law doesn\'t care which was moving. Same force, same time, so same-size impulse.' } }
     },
     teacherExtra: function (note, list) {
-      note(document.querySelector('[data-title="10 · Bridge to Thursday"] h2'), '<strong>Why this one is last:</strong> it sets up ML5 (conservation of momentum), which is due Thursday. If you\'re back, it makes a good opener question.');
+      note(document.querySelector('[data-title="11 · Bridge to Thursday"] h2'), '<strong>Why this one is last:</strong> it sets up ML5 (conservation of momentum), which is due Thursday. If you\'re back, it makes a good opener question.');
     }
   };
 })();
