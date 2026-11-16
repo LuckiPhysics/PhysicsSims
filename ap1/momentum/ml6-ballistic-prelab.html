@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 6: Ballistic Pendulum Pre-Lab</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml6-ballistic-prelab.html">regular lesson link</a>. · <a href="ml6-ballistic-prelab-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 6 · Pre-Lab</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Pre-Lab: The Ballistic Pendulum</h1>
+      <p class="muted">About 13 minutes · Due before class Friday 11/20 (lab day)</p>
+      <p>Friday's lab needs Unit 3 (energy) and Unit 4 (momentum) working together. A spring launches a ball, a catcher arm grabs it, and the arm swings up. Tonight you'll build the toolkit: which law works at each stage, and why. You'll plan the procedure yourself in lab.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag. Bring the sheet to lab.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Three stages -->
+  <section class="step" data-title="Three stages">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Three stages, two laws</h2>
+      <p>Tap each stage to see what's conserved.</p>
+      <svg viewBox="0 0 640 230" aria-label="Stage 1: spring launcher pushes the ball. Stage 2: the ball is caught by the catcher arm. Stage 3: the arm swings up to height h.">
+        <!-- stage 1 launcher -->
+        <rect x="20" y="150" width="120" height="40" rx="6" style="fill:var(--line);stroke:var(--ink)" stroke-width="2"/>
+        <path d="M30 170 l10 -12 l10 24 l10 -24 l10 24 l10 -24 l10 24 l10 -12" fill="none" style="stroke:var(--ink)" stroke-width="3"/>
+        <circle cx="135" cy="170" r="11" style="fill:var(--cartB)"/>
+        <line x1="150" y1="170" x2="190" y2="170" style="stroke:var(--ink)" stroke-width="3"/><path d="M190 164 L202 170 L190 176 Z" style="fill:var(--ink)"/>
+        <!-- stage 2 catch -->
+        <line x1="320" y1="30" x2="320" y2="150" style="stroke:var(--ink)" stroke-width="4"/>
+        <circle cx="320" cy="30" r="6" style="fill:var(--ink)"/>
+        <rect x="296" y="150" width="48" height="40" rx="6" style="fill:var(--cartA)"/>
+        <circle cx="290" cy="170" r="11" style="fill:var(--cartB)"/>
+        <!-- stage 3 swing -->
+        <circle cx="520" cy="30" r="6" style="fill:var(--ink)"/>
+        <line x1="520" y1="30" x2="520" y2="153" style="stroke:var(--muted)" stroke-width="3" stroke-dasharray="6 6"/>
+        <rect x="496" y="153" width="48" height="34" rx="6" fill="none" style="stroke:var(--muted)" stroke-width="2" stroke-dasharray="6 6"/>
+        <line x1="520" y1="30" x2="599" y2="124" style="stroke:var(--ink)" stroke-width="4"/>
+        <g transform="rotate(-40 610 137)"><rect x="586" y="120" width="48" height="34" rx="6" style="fill:var(--cartA)"/><circle cx="584" cy="137" r="11" style="fill:var(--cartB)"/></g>
+        <line x1="470" y1="170" x2="636" y2="170" style="stroke:var(--note)" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="470" y1="137" x2="636" y2="137" style="stroke:var(--note)" stroke-width="2" stroke-dasharray="4 4"/>
+        <line x1="478" y1="140" x2="478" y2="167" style="stroke:var(--note)" stroke-width="2"/>
+        <text x="466" y="160" text-anchor="end" font-size="20" font-weight="800" style="fill:var(--note)">h</text>
+        <text x="80" y="222" text-anchor="middle" font-size="17" font-weight="800">1. Launch</text>
+        <text x="320" y="222" text-anchor="middle" font-size="17" font-weight="800">2. Catch</text>
+        <text x="545" y="222" text-anchor="middle" font-size="17" font-weight="800">3. Swing</text>
+      </svg>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px">
+        <button class="ghost" data-stage="1" style="flex:1">1. Launch</button>
+        <button class="ghost" data-stage="2" style="flex:1">2. Catch</button>
+        <button class="ghost" data-stage="3" style="flex:1">3. Swing</button>
+      </div>
+      <div class="readout" id="stageOut" style="font-size:19px;text-align:left;min-height:96px">Tap a stage.</div>
+      <p><strong>Quick check:</strong> In which stage can you <em>not</em> use conservation of energy?</p>
+      <button class="big-btn" data-quick="1">Stage 1 (launch)</button>
+      <button class="big-btn" data-quick="2">Stage 2 (catch)</button>
+      <button class="big-btn" data-quick="3">Stage 3 (swing)</button>
+      <div class="feedback" id="quickFb"></div>
+      <div class="notes-box"><strong>Box A:</strong> 1. Launch: <strong>energy</strong> (½kx² → ½mv²). 2. Catch: <strong>momentum</strong> (they stick, so KE is lost). 3. Swing: <strong>energy</strong> (½(m+M)v′² → (m+M)gh). Never use energy across the catch.</div>
+    </div>
+  </section>
+
+  <!-- 2 Launch speed -->
+  <section class="step" data-title="Launch speed">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Stage 1: the spring launch</h2>
+      <p>The compressed spring's energy becomes the ball's kinetic energy: <strong>½kx² = ½mv²</strong>, so <strong>v = x√(k/m)</strong>.</p>
+      <p>Try it with a 200 N/m spring and a 50 g ball:</p>
+      <div class="slider-row"><label for="sX">Compression x: <strong id="vX"></strong></label><input type="range" id="sX" min="1" max="6" step="0.5" value="3"></div>
+      <div class="readout" id="launchOut" style="font-size:20px"></div>
+      <p class="hint" id="launchNote" style="text-align:center">Double the compression and watch what happens to v.</p>
+      <div class="notes-box"><strong>Box B:</strong> ½kx² = ½mv². Speed is <strong>proportional to x</strong>: double the compression, double the speed (and 4× the energy). If you know v and x, you can find k: <strong>k = mv² / x²</strong>.</div>
+    </div>
+  </section>
+
+  <!-- 3 Catch + swing -->
+  <section class="step" data-title="Catch and swing">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Stages 2 and 3: catch, then swing</h2>
+      <p>Ball (m) hits the arm (M) at speed v and sticks. Then the pair swings up to height h.</p>
+      <div id="csSteps">
+        <div class="reveal step-line"><strong>Catch (momentum):</strong> mv = (m + M)v′, so <strong>v′ = mv / (m + M)</strong>. It's always slower than v.</div>
+        <div class="reveal step-line"><strong>Swing (energy):</strong> ½(m + M)v′² = (m + M)gh. The masses cancel: <strong>h = v′² / 2g</strong>.</div>
+        <div class="reveal step-line"><strong>Run it backward:</strong> measure h, then v′ = √(2gh), then use momentum to get v (or the arm's mass M).</div>
+        <div class="reveal step-line"><strong>Why not skip the catch?</strong> ½mv² = (m + M)gh is wrong. The catch is inelastic: much of the KE becomes heat and sound, so this predicts a height that's way too high.</div>
+      </div>
+      <button class="ghost" id="csNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box C:</strong> Catch: <strong>mv = (m + M)v′</strong>. Swing: <strong>h = v′² / 2g</strong>. You can go forward (v → h) or backward (h → v′ → v or M).</div>
+    </div>
+  </section>
+
+  <!-- 4 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example: predict the height</h2>
+      <p>A 0.050 kg ball leaves the launcher at 4.0 m/s and sticks in a 0.20 kg catcher arm. How high does the arm swing?</p>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1, catch (momentum):</strong> (0.050)(4.0) = (0.050 + 0.20)v′, so 0.20 = 0.25v′ and <strong>v′ = 0.80 m/s</strong>.</div>
+        <div class="reveal step-line"><strong>Step 2, swing (energy):</strong> h = v′² / 2g = (0.80)² / (2 × 9.8) = 0.64 / 19.6 = <strong>0.033 m ≈ 3.3 cm</strong>.</div>
+        <div class="reveal step-line"><strong>Check:</strong> KE before the catch = ½(0.050)(4.0)² = 0.40 J. KE after = ½(0.25)(0.80)² = 0.080 J. Only 20% of the KE survived the catch.</div>
+        <div class="reveal step-line"><strong>The trap:</strong> skipping the catch gives h = 0.40 J ÷ (0.25 kg × 9.8) ≈ 16 cm, five times too high.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 5 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3 · Launch</h2>
+      <p>A 200 N/m spring is compressed 0.040 m and launches a 0.050 kg ball. How fast does the ball leave?</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q1" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q1Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q1" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 6 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3 · Catch and swing</h2>
+      <p>A 0.060 kg ball moving at 3.0 m/s sticks in a 0.24 kg catcher arm. How high does the arm swing? Answer in <strong>centimeters</strong>.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">cm</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3 · Why it's wrong</h2>
+      <p>A student predicts the height with ½mv<sub>ball</sub>² = (m + M)gh, skipping the catch. Her prediction will be…</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="high">too high, because KE is lost when the ball sticks</button>
+        <button class="big-btn" data-opt="low">too low, because momentum is lost when the ball sticks</button>
+        <button class="big-btn" data-opt="right">right, because energy is always conserved</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–E on my notes sheet</span></button>
+      <label for="confused"><strong>Lab planning:</strong> <span class="muted">(optional)</span> Part 2 asks for the catcher arm's mass. Which quantities would you measure to find it?</label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., the ball's mass and …"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 6: Ballistic Pendulum Pre-Lab</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Spring launch speed</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Catch, then swing</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Why you can't skip the catch</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–E</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Lab idea: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Coming up</h2>
+      <p style="margin:0">Friday is Lab 4.2, the ballistic pendulum. Bring this notes sheet. Then, after break: <strong>Mastering HW 4.2</strong> (due Tue 12/1) has the same energy-then-force move in the apple problem (6.40).</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML6';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Stage buttons ----------
+  var STAGES = {
+    '1': '<strong>1. Launch: conserve energy.</strong> The spring\'s elastic energy becomes the ball\'s kinetic energy: ½kx² = ½mv². No collision yet, and friction is small.',
+    '2': '<strong>2. Catch: conserve momentum.</strong> mv = (m + M)v′. The ball sticks, so this is an inelastic collision: momentum is conserved, but a lot of KE becomes heat and sound.',
+    '3': '<strong>3. Swing: conserve energy.</strong> The ball + arm\'s KE becomes gravitational PE: ½(m + M)v′² = (m + M)gh.'
+  };
+  document.querySelectorAll('[data-stage]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-stage]').forEach(function (x) { var on = x === b; x.style.borderColor = on ? 'var(--accent)' : ''; x.style.background = on ? 'var(--accent-soft)' : ''; });
+      document.getElementById('stageOut').innerHTML = STAGES[b.getAttribute('data-stage')];
+    });
+  });
+
+  // ---------- Launch slider ----------
+  function drawLaunch() {
+    var xcm = +document.getElementById('sX').value, x = xcm / 100, k = 200, m = 0.050;
+    var E = 0.5 * k * x * x, v = x * Math.sqrt(k / m);
+    document.getElementById('vX').textContent = xcm.toFixed(1) + ' cm';
+    document.getElementById('launchOut').innerHTML = 'Spring energy = ½(200)(' + x.toFixed(3) + ')² = <strong>' + E.toFixed(3) + ' J</strong> → v = <strong>' + v.toFixed(2) + ' m/s</strong>';
+  }
+  document.getElementById('sX').addEventListener('input', drawLaunch); drawLaunch();
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { type: 'num', answer: 2.53, tol: 0.03, label: '1. Spring launch speed',
+          good: '<strong>Correct: about 2.5 m/s.</strong> ½(200)(0.040)² = 0.16 J = ½(0.050)v², so v² = 6.4 and v ≈ 2.53 m/s.',
+          special: [{ v: 6.4, msg: '<strong>That\'s v².</strong> Take the square root.' },
+                    { v: 3.58, msg: '<strong>Check the ½s.</strong> They cancel only if you keep both: ½kx² = ½mv².' },
+                    { v: 0.16, msg: '<strong>That\'s the spring energy in joules.</strong> Set it equal to ½mv² and solve for v.' },
+                    { v: 1.79, msg: '<strong>Did you drop a ½ on one side?</strong> ½kx² = ½mv², so v = x√(k/m).' }],
+          wrong: '<strong>Not yet.</strong> ½kx² = ½mv². Use x in meters (0.040 m) and m in kg (0.050 kg).' },
+    q2: { type: 'num', answer: 1.84, tol: 0.06, label: '2. Catch, then swing',
+          good: '<strong>Correct: about 1.8 cm.</strong> Catch: (0.060)(3.0) = (0.30)v′, so v′ = 0.60 m/s. Swing: h = (0.60)² / 19.6 = 0.0184 m ≈ 1.8 cm.',
+          special: [{ v: 9.18, msg: '<strong>You skipped the catch.</strong> KE isn\'t conserved when the ball sticks. Find v′ with momentum first.' },
+                    { v: 0.0184, msg: '<strong>Right physics, wrong unit.</strong> That\'s meters. Convert to centimeters.' },
+                    { v: 3.67, msg: '<strong>Check the 2 in h = v′² / 2g.</strong>' },
+                    { v: 45.9, msg: '<strong>Find v′ first.</strong> The arm doesn\'t move at the ball\'s 3.0 m/s; use mv = (m + M)v′.' }],
+          wrong: '<strong>Not yet.</strong> Two stages: mv = (m + M)v′, then h = v′² / 2g. Answer in cm.' },
+    q3: { type: 'mc', ans: 'high', label: '3. Why you can\'t skip the catch',
+          good: '<strong>Correct.</strong> The catch is inelastic, so some KE turns into heat and sound. Using the ball\'s full KE predicts a height that\'s too high (about 5× too high in the worked example).',
+          bad: { low: 'Momentum is conserved in the catch. It\'s KE that\'s lost, so the prediction comes out too high, not too low.',
+                 right: 'Total energy is conserved, but not as <em>kinetic + gravitational</em> energy. In the catch, some KE becomes heat and sound, which can\'t lift the arm.' } }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-title') === 'Three stages') return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Quick check ----------
+  var QUICK = { '2': [true, '<strong>Right.</strong> The ball sticks, so KE is lost in the catch. Use momentum there, and energy before and after it.'],
+                '1': [false, '<strong>Not quite.</strong> The launch has no collision: the spring\'s energy becomes the ball\'s KE. Which stage has the ball sticking to something?'],
+                '3': [false, '<strong>Not quite.</strong> Once the ball and arm move together, KE becomes height. Which stage has a collision?'] };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (state.quick) return;
+      var r = QUICK[b.getAttribute('data-quick')];
+      document.querySelectorAll('[data-quick]').forEach(function (x) { x.classList.remove('wrong'); });
+      b.classList.add(r[0] ? 'right' : 'wrong'); fb('quickFb', r[0], r[1]);
+      if (r[0]) { state.quick = true; upd(); }
+    });
+  });
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('csSteps', 'csNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong, a = Math.abs(val);
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(a - sp.v) <= Math.max(Math.abs(sp.v) * 0.03, 0.005)) msg = sp.msg; });
+      if (Math.abs(val + cfg.answer) <= cfg.tol) msg = '<strong>Check the sign.</strong> Speeds and heights here are positive.';
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q].right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + more(q));
+      });
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var e = document.getElementById(id), s = state[q];
+    if (s.first === true) { e.textContent = '✓ first try'; e.className = 'badge g'; }
+    else if (s.right) { e.textContent = '✓ after ' + s.tries + ' tries'; e.className = 'badge y'; }
+    else { e.textContent = '✗ review in class'; e.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    ['csNext', 'wxNext'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
+    document.getElementById('stageOut').innerHTML = STAGES['1'] + '<br>' + STAGES['2'] + '<br>' + STAGES['3'];
+    document.querySelector('[data-quick="2"]').classList.add('right'); fb('quickFb', true, QUICK['2'][1]);
+    note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Wrong-choice feedback: ' + list(['"Stage 1": ' + plain(QUICK['1'][1]), '"Stage 3": ' + plain(QUICK['3'][1])]));
+    note(document.getElementById('launchNote'), '<strong>Slider:</strong> k = 200 N/m, m = 0.050 kg, x from 1 to 6 cm, so v = x√(k/m) ≈ 63.2·x (x in m). At 3 cm: 0.090 J, 1.90 m/s; at 6 cm: 0.36 J, 3.79 m/s. <strong>Design note:</strong> the lesson gives the tools (½kx², momentum in the catch, h = v′²/2g) but not a procedure for Parts 1–3, so the lab stays open. It never mentions how to measure launch speed (photogate, horizontal-launch range, or running the pendulum backward).');
+    ['q1', 'q2'].forEach(function (q) {
+      var cfg = Q[q];
+      document.getElementById(q + 'Input').value = cfg.answer;
+      fb(q + 'Fb', true, cfg.good);
+      var items = (cfg.special || []).map(function (sp) { return sp.v + ': ' + plain(sp.msg); });
+      items.push('Anything else: ' + plain(cfg.wrong));
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±' + cfg.tol + '):' + list(items));
+    });
+    var g3 = document.querySelector('[data-mc="q3"]');
+    g3.querySelector('[data-opt="high"]').classList.add('right'); fb('q3Fb', true, Q.q3.good);
+    note(document.getElementById('q3Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(Q.q3.bad).map(function (o) {
+      return '"' + g3.querySelector('[data-opt="' + o + '"]').textContent + '": ' + plain(Q.q3.bad[o]);
+    })));
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: false, done: true, right: true, tries: 2 };
+    state.q3 = { first: true, done: true, right: true, tries: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'the ball\'s mass and speed, and how high the arm swings';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> The optional "Lab planning" answer shows who already sees the backward method for Part 2 (measure h → v′ → M). The most common miss on Check 2 is 9.2 cm (skipping the catch).');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>
