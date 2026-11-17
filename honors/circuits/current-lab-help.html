@@ -160,6 +160,11 @@
   body.teacher nav.tabs, body.teacher #meterPick, body.teacher #meterHint { display: none; }
   @media print { nav.tabs, .theme-btn, .stepnav { display: none; } .panel { display: block; } }
   details.stuck .ans p.lol { background: var(--note-soft); border-radius: 10px; padding: 8px 12px; }
+  .warnbig { border: 3px solid var(--bad); border-top: 8px solid var(--bad); background: var(--bad-soft); }
+  .warnhead { font-size: 28px; font-weight: 900; line-height: 1.2; color: var(--bad); margin-bottom: 10px; }
+  .warnfoot { font-size: 20px; margin: 12px 0 0; }
+  .legsSvg { background: var(--card); border-radius: 12px; margin-top: 6px; }
+  .check-row.rule { margin: 8px 0; }
 </style>
 </head>
 <body class="lab">
@@ -173,6 +178,30 @@
     <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
   </header>
 
+  <section id="gate">
+    <div class="card warnbig">
+      <div class="warnhead">⚠️ Do NOT bend the resistor wires</div>
+      <p>The white resistors' wires <strong>snap very easily</strong>. Some are already bent from earlier classes. Trying to straighten them is how they break.</p>
+      <svg class="legsSvg" viewBox="0 0 900 300" role="img" aria-label="Three resistors: one with straight wires, one with slightly wavy wires, one with wires curled like a pig tail. Each is marked: leave it."></svg>
+      <p class="warnfoot">Straight, wavy, or curled up: <strong>leave the wires exactly how you find them.</strong> Clip onto them as they are.</p>
+    </div>
+    <div class="card">
+      <h2>Safety check</h2>
+      <p class="muted">Tap each rule after you've read it. Then the rest of the help page opens.</p>
+      <svg id="safetySvg" viewBox="0 0 900 290" role="img" aria-label="Power supply. The top CURRENT knobs are covered and marked do not touch. The green GND post is crossed out. The bottom VOLTAGE knobs are outlined in red."></svg>
+      <div id="ruleChecks">
+        <button class="check-row rule"><span class="box"></span><span><strong>1. Build with the power OFF.</strong> Only turn it on after your partner check.</span></button>
+        <button class="check-row rule"><span class="box"></span><span><strong>2. Never touch the top CURRENT knobs.</strong> Mr. Lucki set them. Use only the bottom <strong>VOLTAGE</strong> knobs.</span></button>
+        <button class="check-row rule"><span class="box"></span><span><strong>3. Use only the red + post and the black − post.</strong> Never the green GND post in the middle.</span></button>
+        <button class="check-row rule"><span class="box"></span><span><strong>4. Set the meter's dial before you hook it up.</strong> Never turn the dial while the meter is part of a powered circuit.</span></button>
+        <button class="check-row rule"><span class="box"></span><span><strong>5. Hold wires by the clips and turn the power off between readings.</strong> Resistors can get warm.</span></button>
+        <button class="check-row rule"><span class="box"></span><span><strong>6. Never bend or straighten the resistor wires.</strong> Leave them in whatever shape they're in. They snap easily.</span></button>
+      </div>
+      <button class="primary" id="gateBtn" style="width:100%;margin-top:8px" disabled>Read all 6 rules to continue</button>
+    </div>
+  </section>
+
+  <div id="main">
   <div class="card">
     <h1>Current Lab: Help Page</h1>
     <p class="muted">Binder pages 69–72 · Keep this page open during the lab.</p>
@@ -193,18 +222,19 @@
     <button data-tab="done">✅ When you're done</button>
   </nav>
 
-  <!-- SAFETY -->
+  <!-- SAFETY (review) -->
   <section class="panel" id="safety">
     <div class="card">
-      <h2>Five rules before you touch anything</h2>
-      <svg id="safetySvg" viewBox="0 0 900 290" role="img" aria-label="Power supply. The top CURRENT knobs are covered and marked do not touch. The green GND post is crossed out. The bottom VOLTAGE knobs are outlined in red."></svg>
+      <h2>The six safety rules</h2>
       <ol class="rules">
         <li><strong>Build with the power OFF.</strong> Only turn it on after your partner check.</li>
         <li><strong>Never touch the top CURRENT knobs.</strong> Mr. Lucki set them. Use only the bottom <strong>VOLTAGE</strong> knobs.</li>
         <li><strong>Use only the red + post and the black − post.</strong> Never the green GND post in the middle.</li>
         <li><strong>Set the meter's dial before you hook it up.</strong> Never turn the dial while the meter is part of a powered circuit.</li>
         <li><strong>Hold wires by the clips and turn the power off between readings.</strong> Resistors can get warm.</li>
+        <li><strong>Never bend or straighten the resistor wires.</strong> Leave them in whatever shape they're in. They snap easily.</li>
       </ol>
+      <svg class="legsSvg" viewBox="0 0 900 300" role="img" aria-label="Resistor wires: straight, wavy, or curled. Leave them all as they are."></svg>
     </div>
   </section>
 
@@ -271,6 +301,7 @@
     </div>
   </section>
 
+  </div>
   <div class="card teacher-only" id="teacherKey"></div>
 </div>
 <script>(function () {
@@ -626,15 +657,54 @@
 
   document.querySelectorAll('[data-done]').forEach(function (b) { b.addEventListener('click', function () { b.classList.toggle('on'); b.querySelector('.box').textContent = b.classList.contains('on') ? '✓' : ''; }); });
 
+  // ---------- Resistor legs warning ----------
+  function legs(s) {
+    var P = { straight: 'M0,0 L80,0', wavy: 'M0,0 C10,-18 20,18 30,0 S50,-18 60,0 S74,14 82,6', curl: 'M0,0 L8,0 C20,-34 52,-28 44,0 C36,26 8,16 18,-8 C28,-32 66,-28 62,2 C58,28 32,22 38,0' };
+    [['straight', 'Straight', 150], ['wavy', 'A little wavy', 450], ['curl', 'Curled like a pig tail', 750]].forEach(function (r) {
+      var g = E('g', { transform: 'translate(' + r[2] + ',115) scale(0.95)' }, s);
+      ['R', 'L'].forEach(function (side) {
+        var gg = E('g', { transform: 'translate(' + (side === 'R' ? 55 : -55) + ',0) scale(' + (side === 'R' ? 1 : -1) + ',1)' }, g);
+        E('path', { d: P[r[0]], fill: 'none', stroke: '#8d8d8d', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, gg);
+      });
+      E('rect', { x: -56, y: -21, width: 112, height: 42, rx: 4, fill: '#f3f1ea', stroke: '#9c9a92', 'stroke-width': 2 }, g);
+      E('text', { x: -46, y: -5, 'font-size': 11, 'font-weight': 800, style: 'fill:#555' }, g, 'XICON');
+      E('text', { x: -46, y: 13, 'font-size': 13, 'font-weight': 800, style: 'fill:#333' }, g, '5W');
+      E('text', { x: -6, y: 13, 'font-size': 19, 'font-weight': 900, style: 'fill:#111' }, g, '10\u03a9');
+      E('text', { x: r[2], y: 205, 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 700 }, s, r[1]);
+      E('rect', { x: r[2] - 82, y: 225, width: 164, height: 44, rx: 22, fill: '#15803d' }, s);
+      E('text', { x: r[2], y: 254, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, style: 'fill:#fff' }, s, '\u2713 Leave it');
+    });
+  }
+  document.querySelectorAll('.legsSvg').forEach(legs);
+  // ---------- Safety gate ----------
+  var gate = document.getElementById('gate'), mainEl = document.getElementById('main'), gateBtn = document.getElementById('gateBtn');
+  var rules = document.querySelectorAll('#ruleChecks .rule');
+  function today() { return new Date().toDateString(); }
+  function gateUpdate() {
+    var n = Array.prototype.filter.call(rules, function (r) { return r.classList.contains('on'); }).length;
+    gateBtn.disabled = n < rules.length;
+    gateBtn.textContent = n < rules.length ? 'Read all ' + rules.length + ' rules to continue (' + n + ' of ' + rules.length + ')' : 'Open the lab help \u25b6';
+  }
+  rules.forEach(function (r) { r.addEventListener('click', function () { r.classList.toggle('on'); r.querySelector('.box').textContent = r.classList.contains('on') ? '\u2713' : ''; gateUpdate(); }); });
+  function unlock(save) {
+    gate.style.display = 'none'; mainEl.style.display = '';
+    if (save) try { localStorage.setItem('lp-currentlab-safety', today()); } catch (e) {}
+    window.scrollTo(0, 0);
+  }
+  gateBtn.addEventListener('click', function () { if (!gateBtn.disabled) unlock(true); });
+  gateUpdate();
   // ---------- Start ----------
   if (!TEACHER) {
     viewer('p1', P1, p1Scene, CHECKS.p1);
     if (meters === '1' || meters === '2') setMeters(meters, false);
-    show('safety');
+    show('p1');
+    var ok = null; try { ok = localStorage.getItem('lp-currentlab-safety'); } catch (e) {}
+    if (ok === today()) unlock(false); else { mainEl.style.display = 'none'; gate.style.display = ''; }
     return;
   }
   // ---------- Teacher view: everything open ----------
   document.body.classList.add('teacher');
+  rules.forEach(function (r) { r.classList.add('on'); r.querySelector('.box').textContent = '\u2713'; }); gateUpdate();
   var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
   document.title = 'Teacher view · ' + document.title;
   document.querySelectorAll('.panel').forEach(function (p) { p.classList.add('active'); });
