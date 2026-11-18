@@ -52,6 +52,12 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
   - a `noindex` tag
   List each lesson on the unlisted `teacher/index.html`, with Teacher view, Student view, and Notes PDF buttons. Never link to the teacher page from student pages. The site is public, so treat it as unlisted, not private.
 
+## Notation (from Unit 4 ML6 on)
+- **No prime marks** (v′). They are hard to see and track.
+- **Use i and f subscripts** for before and after: v<sub>i</sub>, v<sub>f</sub>. With two objects, put the object first: v<sub>Ai</sub>, v<sub>Bf</sub>.
+- **Multi-stage problems** (e.g., the ballistic pendulum): label the moments as locations a, b, c, d on the diagram, and use those letters as subscripts (v<sub>b</sub>, v<sub>c</sub>). Include a one-line key under the diagram, e.g., "a spring compressed · b just before the catch."
+- Use the same notation on the notes sheet and KEY.
+
 ## Guided-notes PDF requirements
 - One page, letter size, printable, with matching boxes A, B, C, and so on, in the same order as the lesson's notes tags.
 - Diagrams are already drawn, so students fill in key ideas in blanks instead of copying slides.

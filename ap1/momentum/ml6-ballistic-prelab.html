@@ -162,7 +162,7 @@
       <span class="notes-tag">Notes · Box A</span>
       <h2>Three stages, two laws</h2>
       <p>Tap each stage to see what's conserved.</p>
-      <svg viewBox="0 0 640 230" aria-label="Stage 1: spring launcher pushes the ball. Stage 2: the ball is caught by the catcher arm. Stage 3: the arm swings up to height h.">
+      <svg viewBox="0 0 640 230" aria-label="Stage 1: spring launcher pushes the ball. Stage 2: the ball is caught by the catcher arm. Stage 3: the arm swings up to height h. Points: a, spring compressed; b, ball just before the catch; c, ball and arm just after the catch; d, top of the swing.">
         <!-- stage 1 launcher -->
         <rect x="20" y="150" width="120" height="40" rx="6" style="fill:var(--line);stroke:var(--ink)" stroke-width="2"/>
         <path d="M30 170 l10 -12 l10 24 l10 -24 l10 24 l10 -24 l10 24 l10 -12" fill="none" style="stroke:var(--ink)" stroke-width="3"/>
@@ -183,10 +183,13 @@
         <line x1="470" y1="137" x2="636" y2="137" style="stroke:var(--note)" stroke-width="2" stroke-dasharray="4 4"/>
         <line x1="478" y1="140" x2="478" y2="167" style="stroke:var(--note)" stroke-width="2"/>
         <text x="466" y="160" text-anchor="end" font-size="20" font-weight="800" style="fill:var(--note)">h</text>
+        <!-- location labels -->
+        <circle cx="135" cy="140" r="12" style="fill:var(--accent)"/><text x="135" y="146" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">a</text><circle cx="196" cy="146" r="12" style="fill:var(--accent)"/><text x="196" y="152" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">b</text><circle cx="362" cy="170" r="12" style="fill:var(--accent)"/><text x="362" y="176" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">c</text><circle cx="624" cy="86" r="12" style="fill:var(--accent)"/><text x="624" y="92" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">d</text>
         <text x="80" y="222" text-anchor="middle" font-size="17" font-weight="800">1. Launch</text>
         <text x="320" y="222" text-anchor="middle" font-size="17" font-weight="800">2. Catch</text>
         <text x="545" y="222" text-anchor="middle" font-size="17" font-weight="800">3. Swing</text>
       </svg>
+      <p class="hint" style="text-align:center;margin:2px 0 8px"><strong>a</strong> spring compressed · <strong>b</strong> ball just before the catch · <strong>c</strong> ball + arm just after the catch · <strong>d</strong> top of the swing</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px">
         <button class="ghost" data-stage="1" style="flex:1">1. Launch</button>
         <button class="ghost" data-stage="2" style="flex:1">2. Catch</button>
@@ -198,7 +201,7 @@
       <button class="big-btn" data-quick="2">Stage 2 (catch)</button>
       <button class="big-btn" data-quick="3">Stage 3 (swing)</button>
       <div class="feedback" id="quickFb"></div>
-      <div class="notes-box"><strong>Box A:</strong> 1. Launch: <strong>energy</strong> (½kx² → ½mv²). 2. Catch: <strong>momentum</strong> (they stick, so KE is lost). 3. Swing: <strong>energy</strong> (½(m+M)v′² → (m+M)gh). Never use energy across the catch.</div>
+      <div class="notes-box"><strong>Box A:</strong> 1. Launch (a → b): <strong>energy</strong> (½kx² → ½mv<sub>b</sub>²). 2. Catch (b → c): <strong>momentum</strong> (they stick, so KE is lost). 3. Swing (c → d): <strong>energy</strong> (½(m+M)v<sub>c</sub>² → (m+M)gh). Never use energy across the catch.</div>
     </div>
   </section>
 
@@ -207,12 +210,12 @@
     <div class="card">
       <span class="notes-tag">Notes · Box B</span>
       <h2>Stage 1: the spring launch</h2>
-      <p>The compressed spring's energy becomes the ball's kinetic energy: <strong>½kx² = ½mv²</strong>, so <strong>v = x√(k/m)</strong>.</p>
+      <p>The compressed spring's energy becomes the ball's kinetic energy: <strong>½kx² = ½mv<sub>b</sub>²</strong>, so <strong>v<sub>b</sub> = x√(k/m)</strong>.</p>
       <p>Try it with a 200 N/m spring and a 50 g ball:</p>
       <div class="slider-row"><label for="sX">Compression x: <strong id="vX"></strong></label><input type="range" id="sX" min="1" max="6" step="0.5" value="3"></div>
       <div class="readout" id="launchOut" style="font-size:20px"></div>
-      <p class="hint" id="launchNote" style="text-align:center">Double the compression and watch what happens to v.</p>
-      <div class="notes-box"><strong>Box B:</strong> ½kx² = ½mv². Speed is <strong>proportional to x</strong>: double the compression, double the speed (and 4× the energy). If you know v and x, you can find k: <strong>k = mv² / x²</strong>.</div>
+      <p class="hint" id="launchNote" style="text-align:center">Double the compression and watch what happens to v<sub>b</sub>.</p>
+      <div class="notes-box"><strong>Box B:</strong> ½kx² = ½mv<sub>b</sub>². Speed is <strong>proportional to x</strong>: double the compression, double the speed (and 4× the energy). If you know v<sub>b</sub> and x, you can find k: <strong>k = mv<sub>b</sub>² / x²</strong>.</div>
     </div>
   </section>
 
@@ -221,15 +224,15 @@
     <div class="card">
       <span class="notes-tag">Notes · Box C</span>
       <h2>Stages 2 and 3: catch, then swing</h2>
-      <p>Ball (m) hits the arm (M) at speed v and sticks. Then the pair swings up to height h.</p>
+      <p>The ball (m) reaches the arm (M) at speed v<sub>b</sub> (point b) and sticks. Just after the catch (point c), they move together at v<sub>c</sub>. Then the pair swings up to height h (point d).</p>
       <div id="csSteps">
-        <div class="reveal step-line"><strong>Catch (momentum):</strong> mv = (m + M)v′, so <strong>v′ = mv / (m + M)</strong>. It's always slower than v.</div>
-        <div class="reveal step-line"><strong>Swing (energy):</strong> ½(m + M)v′² = (m + M)gh. The masses cancel: <strong>h = v′² / 2g</strong>.</div>
-        <div class="reveal step-line"><strong>Run it backward:</strong> measure h, then v′ = √(2gh), then use momentum to get v (or the arm's mass M).</div>
-        <div class="reveal step-line"><strong>Why not skip the catch?</strong> ½mv² = (m + M)gh is wrong. The catch is inelastic: much of the KE becomes heat and sound, so this predicts a height that's way too high.</div>
+        <div class="reveal step-line"><strong>Catch (momentum):</strong> mv<sub>b</sub> = (m + M)v<sub>c</sub>, so <strong>v<sub>c</sub> = mv<sub>b</sub> / (m + M)</strong>. It's always slower than v<sub>b</sub>.</div>
+        <div class="reveal step-line"><strong>Swing (energy):</strong> ½(m + M)v<sub>c</sub>² = (m + M)gh. The masses cancel: <strong>h = v<sub>c</sub>² / 2g</strong>.</div>
+        <div class="reveal step-line"><strong>Run it backward:</strong> measure h, then v<sub>c</sub> = √(2gh), then use momentum to get v<sub>b</sub> (or the arm's mass M).</div>
+        <div class="reveal step-line"><strong>Why not skip the catch?</strong> ½mv<sub>b</sub>² = (m + M)gh is wrong. The catch is inelastic: much of the KE becomes heat and sound, so this predicts a height that's way too high.</div>
       </div>
       <button class="ghost" id="csNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
-      <div class="notes-box"><strong>Box C:</strong> Catch: <strong>mv = (m + M)v′</strong>. Swing: <strong>h = v′² / 2g</strong>. You can go forward (v → h) or backward (h → v′ → v or M).</div>
+      <div class="notes-box"><strong>Box C:</strong> Catch: <strong>mv<sub>b</sub> = (m + M)v<sub>c</sub></strong>. Swing: <strong>h = v<sub>c</sub>² / 2g</strong>. You can go forward (v<sub>b</sub> → h) or backward (h → v<sub>c</sub> → v<sub>b</sub> or M).</div>
     </div>
   </section>
 
@@ -238,10 +241,10 @@
     <div class="card">
       <span class="notes-tag">Notes · Box D</span>
       <h2>Worked example: predict the height</h2>
-      <p>A 0.050 kg ball leaves the launcher at 4.0 m/s and sticks in a 0.20 kg catcher arm. How high does the arm swing?</p>
+      <p>A 0.050 kg ball reaches the catcher arm at v<sub>b</sub> = 4.0 m/s and sticks in the 0.20 kg arm. How high does the arm swing?</p>
       <div id="wxSteps">
-        <div class="reveal step-line"><strong>Step 1, catch (momentum):</strong> (0.050)(4.0) = (0.050 + 0.20)v′, so 0.20 = 0.25v′ and <strong>v′ = 0.80 m/s</strong>.</div>
-        <div class="reveal step-line"><strong>Step 2, swing (energy):</strong> h = v′² / 2g = (0.80)² / (2 × 9.8) = 0.64 / 19.6 = <strong>0.033 m ≈ 3.3 cm</strong>.</div>
+        <div class="reveal step-line"><strong>Step 1, catch (momentum):</strong> (0.050)(4.0) = (0.050 + 0.20)v<sub>c</sub>, so 0.20 = 0.25v<sub>c</sub> and <strong>v<sub>c</sub> = 0.80 m/s</strong>.</div>
+        <div class="reveal step-line"><strong>Step 2, swing (energy):</strong> h = v<sub>c</sub>² / 2g = (0.80)² / (2 × 9.8) = 0.64 / 19.6 = <strong>0.033 m ≈ 3.3 cm</strong>.</div>
         <div class="reveal step-line"><strong>Check:</strong> KE before the catch = ½(0.050)(4.0)² = 0.40 J. KE after = ½(0.25)(0.80)² = 0.080 J. Only 20% of the KE survived the catch.</div>
         <div class="reveal step-line"><strong>The trap:</strong> skipping the catch gives h = 0.40 J ÷ (0.25 kg × 9.8) ≈ 16 cm, five times too high.</div>
       </div>
@@ -286,7 +289,7 @@
     <div class="card">
       <span class="notes-tag">Notes · Box E</span>
       <h2>Check 3 of 3 · Why it's wrong</h2>
-      <p>A student predicts the height with ½mv<sub>ball</sub>² = (m + M)gh, skipping the catch. Her prediction will be…</p>
+      <p>A student predicts the height with ½mv<sub>b</sub>² = (m + M)gh, skipping the catch. Her prediction will be…</p>
       <div data-mc="q3">
         <button class="big-btn" data-opt="high">too high, because KE is lost when the ball sticks</button>
         <button class="big-btn" data-opt="low">too low, because momentum is lost when the ball sticks</button>
@@ -355,9 +358,9 @@
 
   // ---------- Stage buttons ----------
   var STAGES = {
-    '1': '<strong>1. Launch: conserve energy.</strong> The spring\'s elastic energy becomes the ball\'s kinetic energy: ½kx² = ½mv². No collision yet, and friction is small.',
-    '2': '<strong>2. Catch: conserve momentum.</strong> mv = (m + M)v′. The ball sticks, so this is an inelastic collision: momentum is conserved, but a lot of KE becomes heat and sound.',
-    '3': '<strong>3. Swing: conserve energy.</strong> The ball + arm\'s KE becomes gravitational PE: ½(m + M)v′² = (m + M)gh.'
+    '1': '<strong>1. Launch (a → b): conserve energy.</strong> The spring\'s elastic energy becomes the ball\'s kinetic energy: ½kx² = ½mv<sub>b</sub>². No collision yet, and friction is small.',
+    '2': '<strong>2. Catch (b → c): conserve momentum.</strong> mv<sub>b</sub> = (m + M)v<sub>c</sub>. The ball sticks, so this is an inelastic collision: momentum is conserved, but a lot of KE becomes heat and sound.',
+    '3': '<strong>3. Swing (c → d): conserve energy.</strong> The ball + arm\'s KE becomes gravitational PE: ½(m + M)v<sub>c</sub>² = (m + M)gh.'
   };
   document.querySelectorAll('[data-stage]').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -371,26 +374,26 @@
     var xcm = +document.getElementById('sX').value, x = xcm / 100, k = 200, m = 0.050;
     var E = 0.5 * k * x * x, v = x * Math.sqrt(k / m);
     document.getElementById('vX').textContent = xcm.toFixed(1) + ' cm';
-    document.getElementById('launchOut').innerHTML = 'Spring energy = ½(200)(' + x.toFixed(3) + ')² = <strong>' + E.toFixed(3) + ' J</strong> → v = <strong>' + v.toFixed(2) + ' m/s</strong>';
+    document.getElementById('launchOut').innerHTML = 'Spring energy = ½(200)(' + x.toFixed(3) + ')² = <strong>' + E.toFixed(3) + ' J</strong> → v<sub>b</sub> = <strong>' + v.toFixed(2) + ' m/s</strong>';
   }
   document.getElementById('sX').addEventListener('input', drawLaunch); drawLaunch();
 
   // ---------- Question bank ----------
   var Q = {
     q1: { type: 'num', answer: 2.53, tol: 0.03, label: '1. Spring launch speed',
-          good: '<strong>Correct: about 2.5 m/s.</strong> ½(200)(0.040)² = 0.16 J = ½(0.050)v², so v² = 6.4 and v ≈ 2.53 m/s.',
-          special: [{ v: 6.4, msg: '<strong>That\'s v².</strong> Take the square root.' },
-                    { v: 3.58, msg: '<strong>Check the ½s.</strong> They cancel only if you keep both: ½kx² = ½mv².' },
-                    { v: 0.16, msg: '<strong>That\'s the spring energy in joules.</strong> Set it equal to ½mv² and solve for v.' },
-                    { v: 1.79, msg: '<strong>Did you drop a ½ on one side?</strong> ½kx² = ½mv², so v = x√(k/m).' }],
-          wrong: '<strong>Not yet.</strong> ½kx² = ½mv². Use x in meters (0.040 m) and m in kg (0.050 kg).' },
+          good: '<strong>Correct: about 2.5 m/s.</strong> ½(200)(0.040)² = 0.16 J = ½(0.050)v<sub>b</sub>², so v<sub>b</sub>² = 6.4 and v<sub>b</sub> ≈ 2.53 m/s.',
+          special: [{ v: 6.4, msg: '<strong>That\'s v<sub>b</sub>².</strong> Take the square root.' },
+                    { v: 3.58, msg: '<strong>Check the ½s.</strong> They cancel only if you keep both: ½kx² = ½mv<sub>b</sub>².' },
+                    { v: 0.16, msg: '<strong>That\'s the spring energy in joules.</strong> Set it equal to ½mv<sub>b</sub>² and solve for v<sub>b</sub>.' },
+                    { v: 1.79, msg: '<strong>Did you drop a ½ on one side?</strong> ½kx² = ½mv<sub>b</sub>², so v<sub>b</sub> = x√(k/m).' }],
+          wrong: '<strong>Not yet.</strong> ½kx² = ½mv<sub>b</sub>². Use x in meters (0.040 m) and m in kg (0.050 kg).' },
     q2: { type: 'num', answer: 1.84, tol: 0.06, label: '2. Catch, then swing',
-          good: '<strong>Correct: about 1.8 cm.</strong> Catch: (0.060)(3.0) = (0.30)v′, so v′ = 0.60 m/s. Swing: h = (0.60)² / 19.6 = 0.0184 m ≈ 1.8 cm.',
-          special: [{ v: 9.18, msg: '<strong>You skipped the catch.</strong> KE isn\'t conserved when the ball sticks. Find v′ with momentum first.' },
+          good: '<strong>Correct: about 1.8 cm.</strong> Catch: (0.060)(3.0) = (0.30)v<sub>c</sub>, so v<sub>c</sub> = 0.60 m/s. Swing: h = (0.60)² / 19.6 = 0.0184 m ≈ 1.8 cm.',
+          special: [{ v: 9.18, msg: '<strong>You skipped the catch.</strong> KE isn\'t conserved when the ball sticks. Find v<sub>c</sub> with momentum first.' },
                     { v: 0.0184, msg: '<strong>Right physics, wrong unit.</strong> That\'s meters. Convert to centimeters.' },
-                    { v: 3.67, msg: '<strong>Check the 2 in h = v′² / 2g.</strong>' },
-                    { v: 45.9, msg: '<strong>Find v′ first.</strong> The arm doesn\'t move at the ball\'s 3.0 m/s; use mv = (m + M)v′.' }],
-          wrong: '<strong>Not yet.</strong> Two stages: mv = (m + M)v′, then h = v′² / 2g. Answer in cm.' },
+                    { v: 3.67, msg: '<strong>Check the 2 in h = v<sub>c</sub>² / 2g.</strong>' },
+                    { v: 45.9, msg: '<strong>Find v<sub>c</sub> first.</strong> The arm doesn\'t move at the ball\'s 3.0 m/s; use mv<sub>b</sub> = (m + M)v<sub>c</sub>.' }],
+          wrong: '<strong>Not yet.</strong> Two stages: mv<sub>b</sub> = (m + M)v<sub>c</sub>, then h = v<sub>c</sub>² / 2g. Answer in cm.' },
     q3: { type: 'mc', ans: 'high', label: '3. Why you can\'t skip the catch',
           good: '<strong>Correct.</strong> The catch is inelastic, so some KE turns into heat and sound. Using the ball\'s full KE predicts a height that\'s too high (about 5× too high in the worked example).',
           bad: { low: 'Momentum is conserved in the catch. It\'s KE that\'s lost, so the prediction comes out too high, not too low.',
@@ -544,7 +547,7 @@
     document.getElementById('stageOut').innerHTML = STAGES['1'] + '<br>' + STAGES['2'] + '<br>' + STAGES['3'];
     document.querySelector('[data-quick="2"]').classList.add('right'); fb('quickFb', true, QUICK['2'][1]);
     note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Wrong-choice feedback: ' + list(['"Stage 1": ' + plain(QUICK['1'][1]), '"Stage 3": ' + plain(QUICK['3'][1])]));
-    note(document.getElementById('launchNote'), '<strong>Slider:</strong> k = 200 N/m, m = 0.050 kg, x from 1 to 6 cm, so v = x√(k/m) ≈ 63.2·x (x in m). At 3 cm: 0.090 J, 1.90 m/s; at 6 cm: 0.36 J, 3.79 m/s. <strong>Design note:</strong> the lesson gives the tools (½kx², momentum in the catch, h = v′²/2g) but not a procedure for Parts 1–3, so the lab stays open. It never mentions how to measure launch speed (photogate, horizontal-launch range, or running the pendulum backward).');
+    note(document.getElementById('launchNote'), '<strong>Slider:</strong> k = 200 N/m, m = 0.050 kg, x from 1 to 6 cm, so v<sub>b</sub> = x√(k/m) ≈ 63.2·x (x in m). At 3 cm: 0.090 J, 1.90 m/s; at 6 cm: 0.36 J, 3.79 m/s. <strong>Design note:</strong> the lesson gives the tools (½kx², momentum in the catch, h = v<sub>c</sub>²/2g) but not a procedure for Parts 1–3, so the lab stays open. It never mentions how to measure launch speed (photogate, horizontal-launch range, or running the pendulum backward).');
     ['q1', 'q2'].forEach(function (q) {
       var cfg = Q[q];
       document.getElementById(q + 'Input').value = cfg.answer;
@@ -565,11 +568,10 @@
     state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
     document.getElementById('confused').value = 'the ball\'s mass and speed, and how high the arm swings';
     buildResults();
-    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> The optional "Lab planning" answer shows who already sees the backward method for Part 2 (measure h → v′ → M). The most common miss on Check 2 is 9.2 cm (skipping the catch).');
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> The optional "Lab planning" answer shows who already sees the backward method for Part 2 (measure h → v<sub>c</sub> → M). The most common miss on Check 2 is 9.2 cm (skipping the catch).');
     window.scrollTo(0, 0);
   }
 })();
 </script>
 </body>
-
 </html>

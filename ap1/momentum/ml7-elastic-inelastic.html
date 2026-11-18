@@ -236,7 +236,7 @@
       <p>A 2.0 kg cart moving at +3.0 m/s collides with a 1.0 kg cart moving at −4.0 m/s. They stick. Find their velocity, and decide what kind of collision it is.</p>
       <div id="wxSteps">
         <div class="reveal step-line"><strong>Momentum before:</strong> (2.0)(+3.0) + (1.0)(−4.0) = +6 − 4 = <strong>+2.0 kg·m/s</strong>. Bars: +6 and −4, total +2.</div>
-        <div class="reveal step-line"><strong>Momentum after:</strong> they stick, so one bar of +2.0 = (3.0)v′, and <strong>v′ ≈ +0.67 m/s</strong> (to the right).</div>
+        <div class="reveal step-line"><strong>Momentum after:</strong> they stick, so one bar of +2.0 = (3.0)v<sub>f</sub>, and <strong>v<sub>f</sub> ≈ +0.67 m/s</strong> (to the right).</div>
         <div class="reveal step-line"><strong>KE before:</strong> ½(2.0)(3.0)² + ½(1.0)(4.0)² = 9 + 8 = <strong>17 J</strong>. KE is never negative, so both KE bars point up.</div>
         <div class="reveal step-line"><strong>KE after:</strong> ½(3.0)(0.67)² ≈ <strong>0.67 J</strong>. Almost all of it (about 16 J) became heat, sound, and bent metal: <strong>perfectly inelastic</strong>.</div>
       </div>
@@ -568,7 +568,7 @@
     function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
     document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
     ['ruleNext', 'wxNext'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
-    note(document.getElementById('simOut'), '<strong>Sim:</strong> A (red) starts at +2.0 m/s, B at rest. Final velocities use a coefficient of restitution e ("bounciness"): v<sub>A</sub>′ = (m<sub>A</sub>v<sub>A</sub> − m<sub>B</sub>e·v<sub>A</sub>)/(m<sub>A</sub>+m<sub>B</sub>), v<sub>B</sub>′ = m<sub>A</sub>(1+e)v<sub>A</sub>/(m<sub>A</sub>+m<sub>B</sub>). With 1 kg carts: e = 1 swaps velocities (KE 2.0 → 2.0 J); e = 0 gives 1.0 m/s together (KE 2.0 → 1.0 J). "Coefficient of restitution" isn\'t AP Physics 1 vocabulary, so the page just calls it bounciness.');
+    note(document.getElementById('simOut'), '<strong>Sim:</strong> A (red) starts at +2.0 m/s, B at rest. Final velocities use a coefficient of restitution e ("bounciness"): v<sub>Af</sub> = (m<sub>A</sub>v<sub>Ai</sub> − m<sub>B</sub>e·v<sub>Ai</sub>)/(m<sub>A</sub>+m<sub>B</sub>), v<sub>Bf</sub> = m<sub>A</sub>(1+e)v<sub>Ai</sub>/(m<sub>A</sub>+m<sub>B</sub>). With 1 kg carts: e = 1 swaps velocities (KE 2.0 → 2.0 J); e = 0 gives 1.0 m/s together (KE 2.0 → 1.0 J). "Coefficient of restitution" isn\'t AP Physics 1 vocabulary, so the page just calls it bounciness.');
     document.querySelector('[data-quick="one"]').classList.add('right'); fb('quickFb', true, QUICK.one[1]);
     note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Wrong-choice feedback: ' + list(['"Bounciness = 0": ' + plain(QUICK.zero[1]), '"Always": ' + plain(QUICK.always[1])]));
     note(document.getElementById('ruleNext'), '<strong>Box C step 4</strong> previews the binder\'s 5.F Part B (the car-only system). The binder\'s 5.E toy car/truck scenario is left for class.');
@@ -594,5 +594,4 @@
 })();
 </script>
 </body>
-
 </html>
