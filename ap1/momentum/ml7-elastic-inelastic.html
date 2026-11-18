@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 7: Elastic vs. Inelastic</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+
+  .wx th, .wx td { vertical-align: top; }
+  svg[data-bars] text { fill: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml7-elastic-inelastic.html">regular lesson link</a>. · <a href="ml7-elastic-inelastic-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 7 · Optional</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Elastic vs. Inelastic + Bar Charts</h1>
+      <p class="muted">About 12 minutes · Optional · Due before class Monday 11/30</p>
+      <p>Momentum is conserved in every collision. Kinetic energy isn't. Tonight you'll learn the KE check that sorts collisions into elastic and inelastic, and how to draw momentum bar charts, which AP free-response questions love to ask for.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag. This one is optional, but it's a good review over break.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 KE check -->
+  <section class="step" data-title="The KE check">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Momentum always, KE sometimes</h2>
+      <p>In any collision with no outside push, the <strong>total momentum</strong> stays the same. To sort the collision, check the <strong>total kinetic energy</strong> before and after:</p>
+      <table class="wx" style="font-size:17px">
+        <tr><th>Total KE after vs. before</th><th>Type</th><th>Example</th></tr>
+        <tr><td>Same</td><td><strong>Elastic</strong></td><td>Billiard balls, carts with magnets</td></tr>
+        <tr><td>Less</td><td><strong>Inelastic</strong></td><td>Most real bounces: some KE becomes heat, sound, deformation</td></tr>
+        <tr><td>Much less, and they <strong>stick</strong></td><td><strong>Perfectly inelastic</strong></td><td>Velcro carts, a tackle</td></tr>
+        <tr><td>More</td><td><strong>Explosion</strong></td><td>Stored energy (a spring, a plunger) becomes KE</td></tr>
+      </table>
+      <div class="notes-box" style="margin-top:12px"><strong>Box A:</strong> Momentum is conserved in <strong>every</strong> collision (isolated system). <strong>Elastic:</strong> total KE stays the same. <strong>Inelastic:</strong> total KE decreases (it becomes heat, sound, deformation). <strong>Perfectly inelastic:</strong> they stick, so the most KE is lost. Individual objects' KE can change even in an elastic collision; only the <em>total</em> matters.</div>
+    </div>
+  </section>
+
+  <!-- 2 Sim -->
+  <section class="step" data-title="Bounciness">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Same collision, different bounciness</h2>
+      <p>Cart A (red) hits cart B (blue). Slide <strong>bounciness</strong> from 0 (they stick) to 1 (perfectly elastic) and compare the two charts.</p>
+      <div class="slider-row"><label for="sE">Bounciness: <strong id="vE"></strong></label><input type="range" id="sE" min="0" max="1" step="0.1" value="0.5"></div>
+      <svg id="pChart" viewBox="0 0 640 196" aria-label="Momentum bar chart before and after"></svg>
+      <svg id="kChart" viewBox="0 0 640 240" aria-label="Kinetic energy bar chart before and after"></svg>
+      <div class="readout" id="simOut" style="font-size:18px"></div>
+      <div class="slider-row"><label for="sMa">Cart A mass: <strong id="vMa"></strong></label><input type="range" id="sMa" min="0.5" max="2" step="0.5" value="1"></div>
+      <div class="slider-row"><label for="sMb">Cart B mass: <strong id="vMb"></strong></label><input type="range" id="sMb" min="0.5" max="2" step="0.5" value="1"></div>
+      <p class="hint" style="text-align:center">A starts at +2.0 m/s; B starts at rest. Momentum in kg·m/s, KE in J.</p>
+      <p><strong>Quick check:</strong> When is the total KE the same before and after?</p>
+      <button class="big-btn" data-quick="one">Only when bounciness = 1 (elastic)</button>
+      <button class="big-btn" data-quick="zero">Only when bounciness = 0 (they stick)</button>
+      <button class="big-btn" data-quick="always">Always, just like momentum</button>
+      <div class="feedback" id="quickFb"></div>
+      <div class="notes-box"><strong>Box B:</strong> The momentum total (orange) is the <strong>same</strong> at every bounciness. The KE total is the same <strong>only</strong> when bounciness = 1. The stickier the collision, the more KE is lost, and sticking (0) loses the most.</div>
+    </div>
+  </section>
+
+  <!-- 3 Bar chart rules -->
+  <section class="step" data-title="Momentum bar charts">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>How to draw a momentum bar chart</h2>
+      <svg viewBox="0 0 640 230" aria-label="Example momentum bar chart: before, A plus 4 and B minus 2; after, A minus 1 and B plus 3. The system total is plus 2 both times.">
+        <line x1="20" y1="120" x2="620" y2="120" style="stroke:var(--ink)" stroke-width="2"/>
+        <line x1="320" y1="14" x2="320" y2="220" style="stroke:var(--line)" stroke-width="2" stroke-dasharray="6 6"/>
+        <text x="165" y="24" text-anchor="middle" font-size="18" font-weight="800">Before</text>
+        <text x="475" y="24" text-anchor="middle" font-size="18" font-weight="800">After</text>
+        <rect x="60" y="72" width="60" height="48" rx="4" style="fill:var(--cartB)"/><text x="90" y="64" text-anchor="middle" font-size="16" font-weight="700">+4</text>
+        <rect x="140" y="120" width="60" height="24" rx="4" style="fill:var(--cartA)"/><text x="170" y="164" text-anchor="middle" font-size="16" font-weight="700">−2</text>
+        <rect x="220" y="96" width="60" height="24" rx="4" style="fill:var(--note)"/><text x="250" y="88" text-anchor="middle" font-size="16" font-weight="700">+2</text>
+        <rect x="370" y="120" width="60" height="12" rx="4" style="fill:var(--cartB)"/><text x="400" y="152" text-anchor="middle" font-size="16" font-weight="700">−1</text>
+        <rect x="450" y="84" width="60" height="36" rx="4" style="fill:var(--cartA)"/><text x="480" y="76" text-anchor="middle" font-size="16" font-weight="700">+3</text>
+        <rect x="530" y="96" width="60" height="24" rx="4" style="fill:var(--note)"/><text x="560" y="88" text-anchor="middle" font-size="16" font-weight="700">+2</text>
+        <text x="90" y="210" text-anchor="middle" font-size="15" font-weight="700">A</text><text x="170" y="210" text-anchor="middle" font-size="15" font-weight="700">B</text><text x="250" y="210" text-anchor="middle" font-size="15" font-weight="700">total</text>
+        <text x="400" y="210" text-anchor="middle" font-size="15" font-weight="700">A</text><text x="480" y="210" text-anchor="middle" font-size="15" font-weight="700">B</text><text x="560" y="210" text-anchor="middle" font-size="15" font-weight="700">total</text>
+      </svg>
+      <div id="ruleSteps">
+        <div class="reveal step-line"><strong>1. Pick a + direction</strong> and draw one bar per object, before and after. Up is +, down is −.</div>
+        <div class="reveal step-line"><strong>2. Bar height = p = mv.</strong> Moving the − way? The bar goes below the line. At rest? No bar (zero).</div>
+        <div class="reveal step-line"><strong>3. Check the system total.</strong> If nothing outside pushes, the total is the same before and after: here +2 → +2.</div>
+        <div class="reveal step-line"><strong>4. Change the system, change the chart.</strong> If the system is only cart A, its momentum <em>does</em> change (+4 → −1), because B is now an outside object pushing on it. Show that with an <strong>impulse</strong> bar of −5.</div>
+      </div>
+      <button class="ghost" id="ruleNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box C:</strong> One bar per object, before and after. Up = +, down = −, height = mv. If the system has no outside forces, the <strong>total bar matches</strong> before and after. A one-object system can change its momentum: the difference is the <strong>impulse</strong> from outside.</div>
+    </div>
+  </section>
+
+  <!-- 4 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example: momentum and KE bars</h2>
+      <p>A 2.0 kg cart moving at +3.0 m/s collides with a 1.0 kg cart moving at −4.0 m/s. They stick. Find their velocity, and decide what kind of collision it is.</p>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Momentum before:</strong> (2.0)(+3.0) + (1.0)(−4.0) = +6 − 4 = <strong>+2.0 kg·m/s</strong>. Bars: +6 and −4, total +2.</div>
+        <div class="reveal step-line"><strong>Momentum after:</strong> they stick, so one bar of +2.0 = (3.0)v′, and <strong>v′ ≈ +0.67 m/s</strong> (to the right).</div>
+        <div class="reveal step-line"><strong>KE before:</strong> ½(2.0)(3.0)² + ½(1.0)(4.0)² = 9 + 8 = <strong>17 J</strong>. KE is never negative, so both KE bars point up.</div>
+        <div class="reveal step-line"><strong>KE after:</strong> ½(3.0)(0.67)² ≈ <strong>0.67 J</strong>. Almost all of it (about 16 J) became heat, sound, and bent metal: <strong>perfectly inelastic</strong>.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 5 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3 · Classify it</h2>
+      <p>A 1.0 kg cart at +4.0 m/s hits an identical 1.0 kg cart at rest. Afterward, the first cart moves at +1.0 m/s and the second at +3.0 m/s. What kind of collision is it?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="inel">Inelastic: momentum is the same, but KE drops from 8 J to 5 J</button>
+        <button class="big-btn" data-opt="el">Elastic: momentum is the same before and after</button>
+        <button class="big-btn" data-opt="perf">Perfectly inelastic</button>
+        <button class="big-btn" data-opt="imp">Impossible: momentum isn't conserved</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 6 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3 · KE lost</h2>
+      <p>From ML5: a 2.0 kg cart at +3.0 m/s hits a 1.0 kg cart at rest, and they stick and move at +2.0 m/s. How much kinetic energy is lost?</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">J</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3 · Which chart is possible?</h2>
+      <p>Before a collision, cart A has +5 kg·m/s and cart B has −1 kg·m/s. Nothing outside pushes on them. Which "after" chart could be right?</p>
+      <div data-mc="q3" id="q3opts">
+        <button class="big-btn" data-opt="ok" style="text-align:center"><svg viewBox="0 0 260 120" data-bars="1,3" role="img" aria-label="A: +1, B: +3" style="display:block;margin:0 auto;max-width:300px"></svg></button>
+        <button class="big-btn" data-opt="six" style="text-align:center"><svg viewBox="0 0 260 120" data-bars="2,4" role="img" aria-label="A: +2, B: +4" style="display:block;margin:0 auto;max-width:300px"></svg></button>
+        <button class="big-btn" data-opt="neg" style="text-align:center"><svg viewBox="0 0 260 120" data-bars="-3,-1" role="img" aria-label="A: −3, B: −1" style="display:block;margin:0 auto;max-width:300px"></svg></button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–E on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about anything?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., when the total bar can change"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 7: Elastic vs. Inelastic</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Classify the collision</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. KE lost</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Possible bar chart</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–E</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Coming up</h2>
+      <p style="margin:0">Next is ML8, explosions and three-object systems (due Tue 12/1). <strong>Mastering HW 4.2</strong> is due that night too. The tennis racket problem (6.41) and Conceptual 6.25 use tonight's ideas.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML7';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Bar charts ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function fmt(x) { var r = Math.round(x * 100) / 100; if (Math.abs(r) < 0.005) return '0'; return (r < 0 ? '−' : '+') + Math.abs(r).toFixed(2); }
+  function fmtE(x) { return (Math.round(x * 100) / 100).toFixed(2); }
+  // vals = [[A,B],[A',B']]; signed=true for momentum
+  function chart(id, title, before, after, signed, scale) {
+    var svg = document.getElementById(id); while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var Y0 = signed ? 128 : 200, colW = 56, H = signed ? 196 : 240;
+    el('text', { x: 14, y: 22, 'font-size': 17, 'font-weight': 800 }, svg, title);
+    el('line', { x1: 14, y1: Y0, x2: 626, y2: Y0, style: 'stroke:var(--ink)', 'stroke-width': 2 }, svg);
+    el('line', { x1: 320, y1: 30, x2: 320, y2: H - 4, style: 'stroke:var(--line)', 'stroke-width': 2, 'stroke-dasharray': '6 6' }, svg);
+    el('text', { x: 170, y: 22, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'before');
+    el('text', { x: 480, y: 22, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'after');
+    function grp(x0, v) {
+      [[v[0], 'var(--cartB)', 'A'], [v[1], 'var(--cartA)', 'B'], [v[0] + v[1], 'var(--note)', 'total']].forEach(function (it, i) {
+        var x = x0 + i * (colW + 16), h = it[0] * scale;
+        el('rect', { x: x, y: h >= 0 ? Y0 - h : Y0, width: colW, height: Math.max(Math.abs(h), 1.5), rx: 4, style: 'fill:' + it[1] }, svg);
+        el('text', { x: x + colW / 2, y: h >= 0 ? Y0 - h - 6 : Y0 - h + 18, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700 }, svg, signed ? fmt(it[0]) : fmtE(it[0]));
+        el('text', { x: x + colW / 2, y: signed ? 190 : 220, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700 }, svg, it[2]);
+      });
+    }
+    grp(60, before); grp(370, after);
+  }
+  function drawSim() {
+    var e = +document.getElementById('sE').value, ma = +document.getElementById('sMa').value, mb = +document.getElementById('sMb').value;
+    var va = 2, vb = 0;
+    var va2 = (ma * va + mb * vb - mb * e * (va - vb)) / (ma + mb), vb2 = (ma * va + mb * vb + ma * e * (va - vb)) / (ma + mb);
+    document.getElementById('vE').textContent = e.toFixed(1) + (e === 0 ? ' (stick)' : e === 1 ? ' (elastic)' : '');
+    document.getElementById('vMa').textContent = ma.toFixed(1) + ' kg'; document.getElementById('vMb').textContent = mb.toFixed(1) + ' kg';
+    var pb = [ma * va, mb * vb], pa = [ma * va2, mb * vb2], kb = [0.5 * ma * va * va, 0.5 * mb * vb * vb], ka = [0.5 * ma * va2 * va2, 0.5 * mb * vb2 * vb2];
+    chart('pChart', 'Momentum', pb, pa, true, 22);
+    chart('kChart', 'Kinetic energy', kb, ka, false, 38);
+    var KEb = kb[0] + kb[1], KEa = ka[0] + ka[1], lost = KEb - KEa;
+    var type = e === 1 ? 'Elastic: no KE lost.' : e === 0 ? 'Perfectly inelastic: they stick, and the most KE is lost.' : 'Inelastic: some KE becomes heat, sound, and deformation.';
+    document.getElementById('simOut').innerHTML = 'Total KE: ' + fmtE(KEb) + ' J → ' + fmtE(KEa) + ' J · lost <strong>' + fmtE(Math.max(0, lost)) + ' J</strong><br><span class="muted" style="font-size:16px">' + type + '</span>';
+  }
+  ['sE', 'sMa', 'sMb'].forEach(function (id) { document.getElementById(id).addEventListener('input', drawSim); });
+  drawSim();
+  // mini charts in check 3
+  document.querySelectorAll('svg[data-bars]').forEach(function (svg) {
+    var v = svg.getAttribute('data-bars').split(',').map(Number), Y0 = 64, s = 7.5;
+    el('line', { x1: 6, y1: Y0, x2: 254, y2: Y0, style: 'stroke:var(--ink)', 'stroke-width': 2 }, svg);
+    [[v[0], 'var(--cartB)', 'A'], [v[1], 'var(--cartA)', 'B'], [v[0] + v[1], 'var(--note)', 'total']].forEach(function (it, i) {
+      var x = 20 + i * 80, h = it[0] * s;
+      el('rect', { x: x, y: h >= 0 ? Y0 - h : Y0, width: 60, height: Math.max(Math.abs(h), 1.5), rx: 3, style: 'fill:' + it[1] }, svg);
+      el('text', { x: x + 30, y: 116, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700 }, svg, it[2] + ' ' + (it[0] > 0 ? '+' : it[0] < 0 ? '−' : '') + Math.abs(it[0]));
+    });
+  });
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { type: 'mc', ans: 'inel', label: '1. Classify the collision',
+          good: '<strong>Correct.</strong> Momentum: 4 before, 1 + 3 = 4 after. KE: ½(1)(4)² = 8 J before; ½(1)(1)² + ½(1)(3)² = 0.5 + 4.5 = 5 J after. KE dropped, so it\'s inelastic.',
+          bad: { el: 'Momentum is the same in <em>every</em> collision, so it can\'t tell you the type. Compare total KE: 8 J before, 5 J after.',
+                 perf: 'Perfectly inelastic means they stick and move together. Here they move at different speeds (+1 and +3).',
+                 imp: 'Check again: 1 + 3 = 4 kg·m/s after, the same as the 4 kg·m/s before.' } },
+    q2: { type: 'num', answer: 3.0, tol: 0.05, label: '2. KE lost',
+          good: '<strong>Correct: 3.0 J.</strong> Before: ½(2.0)(3.0)² = 9.0 J. After: ½(3.0)(2.0)² = 6.0 J. Lost: 9.0 − 6.0 = 3.0 J, which became heat, sound, and deformation.',
+          special: [{ v: 9.0, msg: '<strong>That\'s the KE before.</strong> Now find the KE after (both carts, 3.0 kg, at 2.0 m/s) and subtract.' },
+                    { v: 6.0, msg: '<strong>That\'s the KE after.</strong> Subtract it from the KE before (9.0 J).' },
+                    { v: 7.0, msg: '<strong>Use the total mass after.</strong> They stick, so it\'s ½(3.0)(2.0)², not ½(1.0)(2.0)².' },
+                    { v: 2.0, msg: '<strong>Watch the ½ and the square.</strong> KE = ½mv².' }],
+          wrong: '<strong>Not yet.</strong> KE lost = KE before − KE after, with KE = ½mv² for each.' },
+    q3: { type: 'mc', ans: 'ok', label: '3. Possible bar chart',
+          good: '<strong>Correct.</strong> The total before is +5 + (−1) = +4. Only this chart keeps the total at +4 (1 + 3).',
+          bad: { six: 'Add them: +2 + 4 = +6, but the total before was +4. With no outside push, the total can\'t change.',
+                 neg: 'Add them: −3 + (−1) = −4. The size matches, but the total flipped direction. Before, the total was +4, so it has to stay +4.' } }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-title') === 'Bounciness') return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Quick check ----------
+  var QUICK = { one: [true, '<strong>Right.</strong> Only a perfectly elastic collision keeps the total KE. Momentum is the one that\'s always the same.'],
+                zero: [false, '<strong>Not quite.</strong> Set bounciness to 0 and look at the KE chart: that\'s when the <em>most</em> KE is lost.'],
+                always: [false, '<strong>Not quite.</strong> Momentum is always conserved, but drag the slider and watch the KE total: it shrinks unless bounciness = 1.'] };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (state.quick) return;
+      var r = QUICK[b.getAttribute('data-quick')];
+      document.querySelectorAll('[data-quick]').forEach(function (x) { x.classList.remove('wrong'); });
+      b.classList.add(r[0] ? 'right' : 'wrong'); fb('quickFb', r[0], r[1]);
+      if (r[0]) { state.quick = true; upd(); }
+    });
+  });
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('ruleSteps', 'ruleNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(Math.abs(val) - sp.v) <= Math.max(cfg.tol, 0.02)) msg = sp.msg; });
+      if (Math.abs(val + cfg.answer) <= cfg.tol) msg = '<strong>Right size.</strong> "KE lost" is an amount, so give it as a positive number.';
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q].right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + more(q));
+      });
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var e = document.getElementById(id), s = state[q];
+    if (s.first === true) { e.textContent = '✓ first try'; e.className = 'badge g'; }
+    else if (s.right) { e.textContent = '✓ after ' + s.tries + ' tries'; e.className = 'badge y'; }
+    else { e.textContent = '✗ review in class'; e.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    ['ruleNext', 'wxNext'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
+    note(document.getElementById('simOut'), '<strong>Sim:</strong> A (red) starts at +2.0 m/s, B at rest. Final velocities use a coefficient of restitution e ("bounciness"): v<sub>A</sub>′ = (m<sub>A</sub>v<sub>A</sub> − m<sub>B</sub>e·v<sub>A</sub>)/(m<sub>A</sub>+m<sub>B</sub>), v<sub>B</sub>′ = m<sub>A</sub>(1+e)v<sub>A</sub>/(m<sub>A</sub>+m<sub>B</sub>). With 1 kg carts: e = 1 swaps velocities (KE 2.0 → 2.0 J); e = 0 gives 1.0 m/s together (KE 2.0 → 1.0 J). "Coefficient of restitution" isn\'t AP Physics 1 vocabulary, so the page just calls it bounciness.');
+    document.querySelector('[data-quick="one"]').classList.add('right'); fb('quickFb', true, QUICK.one[1]);
+    note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> Wrong-choice feedback: ' + list(['"Bounciness = 0": ' + plain(QUICK.zero[1]), '"Always": ' + plain(QUICK.always[1])]));
+    note(document.getElementById('ruleNext'), '<strong>Box C step 4</strong> previews the binder\'s 5.F Part B (the car-only system). The binder\'s 5.E toy car/truck scenario is left for class.');
+    ['q1', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]'), cfg = Q[q];
+      g.querySelector('[data-opt="' + cfg.ans + '"]').classList.add('right'); fb(q + 'Fb', true, cfg.good);
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(cfg.bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent.trim() + '": ' + plain(cfg.bad[o]);
+      })));
+    });
+    document.getElementById('q2Input').value = '3.0'; fb('q2Fb', true, Q.q2.good);
+    note(document.getElementById('q2Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±' + Q.q2.tol + '):' + list(Q.q2.special.map(function (sp) { return sp.v + ': ' + plain(sp.msg); }).concat(['Anything else: ' + plain(Q.q2.wrong)])));
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: false, done: true, right: true, tries: 2 };
+    state.q3 = { first: true, done: true, right: true, tries: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'when the total bar can change';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> This lesson is optional and due after break. Check 1 targets the most common mix-up ("momentum is conserved, so it\'s elastic"). Check 3\'s wrong choices catch students who don\'t add the bars (+6) and who drop the sign (−4).');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+
+</html>
