@@ -163,29 +163,40 @@
   details.help ul { padding-left: 22px; } details.help li { margin: 8px 0; }
   details.help a { color: var(--accent); font-weight: 700; }
   .primary:disabled { opacity: .45; }
+
+  .topline { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .topline .kicker { flex: 1; text-align: center; }
+  .topline .theme-btn { min-height: 44px; }
+  .simbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .simbar .seg { margin: 0; flex: 1 1 260px; }
+  .simbar #meterSeg { flex: 0 1 220px; }
+  .seg button { min-height: 46px; }
+  .bench { margin-bottom: 8px; display: flex; justify-content: center; background: var(--bench); }
+  .bench svg { width: 100%; height: auto; max-height: calc(100vh - 210px); max-height: calc(100dvh - 210px); }
+  .actbar { display: flex; gap: 10px; }
+  .actbar .primary { flex: 1; min-height: 56px; }
+  .actbar .ghost { flex: 0 0 auto; }
+  .tiphint { margin: 6px 0 16px; }
 </style>
 </head>
 <body class="sim">
 <div class="wrap wide">
-  <a class="back-link" href="index.html">← Circuits</a>
-  <div class="teacher-banner" id="teacherBanner"></div>
-  <header class="top">
-    <div class="kicker">Honors Physics · Circuits · Simulated Current Lab</div>
+  <div class="topline">
+    <a class="back-link" href="index.html">← Circuits</a>
+    <span class="kicker">Current Lab Simulator</span>
     <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
-  </header>
+  </div>
+  <div class="teacher-banner" id="teacherBanner"></div>
 
-  <div class="card">
-    <h1>Current Lab: Simulator</h1>
-    <p class="muted" style="margin-bottom:10px">For a missed lab day, or to practice. Build the circuit by dragging the ends of the leads onto the posts, jacks, and resistor wires. Ends snap into place when they get close.</p>
+  <div class="simbar">
     <div class="seg" id="partSeg" role="tablist">
-      <button data-part="1" class="on">Part 1 · Current vs. resistance</button>
-      <button data-part="2">Part 2 · Current vs. voltage</button>
+      <button data-part="1" class="on">Part 1: I vs. R</button>
+      <button data-part="2">Part 2: I vs. V</button>
     </div>
-    <div class="seg small" id="meterSeg" style="display:none">
+    <div class="seg" id="meterSeg" style="display:none">
       <button data-m="1" class="on">1 meter</button>
       <button data-m="2">2 meters</button>
     </div>
-    <p class="hint" id="partHint"></p>
   </div>
 
   <div class="bench">
@@ -193,45 +204,27 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 
-  <div class="controls card">
-    <div class="ctl-row">
-      <button class="pwr" id="pwrBtn">Power: OFF</button>
-      <div class="vset">
-        <div class="lbl">VOLTAGE knobs <span id="vsetOut">0.00 V</span></div>
-        <div class="vbtns">
-          <button data-dv="-0.5" aria-label="Big step down">⟲ big</button>
-          <button data-dv="-0.05" aria-label="Small step down">⟲ small</button>
-          <button data-dv="0.05" aria-label="Small step up">small ⟳</button>
-          <button data-dv="0.5" aria-label="Big step up">big ⟳</button>
-        </div>
-      </div>
-    </div>
-    <div class="ctl-row">
-      <button class="ghost" id="dial1Btn">Meter dial: OFF</button>
-      <button class="ghost" id="dial2Btn" style="display:none">Meter 2 dial: OFF</button>
-      <button class="ghost" id="resetBtn">Put everything back</button>
-    </div>
-    <div id="shelfWrap">
-      <div class="lbl">Resistors <span class="muted">(power off, then tap one to put it on the bench)</span></div>
-      <div class="shelf" id="shelf"></div>
-    </div>
+  <div class="actbar">
+    <button class="primary" id="recBtn">Record reading</button>
+    <button class="ghost" id="resetBtn">Reset bench</button>
   </div>
+  <p class="hint tiphint" id="partHint"></p>
 
   <div class="card">
     <h2 style="margin-bottom:6px">Your data</h2>
-    <p class="hint" style="margin-top:0" id="recHint">With the power on, tap Record to log what the meters and power supply show. Copy it into your binder.</p>
-    <button class="primary" id="recBtn" style="width:100%">Record this reading</button>
+    <p class="hint" style="margin-top:0">With the power on, tap <strong>Record reading</strong> to log what the meters and power supply show. Copy it into your binder.</p>
     <div id="tables"></div>
   </div>
 
   <details class="card help">
     <summary><strong>Need a hint?</strong> How the circuits go together</summary>
     <ul>
+      <li><strong>Drag the ends of the leads</strong> from the tray. Banana plugs go into posts and jacks. Alligator clips grab resistor wires (or a post). Ends snap on when they get close.</li>
+      <li><strong>Tap</strong> the green POWER switch, the arrows under the VOLTAGE knobs, a meter's dial, or the resistor (⇄) to change them.</li>
       <li><strong>Part 1 loop:</strong> + post → meter (dial on <strong>10A</strong>, leads in <strong>10ADC</strong> and <strong>COM</strong>) → resistor → − post.</li>
       <li><strong>Part 2 loop:</strong> + post → unknown resistor → ammeter → 10 Ω resistor → − post. The voltmeter (dial <strong>DCV 20</strong>, leads in <strong>VΩmA</strong> and <strong>COM</strong>) goes <strong>across</strong> the 10 Ω resistor.</li>
-      <li><strong>One meter in Part 2?</strong> Record all the currents first. Then power off, replace the meter with a yellow jumper, switch it to a voltmeter, and record V<sub>R</sub> at the same supply voltages.</li>
-      <li>Banana plugs go into posts and jacks. Alligator clips grab resistor wires (or a post).</li>
-      <li>Every setup step and mistake is explained on the <a href="current-lab-help.html">Current Lab help page</a>.</li>
+      <li><strong>One meter in Part 2?</strong> Record all the currents first. Then replace the meter with a yellow jumper, switch it to a voltmeter, and record V<sub>R</sub> at the same supply voltages.</li>
+      <li>Every step and mistake is explained on the <a href="current-lab-help.html">Current Lab help page</a>.</li>
     </ul>
   </details>
 </div>
@@ -425,7 +418,7 @@
   var UNKNOWN = Math.round(rnd(10, 100));          // the hidden Part 2 resistor
   var unkTol = 1 + rnd(-0.03, 0.03), tenTol = 1 + rnd(-0.015, 0.015);
   var ILIM = 2.75;                                   // current limit set by the teacher
-  var S = { part: 1, meters: 1, on: false, vset: 0, benchR: null, dial: ['OFF', 'OFF'], k1: 0, k2: 0, rows: { 1: [], 2: [] } };
+  var S = { part: 1, meters: 1, on: false, vset: 0, benchR: 10, dial: ['OFF', 'OFF'], k1: 0, k2: 0, rows: { 1: [], 2: [] } };
 
   // ================= Geometry =================
   var SUP = { x: 12, y: 18, s: 0.9 };
@@ -590,13 +583,34 @@
     });
     if (drag) EQ.ring(svg, drag.near ? drag.near.p : endPos(drag.e), 24, '#ffb000');
     // controls
-    document.getElementById('pwrBtn').textContent = 'Power: ' + (S.on ? 'ON' : 'OFF');
-    document.getElementById('pwrBtn').classList.toggle('on', S.on);
-    document.getElementById('vsetOut').textContent = S.vset.toFixed(2) + ' V set';
-    document.getElementById('dial1Btn').textContent = (nm === 2 ? 'Meter 1 dial: ' : 'Meter dial: ') + dialName(S.dial[0]);
-    var d2 = document.getElementById('dial2Btn'); d2.style.display = nm === 2 ? '' : 'none'; d2.textContent = 'Meter 2 dial: ' + dialName(S.dial[1]);
+    drawArrows(); drawBadges();
     document.getElementById('recBtn').disabled = !S.on;
-    renderShelf(); renderTables();
+    renderTables();
+  }
+  // arrows under the VOLTAGE knobs (coarse = big steps, fine = small steps)
+  var ARROWS = [{ dv: -0.5, lx: 236, up: false }, { dv: 0.5, lx: 292, up: true }, { dv: -0.05, lx: 352, up: false }, { dv: 0.05, lx: 408, up: true }];
+  function arrowRect(a) { var p = supPt(a.lx, 256); return [p[0], p[1], 54 * SUP.s, 46 * SUP.s]; }
+  function drawArrows() {
+    ARROWS.forEach(function (a) {
+      var r = arrowRect(a), cx = r[0] + r[2] / 2, cy = r[1] + r[3] / 2, h = 11;
+      E('rect', { x: r[0], y: r[1], width: r[2], height: r[3], rx: 9, fill: 'var(--card)', stroke: 'var(--line)', 'stroke-width': 2 }, svg);
+      E('path', { d: a.up ? 'M' + (cx - h) + ',' + (cy + h * 0.6) + ' L' + cx + ',' + (cy - h * 0.7) + ' L' + (cx + h) + ',' + (cy + h * 0.6) + ' Z' : 'M' + (cx - h) + ',' + (cy - h * 0.6) + ' L' + cx + ',' + (cy + h * 0.7) + ' L' + (cx + h) + ',' + (cy - h * 0.6) + ' Z', fill: 'var(--accent)' }, svg);
+    });
+    var c = supPt(291, 320), f = supPt(407, 320);
+    E('text', { x: c[0], y: c[1], 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'coarse');
+    E('text', { x: f[0], y: f[1], 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'fine');
+    var t = supPt(46, 236);
+    E('text', { x: t[0], y: t[1], 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 800, style: 'fill:#ffe08a' }, svg, 'TAP');
+  }
+  function badge(x, y, sym) {
+    var g = E('g', {}, svg);
+    E('circle', { cx: x, cy: y, r: 17, fill: 'var(--accent)', stroke: '#fff', 'stroke-width': 3 }, g);
+    E('text', { x: x, y: y + 6, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 900, style: 'fill:#fff' }, g, sym);
+  }
+  function drawBadges() {
+    if (S.part === 1) { var b = benchSlots()[0]; badge(b.x + 78, b.y - 32, '\u21c4'); }
+    var nm = S.part === 2 ? S.meters : 1;
+    for (var i = 0; i < nm; i++) { var d = mPt(i, 262, 188); badge(d[0], d[1], '\u21bb'); }
   }
   function dialName(d) { return { OFF: 'OFF', '10A': '10A', A200m: 'DCA 200m', A20m: 'DCA 20m', A2000u: 'DCA 2000µ', A200u: 'DCA 200µ', V200m: 'DCV 200m', V2000m: 'DCV 2000m', V20: 'DCV 20', V200: 'DCV 200', V1000: 'DCV 1000', ACV200: 'ACV 200', ACV750: 'ACV 750', hFE: 'hFE', diode: 'diode', R200: 'Ω 200', R2000: 'Ω 2000', R20k: 'Ω 20k', R200k: 'Ω 200k', R2000k: 'Ω 2000k' }[d] || d; }
 
@@ -624,7 +638,6 @@
     var p = svgPt(ev); downAt = p;
     var e = nearestEnd(p);
     if (e) {
-      if (S.on && e.at) { toast('<strong>Power OFF first.</strong> Never change wires while the circuit is on.', true); downAt = null; return; }
       drag = { e: e, start: p.slice(), moved: false, near: null };
       svg.setPointerCapture(ev.pointerId); ev.preventDefault();
     }
@@ -647,6 +660,7 @@
     } else if (e.p[1] < 660) { /* leave it where it was dropped */ }
     var wasTap = !drag.moved; drag = null; downAt = null;
     render();
+    if (S.on && !wasTap) setTimeout(checkWarnings, 30);
     if (wasTap) tapAt(endPos(e));
   }
   svg.addEventListener('pointerup', endDrag);
@@ -658,12 +672,14 @@
     var sp = function (px, py) { return supPt(px, py); };
     var sw = sp(24, 154);
     if (inRect(p, sw[0], sw[1], 44 * SUP.s, 40 * SUP.s)) { togglePower(); return; }
+    for (var ai = 0; ai < ARROWS.length; ai++) { var r = arrowRect(ARROWS[ai]); if (inRect(p, r[0] - 6, r[1] - 6, r[2] + 12, r[3] + 12)) { stepV(ARROWS[ai]); return; } }
     var ck = [sp(332, 104), sp(398, 104)], vk = [sp(332, 176), sp(398, 176)];
     if (ck.some(function (c) { return dist(c, p) < 24; })) { toast('<strong>Hands off the CURRENT knobs!</strong> Your teacher set them. Use the VOLTAGE buttons below.', true); return; }
-    if (vk.some(function (c) { return dist(c, p) < 24; })) { toast('Use the <strong>VOLTAGE</strong> buttons under the bench to turn these knobs.'); return; }
+    if (vk.some(function (c) { return dist(c, p) < 24; })) { toast('Tap the <strong>arrows</strong> under the VOLTAGE knobs: coarse for big steps, fine for small ones.'); return; }
     var nm = S.part === 2 ? S.meters : 1;
-    for (var i = 0; i < nm; i++) { if (dist(mPt(i, 120, 188), p) < 60) { openDial(i); return; } }
+    for (var i = 0; i < nm; i++) { if (dist(mPt(i, 120, 188), p) < 60 || dist(mPt(i, 262, 188), p) < 22) { openDial(i); return; } }
     var bs = benchSlots();
+    if (S.part === 1 && (inRect(p, bs[0].x - 64, bs[0].y - 26, 128, 52) || dist(p, [bs[0].x + 78, bs[0].y - 32]) < 24)) { openResistors(); return; }
     for (var j = 0; j < bs.length; j++) { if (inRect(p, bs[j].x - 60, bs[j].y - 24, 120, 48)) { toast('Careful: <strong>don’t bend or straighten the resistor wires.</strong> They snap easily.'); return; } }
   }
 
@@ -675,55 +691,40 @@
   }
   function checkWarnings() {
     if (!S.on || !last) return;
-    if (last.cc) { toast('<strong>The red C.C. light is on.</strong> Something is shorted: a path from + to − with no resistor in it (or a meter set up wrong). Power OFF and check.', true); return; }
+    if (last.cc) { toast('<strong>The red C.C. light is on.</strong> Something is shorted: a path from + to − with no resistor in it (or a meter set up wrong). Find it and fix it.', true); return; }
     var nm = S.part === 2 ? S.meters : 1;
     for (var i = 0; i < nm; i++) {
       var t = meterText(i, last);
-      if (t === '1' && S.dial[i] !== 'OFF' && meterKind(i)) { toast('Meter ' + (nm > 1 ? i + 1 + ' ' : '') + 'shows <strong>1</strong>: over range. Power OFF and pick a bigger setting (10A for current, DCV 20 for voltage).', true); return; }
+      if (t === '1' && S.dial[i] !== 'OFF' && meterKind(i)) { toast('Meter ' + (nm > 1 ? i + 1 + ' ' : '') + 'shows <strong>1</strong>: over range. Tap the dial and pick a bigger setting (10A for current, DCV 20 for voltage).', true); return; }
       if (t.charAt(0) === '-') { toast('A <strong>minus sign</strong> means the leads are swapped. The size is still right.'); return; }
     }
   }
-  document.getElementById('pwrBtn').addEventListener('click', togglePower);
-  document.querySelectorAll('[data-dv]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var dv = parseFloat(b.getAttribute('data-dv'));
-      S.vset = Math.max(0, Math.min(18, Math.round((S.vset + dv) * 100) / 100));
-      if (Math.abs(dv) > 0.1) S.k1 += dv > 0 ? 25 : -25; else S.k2 += dv > 0 ? 25 : -25;
-      render();
-    });
-  });
+  function stepV(a) {
+    S.vset = Math.max(0, Math.min(18, Math.round((S.vset + a.dv) * 100) / 100));
+    if (Math.abs(a.dv) > 0.1) S.k1 += a.dv > 0 ? 25 : -25; else S.k2 += a.dv > 0 ? 25 : -25;
+    render(); if (S.on) setTimeout(checkWarnings, 30);
+  }
   // dial picker
   var sheet = document.getElementById('dialSheet'), dialFor = 0;
   var DIAL_GROUPS = [['OFF', ['OFF']], ['DC volts (DCV)', ['V200m', 'V2000m', 'V20', 'V200', 'V1000']], ['DC current (DCA)', ['A200u', 'A2000u', 'A20m', 'A200m', '10A']], ['Other', ['ACV200', 'ACV750', 'R200', 'R2000', 'R20k', 'hFE', 'diode']]];
   function openDial(i) {
-    if (S.on && meterWired(i)) { toast('<strong>Never turn the dial while the meter is in a powered circuit.</strong> Power OFF first.', true); return; }
     dialFor = i;
     document.getElementById('dialTitle').textContent = 'Turn ' + ((S.part === 2 && S.meters === 2) ? 'meter ' + (i + 1) + '’s' : 'the meter’s') + ' dial to…';
     document.getElementById('dialGrid').innerHTML = DIAL_GROUPS.map(function (g) {
       return '<div class="dg"><div class="lbl">' + g[0] + '</div><div class="dbtns">' + g[1].map(function (k) { return '<button data-dial="' + k + '" class="' + (S.dial[i] === k ? 'on' : '') + '">' + dialName(k) + '</button>'; }).join('') + '</div></div>';
     }).join('');
-    document.querySelectorAll('[data-dial]').forEach(function (b) { b.addEventListener('click', function () { S.dial[dialFor] = b.getAttribute('data-dial'); closeDial(); render(); }); });
+    document.querySelectorAll('[data-dial]').forEach(function (b) { b.addEventListener('click', function () { S.dial[dialFor] = b.getAttribute('data-dial'); closeDial(); render(); if (S.on) setTimeout(checkWarnings, 30); }); });
     sheet.classList.add('show'); sheet.setAttribute('aria-hidden', 'false');
   }
   function closeDial() { sheet.classList.remove('show'); sheet.setAttribute('aria-hidden', 'true'); }
   document.getElementById('dialCancel').addEventListener('click', closeDial);
   sheet.addEventListener('click', function (ev) { if (ev.target === sheet) closeDial(); });
-  document.getElementById('dial1Btn').addEventListener('click', function () { openDial(0); });
-  document.getElementById('dial2Btn').addEventListener('click', function () { openDial(1); });
-  document.getElementById('resetBtn').addEventListener('click', function () {
-    if (S.on) { toast('Power OFF first.', true); return; }
-    resetLeads(); S.dial = ['OFF', 'OFF']; render();
-  });
-  // resistor shelf (Part 1)
-  function renderShelf() {
-    var w = document.getElementById('shelfWrap'); w.style.display = S.part === 1 ? '' : 'none';
-    document.getElementById('shelf').innerHTML = P1_VALUES.map(function (v) { return '<button data-r="' + v + '" class="' + (S.benchR === v ? 'on' : '') + '">' + v + ' Ω</button>'; }).join('');
-    document.querySelectorAll('[data-r]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        if (S.on) { toast('<strong>Power OFF</strong> before you swap resistors.', true); return; }
-        S.benchR = parseInt(b.getAttribute('data-r'), 10); render();
-      });
-    });
+  document.getElementById('resetBtn').addEventListener('click', function () { S.on = false; resetLeads(); S.dial = ['OFF', 'OFF']; render(); });
+  function openResistors() {
+    document.getElementById('dialTitle').textContent = 'Swap the resistor';
+    document.getElementById('dialGrid').innerHTML = '<div class="dbtns">' + P1_VALUES.map(function (v) { return '<button data-r="' + v + '" class="' + (S.benchR === v ? 'on' : '') + '">' + v + ' \u03a9</button>'; }).join('') + '</div>';
+    document.querySelectorAll('[data-r]').forEach(function (b) { b.addEventListener('click', function () { S.benchR = parseInt(b.getAttribute('data-r'), 10); closeDial(); render(); if (S.on) setTimeout(checkWarnings, 30); }); });
+    sheet.classList.add('show'); sheet.setAttribute('aria-hidden', 'false');
   }
   // part / meter switches
   function setPart(p) {
@@ -741,7 +742,6 @@
   document.querySelectorAll('#partSeg button').forEach(function (b) { b.addEventListener('click', function () { setPart(+b.getAttribute('data-part')); }); });
   document.querySelectorAll('#meterSeg button').forEach(function (b) {
     b.addEventListener('click', function () {
-      if (S.on) { toast('Power OFF first.', true); return; }
       S.meters = +b.getAttribute('data-m'); resetLeads(); S.dial = ['OFF', 'OFF'];
       document.querySelectorAll('#meterSeg button').forEach(function (x) { x.classList.toggle('on', x === b); });
       partHint(); render();
