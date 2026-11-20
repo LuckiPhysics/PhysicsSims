@@ -219,7 +219,7 @@
   <details class="card help">
     <summary><strong>Need a hint?</strong> How the circuits go together</summary>
     <ul>
-      <li><strong>Drag the ends of the leads</strong> from the tray. Banana plugs go into posts and jacks. Alligator clips grab resistor wires (or a post). Ends snap on when they get close.</li>
+      <li><strong>Drag the ends of the leads</strong> from the tray onto any post, jack, or resistor wire. Ends snap on when they get close.</li>
       <li><strong>Tap</strong> the green POWER switch, the arrows under the VOLTAGE knobs, a meter's dial, or the resistor (⇄) to change them.</li>
       <li><strong>Part 1 loop:</strong> + post → meter (dial on <strong>10A</strong>, leads in <strong>10ADC</strong> and <strong>COM</strong>) → resistor → − post.</li>
       <li><strong>Part 2 loop:</strong> + post → unknown resistor → ammeter → 10 Ω resistor → − post. The voltmeter (dial <strong>DCV 20</strong>, leads in <strong>VΩmA</strong> and <strong>COM</strong>) goes <strong>across</strong> the 10 Ω resistor.</li>
@@ -627,9 +627,9 @@
     LEADS.forEach(function (l) { l.ends.forEach(function (e) { var d = dist(endPos(e), p); if (d < bd) { bd = d; best = e; } }); });
     return best;
   }
-  function okTarget(e, t) { return e.type === 'banana' ? (t.kind === 'post' || t.kind === 'jack') : (t.kind === 'wire' || t.kind === 'post'); }
+  function okTarget(e, t) { return true; }   // any end can go anywhere
   function nearestTarget(e, p) {
-    var best = null, bd = 40;
+    var best = null, bd = 48;
     targets().forEach(function (t) { if (!okTarget(e, t)) return; var d = dist(t.p, p); if (d < bd) { bd = d; best = t; } });
     return best;
   }
