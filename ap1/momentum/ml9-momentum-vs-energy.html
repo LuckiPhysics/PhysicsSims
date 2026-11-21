@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 9: Momentum vs. Energy</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+
+  .wx th, .wx td { vertical-align: top; }
+  svg[data-bars] text { fill: var(--ink); }
+  .sort-card { border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 12px 0; }
+  .sort-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sort-opts button { min-height: 50px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--ink); font-size: 17px; font-weight: 600; }
+  .sort-opts button.right { border-color: var(--good); background: var(--good-soft); }
+  .sort-opts button.wrong { border-color: var(--bad); background: var(--bad-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml9-momentum-vs-energy.html">regular lesson link</a>. · <a href="ml9-momentum-vs-energy-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 9</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Momentum vs. Energy</h1>
+      <p class="muted">About 12 minutes · Due before class Wednesday 12/2</p>
+      <p>Momentum and kinetic energy both depend on mass and speed, so they're easy to mix up. Tonight: how they differ, when each one is conserved, and how to pick the right tool for each stage of a problem. It's also your review for Thursday's test.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 Side by side -->
+  <section class="step" data-title="Side by side">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Two different quantities</h2>
+      <table class="wx" style="font-size:17px">
+        <tr><th></th><th>Momentum</th><th>Kinetic energy</th></tr>
+        <tr><td><strong>Formula</strong></td><td>p = mv</td><td>K = ½mv²</td></tr>
+        <tr><td><strong>Type</strong></td><td><strong>Vector</strong>: has a direction, can be negative</td><td><strong>Scalar</strong>: no direction, never negative</td></tr>
+        <tr><td><strong>Units</strong></td><td>kg·m/s</td><td>J (kg·m²/s²)</td></tr>
+        <tr><td><strong>Conserved when…</strong></td><td>the <strong>net external force</strong> on the system is zero</td><td>only in <strong>elastic</strong> collisions</td></tr>
+        <tr><td><strong>Changed by</strong></td><td>impulse: FΔt</td><td>work: FΔx</td></tr>
+      </table>
+      <p style="margin-top:12px">Total <em>energy</em> is always conserved. KE just turns into other forms (heat, sound, deformation, spring or gravitational energy).</p>
+      <div class="notes-box"><strong>Box A:</strong> Momentum p = mv is a <strong>vector</strong> (signs matter); KE = ½mv² is a <strong>scalar</strong> (never negative). Momentum is conserved when the <strong>net external force is zero</strong>. KE is conserved only in <strong>elastic</strong> collisions. Impulse (FΔt) changes momentum; work (FΔx) changes KE.</div>
+    </div>
+  </section>
+
+  <!-- 2 Sorter -->
+  <section class="step" data-title="What's conserved?">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>What's conserved? It depends on the system</h2>
+      <p>For each event, tap what is conserved <strong>for the system named</strong>. Get all four right to go on.</p>
+      <div id="sorter"></div>
+      <div class="notes-box"><strong>Box B:</strong> Always name the system first. If something <strong>outside</strong> the system pushes (a wall, the floor, gravity), that system's momentum changes. A ball bouncing off a wall at the same speed keeps its KE but <strong>not</strong> its momentum (it reversed). Include the wall and Earth in the system and the total momentum is conserved.</div>
+    </div>
+  </section>
+
+  <!-- 3 Strategy -->
+  <section class="step" data-title="Pick the tool">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Pick the right tool for each stage</h2>
+      <div id="sSteps">
+        <div class="reveal step-line"><strong>1. Break the problem into stages</strong> and label the moments a, b, c, … (like the ballistic pendulum).</div>
+        <div class="reveal step-line"><strong>2. Collision or explosion</strong> (a quick push between objects)? Use <strong>momentum</strong>: Σp<sub>i</sub> = Σp<sub>f</sub>. Don't use KE across it unless it's elastic.</div>
+        <div class="reveal step-line"><strong>3. Sliding, swinging, rising, falling, or a spring</strong> (no friction)? Use <strong>energy</strong>: K + U<sub>g</sub> + U<sub>s</sub> stays the same.</div>
+        <div class="reveal step-line"><strong>4. Elastic collision?</strong> Both momentum and KE are conserved, so you get two equations. Use the KE check to test whether a collision <em>was</em> elastic.</div>
+      </div>
+      <button class="ghost" id="sNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box C:</strong> Split the problem into stages. <strong>Collision or explosion → momentum.</strong> <strong>Moving through heights or springs → energy.</strong> Elastic collisions conserve both. Never use KE across a sticky collision.</div>
+    </div>
+  </section>
+
+  <!-- 4 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example: down a ramp, stick, up a ramp</h2>
+      <p>A 2.0 kg block starts at rest 0.45 m up a frictionless ramp. It slides down and sticks to a 1.0 kg block at rest at the bottom. How high do they slide up the other side?</p>
+      <svg viewBox="0 0 640 210" aria-label="Track: block at a, top of left ramp; b, bottom just before the collision; c, just after; d, top of the right ramp.">
+        <path d="M20 40 Q 120 190 220 190 L 420 190 Q 520 190 620 70" fill="none" style="stroke:var(--ink)" stroke-width="3"/>
+        <rect x="34" y="36" width="34" height="26" rx="4" style="fill:var(--cartB)" transform="rotate(40 51 49)"/>
+        <rect x="236" y="164" width="34" height="26" rx="4" style="fill:var(--cartB)"/>
+        <rect x="290" y="168" width="28" height="22" rx="4" style="fill:var(--cartA)"/>
+        <g opacity="0.55"><rect x="540" y="118" width="34" height="26" rx="4" style="fill:var(--cartB)" transform="rotate(-38 557 131)"/><rect x="568" y="100" width="28" height="22" rx="4" style="fill:var(--cartA)" transform="rotate(-38 582 111)"/></g>
+        <circle cx="90" cy="30" r="13" style="fill:var(--accent)"/><text x="90" y="36" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">a</text>
+        <circle cx="252" cy="142" r="13" style="fill:var(--accent)"/><text x="252" y="148" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">b</text>
+        <circle cx="330" cy="150" r="13" style="fill:var(--accent)"/><text x="330" y="156" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">c</text>
+        <circle cx="530" cy="86" r="13" style="fill:var(--accent)"/><text x="530" y="92" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">d</text>
+        <text x="320" y="206" text-anchor="middle" font-size="14" style="fill:var(--muted)">2.0 kg (red) · 1.0 kg (blue)</text>
+      </svg>
+      <p class="hint" style="text-align:center;margin-top:0"><strong>a</strong> top, at rest · <strong>b</strong> bottom, just before the collision · <strong>c</strong> just after · <strong>d</strong> highest point</p>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>a → b (energy):</strong> mgh<sub>a</sub> = ½mv<sub>b</sub>², so v<sub>b</sub> = √(2gh<sub>a</sub>) = √(2 × 9.8 × 0.45) ≈ <strong>2.97 m/s</strong>.</div>
+        <div class="reveal step-line"><strong>b → c (momentum):</strong> (2.0)(2.97) = (3.0)v<sub>c</sub>, so <strong>v<sub>c</sub> ≈ 1.98 m/s</strong>. Sticky collision: no KE equation here.</div>
+        <div class="reveal step-line"><strong>c → d (energy):</strong> h<sub>d</sub> = v<sub>c</sub>² / 2g = (1.98)² / 19.6 ≈ <strong>0.20 m</strong>.</div>
+        <div class="reveal step-line"><strong>Check:</strong> the pair rises less than half as high. The collision turned a third of the KE (about 2.9 J of 8.8 J) into heat and sound.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 5 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3 · The falling ball</h2>
+      <p>A ball is dropped from rest and falls toward the floor (ignore air). For the <strong>ball alone</strong>, what is conserved while it falls?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="none">Neither: gravity is an outside force, so both its momentum and its KE increase</button>
+        <button class="big-btn" data-opt="p">Momentum only: nothing collides with it</button>
+        <button class="big-btn" data-opt="ke">KE only: energy is always conserved</button>
+        <button class="big-btn" data-opt="both">Both</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 6 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3 · Stick, then climb</h2>
+      <p>A 0.50 kg ball moving at 6.0 m/s sticks to a 1.0 kg block at rest on a frictionless track. The pair then slides up a ramp. How high does it rise? Answer in <strong>meters</strong>.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3 · Which is impossible?</h2>
+      <p>A 1.0 kg cart at +2.0 m/s hits an identical cart at rest. There's no spring or explosive. Which "after" result is <strong>impossible</strong>?</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="el">A: 0 m/s · B: +2.0 m/s</button>
+        <button class="big-btn" data-opt="stick">A: +1.0 m/s · B: +1.0 m/s</button>
+        <button class="big-btn" data-opt="gain">A: −1.0 m/s · B: +3.0 m/s</button>
+        <button class="big-btn" data-opt="inel">A: +0.50 m/s · B: +1.5 m/s</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–E on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about anything before the test?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., choosing the system"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 9: Momentum vs. Energy</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. The falling ball</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Stick, then climb</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Which is impossible?</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–E</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Coming up</h2>
+      <p style="margin:0"><strong>Unit 4 test tomorrow</strong> (Thursday): multiple choice and free response, full period. Every mini-lesson stays open on the Unit 4 page if you want to review, and the combined notes sheets are there too.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML9';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+
+  // ---------- Sorter ----------
+  var OPTS = [['p', 'Momentum only'], ['ke', 'KE only'], ['both', 'Both'], ['none', 'Neither']];
+  var SORT = [
+    { t: 'Two carts with magnets bounce apart elastically.', sys: 'both carts', ans: 'both',
+      why: { both: 'Right. No outside push, so momentum is conserved, and it\'s elastic, so KE is too.',
+             p: 'Momentum, yes. But "elastic" means the total KE is the same too.', ke: 'KE, yes. Momentum is also conserved: nothing outside pushes on the two carts.', none: 'No outside push and an elastic bounce: both are conserved.' } },
+    { t: 'Two Velcro carts collide and stick.', sys: 'both carts', ans: 'p',
+      why: { p: 'Right. Momentum is conserved, but sticking turns KE into heat and sound.',
+             both: 'Sticking always loses KE. Only momentum is conserved.', ke: 'It\'s the other way around: momentum is conserved, KE is lost.', none: 'No outside push on the two carts, so momentum is conserved.' } },
+    { t: 'A spring pushes two carts apart from rest.', sys: 'both carts', ans: 'p',
+      why: { p: 'Right. Total momentum stays zero, and KE increases (it came from the spring).',
+             both: 'KE went from 0 to something: it increased. Only momentum is conserved.', ke: 'KE increased from zero. Momentum stays at zero, so momentum is the conserved one.', none: 'The spring is inside the system, so momentum is conserved.' } },
+    { t: 'A ball bounces straight back off a wall at the same speed.', sys: 'the ball alone', ans: 'ke',
+      why: { ke: 'Right. Same speed, same KE. But its velocity reversed, so its momentum changed: the wall is outside the system.',
+             both: 'Its speed is the same, but its direction reversed: +mv became −mv. The wall gave it an impulse.', p: 'The wall is outside the system, so the ball\'s momentum can change, and it does: +mv became −mv.', none: 'Same speed means same KE. Only momentum changed.' } }
+  ];
+  var sortDone = [false, false, false, false];
+  (function buildSorter() {
+    var wrap = document.getElementById('sorter');
+    SORT.forEach(function (s, i) {
+      var c = document.createElement('div'); c.className = 'sort-card';
+      c.innerHTML = '<p style="margin:0 0 8px"><strong>' + (i + 1) + '.</strong> ' + s.t + ' <span class="muted">System: <strong>' + s.sys + '</strong>.</span></p><div class="sort-opts"></div><div class="feedback" id="sortFb' + i + '"></div>';
+      var o = c.querySelector('.sort-opts');
+      OPTS.forEach(function (op) {
+        var b = document.createElement('button'); b.textContent = op[1]; b.setAttribute('data-sort', op[0]);
+        b.addEventListener('click', function () {
+          if (sortDone[i]) return;
+          var ok = op[0] === s.ans;
+          o.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+          b.classList.add(ok ? 'right' : 'wrong');
+          fb('sortFb' + i, ok, (ok ? '' : '<strong>Not quite.</strong> ') + s.why[op[0]]);
+          if (ok) { sortDone[i] = true; state.quick = sortDone.every(Boolean); upd(); }
+        });
+        o.appendChild(b);
+      });
+      wrap.appendChild(c);
+    });
+  })();
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { type: 'mc', ans: 'none', label: '1. The falling ball',
+          good: '<strong>Correct.</strong> Earth is outside the "ball" system, and its pull (gravity) speeds the ball up. Its momentum and its KE both increase. Include the Earth in the system and momentum is conserved; ball + Earth also keeps K + U<sub>g</sub> constant.',
+          bad: { p: 'Nothing collides with it, but gravity is still an outside force on the ball alone. It speeds up, so its momentum (mv) grows.',
+                 ke: 'Total energy is conserved, but the ball\'s KE grows as gravitational energy turns into KE. KE alone isn\'t constant.',
+                 both: 'It speeds up as it falls, so neither mv nor ½mv² stays the same.' } },
+    q2: { type: 'num', answer: 0.204, tol: 0.006, label: '2. Stick, then climb',
+          good: '<strong>Correct: about 0.20 m.</strong> Collision: (0.50)(6.0) = (1.5)v<sub>f</sub>, so v<sub>f</sub> = 2.0 m/s. Ramp: h = v<sub>f</sub>² / 2g = 4.0 / 19.6 ≈ 0.20 m.',
+          special: [{ v: 1.84, msg: '<strong>You skipped the collision.</strong> KE isn\'t conserved when they stick. Find the speed after the collision with momentum first.' },
+                    { v: 0.408, msg: '<strong>Check the 2 in h = v² / 2g.</strong>' },
+                    { v: 0.459, msg: '<strong>Use the total mass after.</strong> (0.50)(6.0) = (0.50 + 1.0)v<sub>f</sub>, so v<sub>f</sub> = 2.0 m/s, not 3.0 m/s.' },
+                    { v: 20.4, msg: '<strong>Right physics, wrong unit.</strong> That\'s centimeters. Give the answer in meters.' }],
+          wrong: '<strong>Not yet.</strong> Two stages: momentum for the collision, then energy for the ramp.' },
+    q3: { type: 'mc', ans: 'gain', label: '3. Which is impossible?',
+          good: '<strong>Correct.</strong> Momentum checks out (−1 + 3 = +2), but KE goes from 2.0 J to 0.5 + 4.5 = 5.0 J. Without a spring or explosive, the total KE can\'t increase.',
+          bad: { el: 'This one is possible: it\'s a perfectly elastic collision. Momentum: 2 → 2. KE: 2.0 J → 2.0 J.',
+                 stick: 'This one is possible: they stick. Momentum: 2 → 2. KE drops from 2.0 J to 1.0 J.',
+                 inel: 'This one is possible: an inelastic bounce. Momentum: 0.5 + 1.5 = 2. KE drops from 2.0 J to 1.25 J.' } }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-title') === 'What\'s conserved?') return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('sSteps', 'sNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Graded checks ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      if (Math.abs(val + cfg.answer) <= cfg.tol) msg = '<strong>Right size.</strong> A height is measured upward, so give it as a positive number.';
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(Math.abs(val) - sp.v) <= Math.max(cfg.tol, sp.v * 0.02)) msg = sp.msg; });
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), cfg = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q].right) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === cfg.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        fb(q + 'Fb', ok, ok ? cfg.good : '<strong>Not quite.</strong> ' + cfg.bad[opt] + more(q));
+      });
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var e = document.getElementById(id), s = state[q];
+    if (s.first === true) { e.textContent = '✓ first try'; e.className = 'badge g'; }
+    else if (s.right) { e.textContent = '✓ after ' + s.tries + ' tries'; e.className = 'badge y'; }
+    else { e.textContent = '✗ review in class'; e.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<\/sub>/g, '').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    ['sNext', 'wxNext'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
+    SORT.forEach(function (s, i) {
+      document.querySelector('#sorter .sort-card:nth-child(' + (i + 1) + ') [data-sort="' + s.ans + '"]').classList.add('right');
+      fb('sortFb' + i, true, s.why[s.ans]);
+      note(document.getElementById('sortFb' + i), 'Wrong-choice feedback: ' + list(OPTS.filter(function (o) { return o[0] !== s.ans; }).map(function (o) { return '"' + o[1] + '": ' + plain(s.why[o[0]]); })));
+    });
+    note(document.getElementById('sorter'), '<strong>Practice sort (all four must be right to unlock Next).</strong> Items 1–4 match tomorrow\'s opener: (a) and (b) are items 1–3, and (c) is item 4. Check 1 then switches to gravity as the outside force (binder #8 has the same idea).');
+    note(document.getElementById('sNext'), '<strong>Uses the a, b, c… location labels</strong> from ML6, per the notation rule (no primes).');
+    note(document.getElementById('wxNext'), '<strong>Like binder #16</strong> (blocks on a track), with new numbers. h<sub>d</sub> = (m<sub>1</sub>/(m<sub>1</sub>+m<sub>2</sub>))² h<sub>a</sub> = (4/9)(0.45) = 0.20 m. KE at b: 8.82 J; at c: 5.88 J (2/3 survives the catch).');
+    ['q1', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]'), cfg = Q[q];
+      g.querySelector('[data-opt="' + cfg.ans + '"]').classList.add('right'); fb(q + 'Fb', true, cfg.good);
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong choices</strong> (up to 3 tries):' + list(Object.keys(cfg.bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent.trim() + '": ' + plain(cfg.bad[o]);
+      })));
+    });
+    document.getElementById('q2Input').value = '0.20'; fb('q2Fb', true, Q.q2.good);
+    note(document.getElementById('q2Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ' + (Q.q2.answer - Q.q2.tol).toFixed(3) + '–' + (Q.q2.answer + Q.q2.tol).toFixed(3) + ' m):' + list(Q.q2.special.map(function (sp) { return sp.v + ': ' + plain(sp.msg); }).concat(['Anything else: ' + plain(Q.q2.wrong)])));
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: false, done: true, right: true, tries: 2 };
+    state.q3 = { first: true, done: true, right: true, tries: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'choosing the system';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> The "unsure about" answers are a quick list of what to review in class before the test. Check 3 is the most test-like: momentum works for every choice, so only the KE check finds the impossible one.');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
