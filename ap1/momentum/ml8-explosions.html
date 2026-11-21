@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini-Lesson 8: Explosions and 3+ Objects</title>
+<style>
+
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+
+  .wx th, .wx td { vertical-align: top; }
+  svg[data-bars] text { fill: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 4: Momentum</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml8-explosions.html">regular lesson link</a>. · <a href="ml8-explosions-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 4 · Mini-Lesson 8</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- 0 Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Explosions and 3+ Objects</h1>
+      <p class="muted">About 12 minutes · Due before class Tuesday 12/1</p>
+      <p>In ML5 two skaters pushed apart from rest. Tonight: explosions where the system is <em>already moving</em>, where the energy comes from, and what to do when there are three or more pieces.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> Fill in each box when you see its orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag.
+      </div>
+      <label for="nameInput"><strong>Your first and last name</strong></label>
+      <input id="nameInput" class="text-input" type="text" autocomplete="name" autocapitalize="words" placeholder="First Last" style="margin-top:8px">
+      <p class="hint">Type your name to start. It goes on the results card you'll screenshot at the end.</p>
+    </div>
+  </section>
+
+  <!-- 1 What is an explosion -->
+  <section class="step" data-title="What's an explosion?">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Start together, end apart</h2>
+      <p>An <strong>explosion</strong> is any interaction where objects start together and end up apart: a cannon firing, a spring launcher, a skater throwing a ball, a rocket dumping fuel.</p>
+      <div id="aSteps">
+        <div class="reveal step-line"><strong>Momentum:</strong> the push between the pieces is internal (Newton's 3rd law pairs), so the <strong>total momentum stays the same</strong>: Σp<sub>i</sub> = Σp<sub>f</sub>.</div>
+        <div class="reveal step-line"><strong>From rest:</strong> the total is zero before, so it's zero after. The pieces get <strong>equal and opposite</strong> momenta, and the heavier piece moves slower (a cannon's recoil).</div>
+        <div class="reveal step-line"><strong>Energy:</strong> total KE <strong>increases</strong>. It comes from stored energy: a compressed spring, chemical energy in gunpowder or fuel, or your muscles.</div>
+      </div>
+      <button class="ghost" id="aNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box A:</strong> Explosion = start together, end apart. Total momentum is <strong>conserved</strong> (Σp<sub>i</sub> = Σp<sub>f</sub>). From rest: equal and opposite momenta. Total KE <strong>increases</strong>; it comes from stored energy (spring, chemical, muscles).</div>
+    </div>
+  </section>
+
+  <!-- 2 Sim -->
+  <section class="step" data-title="Moving explosion">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Explosions on the move</h2>
+      <p>A 2.0 kg cart (A, red) carries a 1.0 kg block (B, blue). A spring on the cart launches the block. Set how fast they move together at first, and how fast the block leaves.</p>
+      <svg id="scene" viewBox="0 0 640 120" aria-label="Cart A carrying block B on a track"></svg>
+      <div class="slider-row"><label for="sVi">Starting velocity (together): <strong id="vVi"></strong></label><input type="range" id="sVi" min="0" max="3" step="0.5" value="2"></div>
+      <div class="slider-row"><label for="sVb">Block's velocity after: <strong id="vVb"></strong></label><input type="range" id="sVb" min="-4" max="8" step="1" value="6"></div>
+      <svg id="pChart" viewBox="0 0 640 225" aria-label="Momentum bar chart before and after"></svg>
+      <div class="readout" id="simOut" style="font-size:18px"></div>
+      <p class="hint" style="text-align:center">Right is +. Try a starting velocity of 0, then 2.0 m/s.</p>
+      <p><strong>Quick check:</strong> Can both pieces move <em>forward</em> after an explosion?</p>
+      <button class="big-btn" data-quick="yes">Yes, if the system was already moving forward</button>
+      <button class="big-btn" data-quick="no">No, the pieces always go in opposite directions</button>
+      <button class="big-btn" data-quick="mass">Only if the pieces have equal masses</button>
+      <div class="feedback" id="quickFb"></div>
+      <div class="notes-box"><strong>Box B:</strong> If the system starts moving, the total momentum is <strong>not zero</strong>, and it stays the same after. The pieces do <strong>not</strong> have to go opposite ways. Start every problem with Σp<sub>i</sub> = (total mass)(starting velocity).</div>
+    </div>
+  </section>
+
+  <!-- 3 Three or more -->
+  <section class="step" data-title="Three or more pieces">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Three or more pieces: just add more terms</h2>
+      <p>A 0.60 kg firework is at rest when it bursts into three pieces. A 0.20 kg piece flies at +30 m/s and a 0.10 kg piece flies at −20 m/s. Find the velocity of the 0.30 kg piece.</p>
+      <svg viewBox="0 0 640 190" aria-label="Momentum bars after the burst: piece 1 plus 6, piece 2 minus 2, piece 3 minus 4, total zero.">
+        <line x1="20" y1="95" x2="620" y2="95" style="stroke:var(--ink)" stroke-width="2"/>
+        <text x="20" y="22" font-size="17" font-weight="800">After the burst (before: total = 0)</text>
+        <rect x="70" y="47" width="70" height="48" rx="4" style="fill:var(--cartB)"/><text x="105" y="40" text-anchor="middle" font-size="16" font-weight="700">+6</text>
+        <rect x="190" y="95" width="70" height="16" rx="4" style="fill:var(--cartA)"/><text x="225" y="130" text-anchor="middle" font-size="16" font-weight="700">−2</text>
+        <rect x="310" y="95" width="70" height="32" rx="4" fill="none" style="stroke:var(--ink)" stroke-width="2" stroke-dasharray="6 5"/><text x="345" y="146" text-anchor="middle" font-size="16" font-weight="700">?</text>
+        <rect x="470" y="94" width="70" height="2" style="fill:var(--note)"/><text x="505" y="85" text-anchor="middle" font-size="16" font-weight="700">0</text>
+        <text x="105" y="178" text-anchor="middle" font-size="15" font-weight="700">piece 1</text><text x="225" y="178" text-anchor="middle" font-size="15" font-weight="700">piece 2</text>
+        <text x="345" y="178" text-anchor="middle" font-size="15" font-weight="700">piece 3</text><text x="505" y="178" text-anchor="middle" font-size="15" font-weight="700">total</text>
+      </svg>
+      <div id="cSteps">
+        <div class="reveal step-line"><strong>Write it out:</strong> Σp<sub>i</sub> = Σp<sub>f</sub> becomes 0 = p<sub>1f</sub> + p<sub>2f</sub> + p<sub>3f</sub>. One term per piece, however many pieces.</div>
+        <div class="reveal step-line"><strong>Plug in:</strong> 0 = (0.20)(+30) + (0.10)(−20) + (0.30)v<sub>3f</sub> = +6 − 2 + 0.30v<sub>3f</sub></div>
+        <div class="reveal step-line"><strong>Solve:</strong> 0.30v<sub>3f</sub> = −4, so <strong>v<sub>3f</sub> ≈ −13 m/s</strong> (to the left). The third bar has to cancel the other two.</div>
+      </div>
+      <button class="ghost" id="cNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+      <div class="notes-box"><strong>Box C:</strong> More objects = more terms: Σp<sub>i</sub> = p<sub>1f</sub> + p<sub>2f</sub> + p<sub>3f</sub> + … Keep the signs. The missing bar is whatever makes the total match.</div>
+    </div>
+  </section>
+
+  <!-- 4 Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example: launching from a moving cart</h2>
+      <p>A 25 kg cart carrying a 5.0 kg box rolls at +2.0 m/s. A spring launches the box forward at +8.0 m/s. Find the cart's velocity after, and the change in KE.</p>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Before:</strong> Σp<sub>i</sub> = (25 + 5.0)(+2.0) = <strong>+60 kg·m/s</strong>. Not zero: they were already moving.</div>
+        <div class="reveal step-line"><strong>After:</strong> +60 = (5.0)(+8.0) + (25)v<sub>Cf</sub> = +40 + 25v<sub>Cf</sub>, so <strong>v<sub>Cf</sub> = +0.80 m/s</strong>. Both move forward.</div>
+        <div class="reveal step-line"><strong>KE before:</strong> ½(30)(2.0)² = <strong>60 J</strong>. <strong>KE after:</strong> ½(5.0)(8.0)² + ½(25)(0.80)² = 160 + 8 = <strong>168 J</strong>.</div>
+        <div class="reveal step-line"><strong>Where did 108 J come from?</strong> The compressed spring. Explosions always gain KE from stored energy.</div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- 5 Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3 · Recoil</h2>
+      <p>A 0.40 kg toy launcher (not counting the ball) sits at rest on ice. It fires a 0.020 kg ball at +25 m/s. What is the launcher's velocity right after? Include the sign.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q1" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q1Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q1" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- 6 Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3 · Moving explosion</h2>
+      <p>A 50 kg skater holding a 10 kg ball glides at +3.0 m/s. She throws the ball forward at +9.0 m/s. What is her velocity right after? Include the sign.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q2" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- 7 Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3 · Three pieces</h2>
+      <p>A 0.90 kg firework at rest bursts into three 0.30 kg pieces. One flies at +20 m/s and one at −5.0 m/s. What is the velocity of the third piece? Include the sign.</p>
+      <div class="num-row">
+        <button class="sign-btn" data-sign="q3" aria-label="Toggle positive or negative">+</button>
+        <input class="num-input" id="q3Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off">
+        <span class="units">m/s</span>
+      </div>
+      <button class="primary" data-check="q3" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- 8 Results -->
+  <section class="step" data-title="Results">
+    <div class="shot-tip" style="margin:0 0 16px">
+      <strong>Last step: screenshot your results card and turn it in on OnCampus.</strong><br>
+      iPad without a Home button: press the <strong>top button + volume up</strong> together.<br>
+      iPad with a Home button: press the <strong>top button + Home button</strong> together.
+    </div>
+    <div class="card">
+      <h2>Almost done</h2>
+      <button class="check-row" id="notesCheck"><span class="box"></span><span>I filled in Boxes A–E on my notes sheet</span></button>
+      <label for="confused"><strong>Still unsure about anything?</strong> <span class="muted">(optional)</span></label>
+      <textarea id="confused" class="text-input" style="margin-top:8px" placeholder="e.g., when the starting total isn't zero"></textarea>
+    </div>
+    <div class="card results" id="resultsCard">
+      <div class="kicker">Results card · Screenshot this</div>
+      <h2>Mini-Lesson 8: Explosions and 3+ Objects</h2>
+      <div class="res-row"><span id="rName" style="font-weight:700"></span><span id="rDate" class="muted"></span></div>
+      <div class="res-row"><span>Correct on first try</span><span class="score-big" id="rScore"></span></div>
+      <div class="res-row"><span>1. Recoil</span><span class="badge" id="r1"></span></div>
+      <div class="res-row"><span>2. Moving explosion</span><span class="badge" id="r2"></span></div>
+      <div class="res-row"><span>3. Three pieces</span><span class="badge" id="r3"></span></div>
+      <div class="res-row"><span>Notes sheet A–E</span><span class="badge" id="rNotes"></span></div>
+      <div class="res-row" id="rConfRow" style="display:none"><span>Unsure about: <em id="rConf"></em></span></div>
+      <div class="res-row"><span class="muted">Check code</span><span class="muted" id="rCode"></span></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px">Coming up</h2>
+      <p style="margin:0"><strong>Mastering HW 4.2</strong> is due tonight. Tonight's lesson sets up 6.36 (cannon), 6.37 (sled), and 6.56 (rocket). Next is ML9, momentum vs. energy (due Wed 12/2), then the Unit 4 test on Thursday.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var LESSON = 'ML8';
+  // ---------- Theme ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+
+  // ---------- Drawing helpers ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text !== undefined) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+  function fmt(x) { var r = Math.round(x * 10) / 10; if (Math.abs(r) < 0.05) return '0'; return (r < 0 ? '−' : '+') + Math.abs(r).toFixed(1); }
+  function arrow(svg, x, y, v, color) {
+    if (Math.abs(v) < 0.05) { el('text', { x: x, y: y + 5, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'at rest'); return; }
+    var L = 12 + Math.abs(v) * 7, d = v > 0 ? 1 : -1, x2 = x + d * L;
+    el('line', { x1: x, y1: y, x2: x2, y2: y, style: 'stroke:' + color, 'stroke-width': 4 }, svg);
+    el('path', { d: 'M' + (x2 + d * 10) + ' ' + y + ' L' + x2 + ' ' + (y - 7) + ' L' + x2 + ' ' + (y + 7) + ' Z', style: 'fill:' + color }, svg);
+    el('text', { x: (x + x2) / 2, y: y - 9, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700 }, svg, fmt(v) + ' m/s');
+  }
+  function chart(before, after) {
+    var svg = document.getElementById('pChart'); clear(svg);
+    var Y0 = 118, colW = 56, scale = 6.0;
+    el('text', { x: 14, y: 22, 'font-size': 17, 'font-weight': 800 }, svg, 'Momentum');
+    el('line', { x1: 14, y1: Y0, x2: 626, y2: Y0, style: 'stroke:var(--ink)', 'stroke-width': 2 }, svg);
+    el('line', { x1: 320, y1: 30, x2: 320, y2: 221, style: 'stroke:var(--line)', 'stroke-width': 2, 'stroke-dasharray': '6 6' }, svg);
+    el('text', { x: 170, y: 22, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'before');
+    el('text', { x: 480, y: 22, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, style: 'fill:var(--muted)' }, svg, 'after');
+    function grp(x0, v) {
+      [[v[0], 'var(--cartB)', 'A'], [v[1], 'var(--cartA)', 'B'], [v[0] + v[1], 'var(--note)', 'total']].forEach(function (it, i) {
+        var x = x0 + i * (colW + 16), h = it[0] * scale;
+        el('rect', { x: x, y: h >= 0 ? Y0 - h : Y0, width: colW, height: Math.max(Math.abs(h), 1.5), rx: 4, style: 'fill:' + it[1] }, svg);
+        el('text', { x: x + colW / 2, y: h >= 0 ? Y0 - h - 6 : Y0 - h + 18, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700 }, svg, fmt(it[0]));
+        el('text', { x: x + colW / 2, y: 216, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700 }, svg, it[2]);
+      });
+    }
+    grp(60, before); grp(370, after);
+  }
+  function drawSim() {
+    var vi = +document.getElementById('sVi').value, vb = +document.getElementById('sVb').value, mA = 2, mB = 1;
+    var va = ((mA + mB) * vi - mB * vb) / mA;
+    document.getElementById('vVi').textContent = fmt(vi) + ' m/s';
+    document.getElementById('vVb').textContent = fmt(vb) + ' m/s';
+    var s = document.getElementById('scene'); clear(s);
+    el('line', { x1: 0, y1: 104, x2: 640, y2: 104, style: 'stroke:var(--track)', 'stroke-width': 3 }, s);
+    el('text', { x: 10, y: 18, 'font-size': 14, 'font-weight': 800, style: 'fill:var(--muted)' }, s, 'BEFORE');
+    el('text', { x: 630, y: 18, 'text-anchor': 'end', 'font-size': 14, 'font-weight': 800, style: 'fill:var(--muted)' }, s, 'AFTER');
+    el('line', { x1: 320, y1: 6, x2: 320, y2: 100, style: 'stroke:var(--line)', 'stroke-width': 2, 'stroke-dasharray': '6 6' }, s);
+    // before: block on cart
+    el('rect', { x: 90, y: 72, width: 90, height: 26, rx: 6, style: 'fill:var(--cartB)' }, s);
+    el('rect', { x: 140, y: 50, width: 30, height: 22, rx: 4, style: 'fill:var(--cartA)' }, s);
+    arrow(s, 135, 34, vi, 'var(--ink)');
+    // after: cart and block separate
+    el('rect', { x: 420, y: 72, width: 90, height: 26, rx: 6, style: 'fill:var(--cartB)' }, s);
+    el('rect', { x: vb >= va ? 535 : 375, y: 76, width: 30, height: 22, rx: 4, style: 'fill:var(--cartA)' }, s);
+    arrow(s, 465, 58, va, 'var(--cartB)');
+    arrow(s, vb >= va ? 550 : 390, vb >= va ? 60 : 44, vb, 'var(--cartA)');
+    chart([mA * vi, mB * vi], [mA * va, mB * vb]);
+    var Kb = 0.5 * (mA + mB) * vi * vi, Ka = 0.5 * mA * va * va + 0.5 * mB * vb * vb, both = va > 0.05 && vb > 0.05;
+    document.getElementById('simOut').innerHTML = 'Cart A after: <strong>' + fmt(va) + ' m/s</strong><br><span class="muted" style="font-size:16px">Total KE ' + Kb.toFixed(1) + ' J → ' + Ka.toFixed(1) + ' J' +
+      (Ka - Kb > 0.05 ? ' (the spring added ' + (Ka - Kb).toFixed(1) + ' J)' : ' (the spring didn\'t push)') + (both ? ' · Both pieces move forward.' : '') + '</span>';
+  }
+  ['sVi', 'sVb'].forEach(function (id) { document.getElementById(id).addEventListener('input', drawSim); });
+  drawSim();
+
+  // ---------- Question bank ----------
+  var Q = {
+    q1: { answer: -1.25, tol: 0.03, label: '1. Recoil',
+          good: '<strong>Correct: −1.25 m/s.</strong> Total before = 0, so 0 = (0.020)(+25) + (0.40)v<sub>Lf</sub>. That gives 0.40v<sub>Lf</sub> = −0.50 and v<sub>Lf</sub> = −1.25 m/s. Small, and backward.',
+          signMsg: '<strong>Right size, wrong direction.</strong> The total is zero, so the launcher\'s momentum must cancel the ball\'s. The ball goes +, so the launcher goes −.',
+          special: [{ v: -1.19, msg: '<strong>Close.</strong> The 0.40 kg doesn\'t include the ball, so don\'t add 0.020 kg to it.' },
+                    { v: 1.19, msg: '<strong>Check the direction, and the mass.</strong> The launcher recoils backward (−), and its mass is 0.40 kg, not 0.42 kg.' },
+                    { v: -500, msg: '<strong>The masses got flipped.</strong> The heavy launcher should move <em>slowly</em>. Divide 0.50 kg·m/s by the launcher\'s 0.40 kg.' },
+                    { v: -0.5, msg: '<strong>That\'s the launcher\'s momentum</strong> (kg·m/s). Divide by its mass to get velocity.' }],
+          wrong: '<strong>Not yet.</strong> Total before = 0. Write 0 = p<sub>ball,f</sub> + p<sub>launcher,f</sub> and solve.' },
+    q2: { answer: 1.8, tol: 0.03, label: '2. Moving explosion',
+          good: '<strong>Correct: +1.8 m/s.</strong> Before: (50 + 10)(+3.0) = +180 kg·m/s. After: +180 = (10)(+9.0) + (50)v<sub>Sf</sub> = +90 + 50v<sub>Sf</sub>, so v<sub>Sf</sub> = +1.8 m/s. She slows down but still moves forward.',
+          signMsg: '<strong>You started from zero.</strong> They were already moving at +3.0 m/s, so the total before is (60)(+3.0) = +180 kg·m/s, not 0.',
+          special: [{ v: 1.5, msg: '<strong>Use her mass alone after the throw.</strong> The ball has left, so her term is (50)v<sub>Sf</sub>, not (60)v<sub>Sf</sub>.' },
+                    { v: 3.6, msg: '<strong>Subtract the ball\'s momentum first.</strong> +180 = +90 + 50v<sub>Sf</sub>.' },
+                    { v: 1.2, msg: '<strong>Include the ball in the total before.</strong> Both she and the ball move at +3.0 m/s: (50 + 10)(3.0) = 180, not 150.' }],
+          wrong: '<strong>Not yet.</strong> Step 1: Σp<sub>i</sub> = (total mass)(+3.0). Step 2: Σp<sub>f</sub> = (10)(+9.0) + (50)v<sub>Sf</sub>.' },
+    q3: { answer: -15, tol: 0.2, label: '3. Three pieces',
+          good: '<strong>Correct: −15 m/s.</strong> 0 = (0.30)(+20) + (0.30)(−5.0) + (0.30)v<sub>3f</sub> = +6.0 − 1.5 + 0.30v<sub>3f</sub>, so v<sub>3f</sub> = −4.5 ÷ 0.30 = −15 m/s.',
+          signMsg: '<strong>Right size, wrong direction.</strong> The first two pieces add up to +4.5 kg·m/s, so the third must be −4.5 kg·m/s.',
+          special: [{ v: -25, msg: '<strong>Check the sign of the second piece.</strong> It moves at −5.0 m/s, so its momentum is −1.5, not +1.5.' },
+                    { v: -5, msg: '<strong>Use the third piece\'s mass.</strong> −4.5 kg·m/s ÷ 0.30 kg, not ÷ 0.90 kg.' },
+                    { v: -4.5, msg: '<strong>That\'s the third piece\'s momentum</strong> (kg·m/s). Divide by its 0.30 kg mass.' }],
+          wrong: '<strong>Not yet.</strong> 0 = p<sub>1f</sub> + p<sub>2f</sub> + p<sub>3f</sub>. Keep each sign.' }
+  };
+
+  // ---------- Navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var nameInput = document.getElementById('nameInput');
+  var state = { notes: false, quick: false };
+  Object.keys(Q).forEach(function (k) { state[k] = { first: null, done: false, right: false, tries: 0 }; });
+  function canAdvance() {
+    var s = steps[cur];
+    if (cur === 0) return nameInput.value.trim().length >= 3;
+    if (s.getAttribute('data-title') === 'Moving explosion') return state.quick;
+    var q = s.getAttribute('data-q');
+    if (q) return state[q].done;
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'See my results' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    if (cur === steps.length - 1) buildResults();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+  nameInput.addEventListener('input', function () { nextBtn.disabled = !canAdvance(); });
+  function fb(id, ok, html) { var e = document.getElementById(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+
+  // ---------- Quick check ----------
+  var QUICK = { yes: [true, '<strong>Right.</strong> If the system starts moving forward, the total momentum is forward, and it stays forward. Set the starting velocity to 2.0 m/s and the block to +6: the cart stops. Lower the block to +4 and both move forward.'],
+                no: [false, '<strong>Not always.</strong> That\'s only guaranteed from rest, when the total is zero. Set the starting velocity to 2.0 m/s and the block to +4, and watch the cart.'],
+                mass: [false, '<strong>Not quite.</strong> Mass changes how fast each piece moves, but direction depends on the total. Try a starting velocity of 2.0 m/s and the block at +4.'] };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (state.quick) return;
+      var r = QUICK[b.getAttribute('data-quick')];
+      document.querySelectorAll('[data-quick]').forEach(function (x) { x.classList.remove('wrong'); });
+      b.classList.add(r[0] ? 'right' : 'wrong'); fb('quickFb', r[0], r[1]);
+      if (r[0]) { state.quick = true; upd(); }
+    });
+  });
+
+  // ---------- Step-by-step reveals ----------
+  function stepper(wrapId, btnId) {
+    var parts = document.querySelectorAll('#' + wrapId + ' .reveal'), i = 0, btn = document.getElementById(btnId);
+    btn.addEventListener('click', function () {
+      if (i < parts.length) { parts[i].classList.add('show'); i++; }
+      if (i >= parts.length) btn.style.display = 'none';
+    });
+  }
+  stepper('aSteps', 'aNext'); stepper('cSteps', 'cNext'); stepper('wxSteps', 'wxNext');
+
+  // ---------- Graded checks (signed answers) ----------
+  function more(q) { return state[q].done && !state[q].right ? '<br>The answer is on your results card. Tap Next to move on.' : ''; }
+  function record(q, ok) {
+    var s = state[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), cfg = Q[q];
+    b.addEventListener('click', function () {
+      if (state[q].right) return;
+      var raw = document.getElementById(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var val = parseFloat(raw), neg = document.querySelector('[data-sign="' + q + '"]').textContent === '−';
+      if (raw.charAt(0) !== '-' && neg) val = -val;
+      var ok = Math.abs(val - cfg.answer) <= cfg.tol;
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, cfg.good); return; }
+      var msg = cfg.wrong;
+      if (Math.abs(val + cfg.answer) <= cfg.tol) msg = cfg.signMsg;
+      (cfg.special || []).forEach(function (sp) { if (Math.abs(val - sp.v) <= Math.max(cfg.tol, Math.abs(sp.v) * 0.02)) msg = sp.msg; });
+      fb(q + 'Fb', false, msg + more(q));
+    });
+  });
+
+  // ---------- Results ----------
+  document.getElementById('notesCheck').addEventListener('click', function () {
+    state.notes = !state.notes; this.classList.toggle('on', state.notes);
+    this.querySelector('.box').textContent = state.notes ? '✓' : ''; buildResults();
+  });
+  document.getElementById('confused').addEventListener('input', buildResults);
+  function badge(id, q) {
+    var e = document.getElementById(id), s = state[q];
+    if (s.first === true) { e.textContent = '✓ first try'; e.className = 'badge g'; }
+    else if (s.right) { e.textContent = '✓ after ' + s.tries + ' tries'; e.className = 'badge y'; }
+    else { e.textContent = '✗ review in class'; e.className = 'badge r'; }
+  }
+  function buildResults() {
+    var name = nameInput.value.trim(), d = new Date();
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rDate').textContent = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    var keys = Object.keys(Q), score = keys.filter(function (q) { return state[q].first === true; }).length;
+    document.getElementById('rScore').textContent = score + '/' + keys.length;
+    badge('r1', 'q1'); badge('r2', 'q2'); badge('r3', 'q3');
+    var n = document.getElementById('rNotes');
+    n.textContent = state.notes ? '✓ done' : 'not checked'; n.className = 'badge ' + (state.notes ? 'g' : 'r');
+    var c = document.getElementById('confused').value.trim();
+    document.getElementById('rConfRow').style.display = c ? '' : 'none';
+    document.getElementById('rConf').textContent = c;
+    var s = LESSON + '|' + name.toLowerCase() + '|' + score + '|' + d.toDateString(), h = 7;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616;
+    document.getElementById('rCode').textContent = h.toString(36).toUpperCase().padStart(4, '0');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var lbl = document.createElement('div'); lbl.className = 'part-label';
+      lbl.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(lbl, s.firstChild);
+    });
+    function note(afterEl, html) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html; afterEl.parentNode.insertBefore(n, afterEl.nextSibling); }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function plain(h) { return h.replace(/<sub>/g, '_').replace(/<\/sub>/g, '').replace(/<[^>]+>/g, ''); }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    ['aNext', 'cNext', 'wxNext'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
+    note(document.getElementById('aNext'), '<strong>Builds on ML5,</strong> which already did a push-apart from rest (two skaters, check 2). New tonight: a system that is already moving, the KE gain, and 3+ pieces. ML7\'s KE table had an "Explosion: KE increases" row.');
+    note(document.getElementById('simOut'), '<strong>Sim:</strong> cart 2.0 kg, block 1.0 kg. v<sub>Af</sub> = (3.0·v<sub>i</sub> − 1.0·v<sub>Bf</sub>) / 2.0. The default (v<sub>i</sub> = +2.0, block +6) makes the cart stop. Block +4 gives the cart +1.0 m/s, so both move forward. The KE gain is always ≥ 0, and 0 only when the block leaves at the starting velocity (no push).');
+    document.querySelector('[data-quick="yes"]').classList.add('right'); fb('quickFb', true, QUICK.yes[1]);
+    note(document.getElementById('quickFb'), '<strong>Practice question (must be answered right to unlock Next).</strong> It targets "explosion pieces always go opposite ways," which is only true from rest. Wrong-choice feedback: ' + list(['"Always opposite": ' + plain(QUICK.no[1]), '"Equal masses": ' + plain(QUICK.mass[1])]));
+    note(document.getElementById('cNext'), '<strong>In class:</strong> the raft (two boys) and the watermelon on slides 81–82 are left for class, so tonight\'s firework uses different numbers.');
+    note(document.getElementById('wxNext'), '<strong>Mastering HW 4.2:</strong> this example sets up 6.37 (child jumps off a moving sled) and 6.56 (rocket ejects fuel while moving). Check 1 sets up 6.36 (cannon on a ship).');
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var cfg = Q[q];
+      document.getElementById(q + 'Input').value = Math.abs(cfg.answer);
+      if (cfg.answer < 0) document.querySelector('[data-sign="' + q + '"]').textContent = '−';
+      fb(q + 'Fb', true, cfg.good);
+      var items = cfg.special.map(function (sp) { return (sp.v > 0 ? '+' : '') + sp.v + ': ' + plain(sp.msg); });
+      items.unshift((cfg.answer > 0 ? '−' : '+') + Math.abs(cfg.answer) + ' (sign flipped): ' + plain(cfg.signMsg));
+      items.push('Anything else: ' + plain(cfg.wrong));
+      note(document.getElementById(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (up to 3 tries, accepts ±' + cfg.tol + '; the sign must match):' + list(items));
+    });
+    nameInput.value = 'Sample Student';
+    state.q1 = { first: true, done: true, right: true, tries: 1 };
+    state.q2 = { first: false, done: true, right: true, tries: 2 };
+    state.q3 = { first: true, done: true, right: true, tries: 1 };
+    state.notes = true; var nc = document.getElementById('notesCheck'); nc.classList.add('on'); nc.querySelector('.box').textContent = '✓';
+    document.getElementById('confused').value = 'when the starting total isn\'t zero';
+    buildResults();
+    note(document.getElementById('resultsCard'), '<strong>Sample card.</strong> The most common miss on Check 2 is −1.8 m/s: starting from a total of zero even though the system was moving.');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
