@@ -133,6 +133,7 @@
   .sort-opts button { min-height: 50px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--ink); font-size: 17px; font-weight: 600; }
   .sort-opts button.right { border-color: var(--good); background: var(--good-soft); }
   .sort-opts button.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  svg text { -webkit-user-select: none; user-select: none; }
 </style>
 </head>
 <body>
@@ -215,17 +216,22 @@
       <span class="notes-tag">Notes · Box D</span>
       <h2>Worked example: down a ramp, stick, up a ramp</h2>
       <p>A 2.0 kg block starts at rest 0.45 m up a frictionless ramp. It slides down and sticks to a 1.0 kg block at rest at the bottom. How high do they slide up the other side?</p>
-      <svg viewBox="0 0 640 210" aria-label="Track: block at a, top of left ramp; b, bottom just before the collision; c, just after; d, top of the right ramp.">
-        <path d="M20 40 Q 120 190 220 190 L 420 190 Q 520 190 620 70" fill="none" style="stroke:var(--ink)" stroke-width="3"/>
-        <rect x="34" y="36" width="34" height="26" rx="4" style="fill:var(--cartB)" transform="rotate(40 51 49)"/>
-        <rect x="236" y="164" width="34" height="26" rx="4" style="fill:var(--cartB)"/>
-        <rect x="290" y="168" width="28" height="22" rx="4" style="fill:var(--cartA)"/>
-        <g opacity="0.55"><rect x="540" y="118" width="34" height="26" rx="4" style="fill:var(--cartB)" transform="rotate(-38 557 131)"/><rect x="568" y="100" width="28" height="22" rx="4" style="fill:var(--cartA)" transform="rotate(-38 582 111)"/></g>
-        <circle cx="90" cy="30" r="13" style="fill:var(--accent)"/><text x="90" y="36" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">a</text>
-        <circle cx="252" cy="142" r="13" style="fill:var(--accent)"/><text x="252" y="148" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">b</text>
-        <circle cx="330" cy="150" r="13" style="fill:var(--accent)"/><text x="330" y="156" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">c</text>
-        <circle cx="530" cy="86" r="13" style="fill:var(--accent)"/><text x="530" y="92" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">d</text>
-        <text x="320" y="206" text-anchor="middle" font-size="14" style="fill:var(--muted)">2.0 kg (red) · 1.0 kg (blue)</text>
+      <svg viewBox="0 0 640 230" aria-label="Track: a, the 2.0 kg block at rest 0.45 m up the left ramp; b, at the bottom just before it hits the 1.0 kg block at rest; c, the two stuck together just after; d, the pair at its highest point on the right ramp, height h_d.">
+        <line x1="20" y1="63.1" x2="640" y2="63.1" style="stroke:var(--note)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="505.9" y1="131.9" x2="640" y2="131.9" style="stroke:var(--note)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="20" y1="190" x2="640" y2="190" style="stroke:var(--line)" stroke-width="1.5"/>
+        <path d="M40 30 Q 130 190 230 190 L 420 190 Q 520 190 610 60" fill="none" style="stroke:var(--ink)" stroke-width="3"/>
+        <g transform="translate(63.8 68.8) rotate(56.7)"><rect x="-17.0" y="-27.5" width="34.1" height="26" rx="4" style="fill:var(--cartB)"/></g>
+        <g transform="translate(250.0 190.0) rotate(0.0)"><rect x="-17.0" y="-27.5" width="34" height="26" rx="4" style="fill:var(--cartB)"/></g><line x1="270" y1="165" x2="296" y2="165" style="stroke:var(--ink)" stroke-width="3"/><path d="M296 159 L306 165 L296 171 Z" style="fill:var(--ink)"/>
+        <g transform="translate(322.0 190.0) rotate(0.0)"><rect x="-14.0" y="-23.5" width="28" height="22" rx="4" style="fill:var(--cartA)"/></g><text x="322" y="208" text-anchor="middle" font-size="13" style="fill:var(--muted)">at rest</text>
+        <rect x="376" y="161" width="34" height="26" rx="4" style="fill:var(--cartB)"/><rect x="411" y="165" width="28" height="22" rx="4" style="fill:var(--cartA)"/><line x1="446" y1="165" x2="468" y2="165" style="stroke:var(--ink)" stroke-width="3"/><path d="M468 159 L478 165 L468 171 Z" style="fill:var(--ink)"/>
+        <g><g transform="translate(545.6 134.6) rotate(-42.1)"><rect x="-17.0" y="-27.5" width="34.0" height="26" rx="4" style="fill:var(--cartB)"/></g><g transform="translate(568.5 112.1) rotate(-47.4)"><rect x="-14.0" y="-23.5" width="28.0" height="22" rx="4" style="fill:var(--cartA)"/></g></g>
+        <circle cx="88" cy="34" r="13" style="fill:var(--accent)"/><text x="88" y="40" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">a</text><circle cx="250" cy="140" r="13" style="fill:var(--accent)"/><text x="250" y="146" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">b</text><circle cx="400" cy="140" r="13" style="fill:var(--accent)"/><text x="400" y="146" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">c</text><circle cx="505" cy="102" r="13" style="fill:var(--accent)"/><text x="505" y="108" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--accent-ink)">d</text>
+        <line x1="632" y1="66.1" x2="632" y2="186" style="stroke:var(--note)" stroke-width="2"/>
+        <text x="636" y="54" text-anchor="end" font-size="15" font-weight="800" style="fill:var(--note)">h<tspan baseline-shift="sub" font-size="11">a</tspan> = 0.45 m</text>
+        <line x1="612" y1="134.9" x2="612" y2="186" style="stroke:var(--note)" stroke-width="2"/>
+        <text x="604" y="166" text-anchor="end" font-size="15" font-weight="800" style="fill:var(--note)">h<tspan baseline-shift="sub" font-size="11">d</tspan> = ?</text>
+        <text x="320" y="224" text-anchor="middle" font-size="14" style="fill:var(--muted)">2.0 kg (red) · 1.0 kg (blue) · c and d show the pair stuck together</text>
       </svg>
       <p class="hint" style="text-align:center;margin-top:0"><strong>a</strong> top, at rest · <strong>b</strong> bottom, just before the collision · <strong>c</strong> just after · <strong>d</strong> highest point</p>
       <div id="wxSteps">
