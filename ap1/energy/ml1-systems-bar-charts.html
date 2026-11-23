@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy Review R1: Systems and Bar Charts</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- R1 additions ---- */
+  .toggle-row { display: flex; gap: 10px; margin: 12px 0; }
+  .toggle-row button { flex: 1; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-weight: 700; }
+  .toggle-row button.on { border-color: var(--accent); background: var(--accent-soft); }
+  .explain { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .chip { min-height: 56px; min-width: 88px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-weight: 700; font-size: 20px; padding: 0 16px; }
+  .chip.on { border-color: var(--accent); background: var(--accent-soft); }
+  .chart-opt { padding: 8px 10px; }
+  .chart-opt .optlabel { font-weight: 800; margin-bottom: 2px; }
+  .chartbox { margin: 10px 0; }
+  .mini-q { margin-top: 14px; }
+  .mini-q .big-btn { min-height: 52px; }
+  table.forms { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0 4px; }
+  table.forms th, table.forms td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; vertical-align: top; }
+  table.forms td:first-child { font-weight: 800; white-space: nowrap; }
+  .rule-list { padding-left: 22px; margin: 6px 0 12px; }
+  .rule-list li { margin-bottom: 6px; }
+  .next-card a { color: var(--accent); font-weight: 700; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 3: Work, Energy, and Power</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml1-systems-bar-charts.html">regular lesson link</a>. · <a href="ml1-systems-bar-charts-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 3 Review · R1</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- STEP 0: Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Systems and Energy Bar Charts</h1>
+      <p class="muted">About 10 minutes · Review for the Energy reassessment</p>
+      <p>Every energy problem starts with two choices: <strong>what's in the system</strong>, and <strong>what forms the energy takes</strong>. A bar chart shows both at once, and it turns straight into the equation you solve.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> When you see an orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag, fill in that box on your sheet. The diagrams are already drawn, so you only write the key ideas.
+      </div>
+      <p class="hint">Tap Start when you're ready.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1: Choosing the system -->
+  <section class="step" data-title="Choosing the system">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Choosing the system</h2>
+      <p>A ball is dropped from rest. Ignore air resistance. Watch what happens to the bar chart when you change <strong>what's inside the system</strong> (the dashed boundary).</p>
+      <svg viewBox="0 0 600 210" id="sysSvg" role="img" aria-label="A ball above the ground with a dashed system boundary">
+        <rect x="20" y="168" width="560" height="36" rx="6" fill="var(--track)" opacity=".45"/>
+        <text x="300" y="192" text-anchor="middle" font-size="17" font-weight="700">Earth</text>
+        <circle cx="300" cy="42" r="20" fill="var(--cartA)"/>
+        <circle cx="300" cy="148" r="20" fill="none" stroke="var(--cartA)" stroke-width="2" stroke-dasharray="5 4"/>
+        <line x1="338" y1="50" x2="338" y2="136" stroke="var(--ink)" stroke-width="2"/><polygon points="332,134 338,148 344,134" fill="var(--ink)"/>
+        <text x="350" y="98" font-size="16">falls a height h</text>
+        <text x="236" y="46" text-anchor="end" font-size="15" style="fill:var(--muted)">start (at rest)</text>
+        <text x="236" y="152" text-anchor="end" font-size="15" style="fill:var(--muted)">just before landing</text>
+        <rect id="bndBall" x="262" y="10" width="76" height="164" rx="10" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="9 6"/>
+        <rect id="bndAll" x="8" y="4" width="584" height="204" rx="12" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="9 6" style="display:none"/>
+      </svg>
+      <div class="toggle-row" role="group" aria-label="Choose the system">
+        <button id="sysBall" class="on">System: ball only</button>
+        <button id="sysEarth">System: ball + Earth</button>
+      </div>
+      <div class="chartbox" id="sysChart"></div>
+      <div class="explain" id="sysText"></div>
+      <div class="reveal" id="sysMore">
+        <div class="notes-box"><strong>Box A:</strong> Same fall, same final K. Only the bookkeeping changes.
+          <br>• Earth <strong>in</strong> the system: gravity is <strong>internal</strong>, and the energy starts as <strong>U<sub>g</sub></strong>.
+          <br>• Earth <strong>outside</strong>: gravity is an <strong>external</strong> force that does <strong>positive work</strong>.
+          <br><strong>U<sub>g</sub> only exists when the Earth is in the system.</strong></div>
+      </div>
+      <p class="hint" id="sysHint">Tap the other system to compare.</p>
+    </div>
+  </section>
+
+  <!-- STEP 2: Open or closed -->
+  <section class="step" data-title="Open or closed?">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Open or closed?</h2>
+      <p>Once you've drawn the boundary, ask: <strong>does anything outside the system do work on something inside?</strong></p>
+      <table class="wx">
+        <tr><th></th><th>Closed system</th><th>Open system</th></tr>
+        <tr><td><strong>External work</strong></td><td>None</td><td>Yes (a push, friction from an outside surface, gravity if Earth is outside…)</td></tr>
+        <tr><td><strong>Total energy</strong></td><td>Stays the same</td><td>Changes by W<sub>ext</sub></td></tr>
+        <tr><td><strong>Equation</strong></td><td>E<sub>i</sub> = E<sub>f</sub></td><td>E<sub>i</sub> + W<sub>ext</sub> = E<sub>f</sub></td></tr>
+      </table>
+      <div class="notes-box"><strong>Box A:</strong> Closed: E<sub>i</sub> = E<sub>f</sub>. Open: E<sub>i</sub> + W<sub>ext</sub> = E<sub>f</sub>. Energy is never created or destroyed. It only moves across the boundary as <strong>work</strong>.</div>
+      <div class="mini-q">
+        <p><strong>Try it.</strong> System: cart + Earth. <strong>You</strong> push the cart up a ramp.</p>
+        <button class="big-btn" data-quick="push" data-v="open">Open</button>
+        <button class="big-btn" data-quick="push" data-v="closed">Closed</button>
+        <div class="feedback" id="pushFb"></div>
+      </div>
+      <div class="mini-q">
+        <p>System: ball + Earth + <strong>the air</strong>. The ball falls with air resistance.</p>
+        <button class="big-btn" data-quick="air" data-v="open">Open</button>
+        <button class="big-btn" data-quick="air" data-v="closed">Closed</button>
+        <div class="feedback" id="airFb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3: Energy forms -->
+  <section class="step" data-title="Energy forms">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>The energy forms you'll use</h2>
+      <table class="forms">
+        <tr><th>Form</th><th>The system has it when…</th><th>Equation</th></tr>
+        <tr><td>K</td><td>something in it is moving</td><td>½mv²</td></tr>
+        <tr><td>U<sub>g</sub></td><td>the Earth is in the system, and the object is above your zero height</td><td>mgΔh</td></tr>
+        <tr><td>U<sub>s</sub></td><td>a spring in the system is stretched or compressed</td><td>½kx²</td></tr>
+        <tr><td>E<sub>th</sub></td><td>both rubbing surfaces are in the system (friction warms them)</td><td>(from friction)</td></tr>
+      </table>
+      <p class="hint">If the rubbing surface is <em>outside</em> the system, friction shows up as negative W<sub>ext</sub> instead of E<sub>th</sub>.</p>
+      <div class="mini-q">
+        <p><strong>Try it.</strong> A cart is held against a compressed spring at the <strong>top</strong> of a ramp, then released. System: cart + spring + Earth. Which forms does the system have <strong>before release</strong>? Tap all that apply.</p>
+        <div class="chips" id="formChips">
+          <button class="chip" data-f="K">K</button>
+          <button class="chip" data-f="Ug">U<sub>g</sub></button>
+          <button class="chip" data-f="Us">U<sub>s</sub></button>
+          <button class="chip" data-f="Eth">E<sub>th</sub></button>
+        </div>
+        <button class="primary" id="formCheck" style="width:100%">Check</button>
+        <div class="feedback" id="formFb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4: Bar charts + worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Energy bar charts</h2>
+      <ol class="rule-list">
+        <li>Name the system first.</li>
+        <li><strong>Initial</strong> bars: what forms are there at the start?</li>
+        <li><strong>W<sub>ext</sub></strong> bar: zero if the system is closed. Below the line if energy leaves.</li>
+        <li><strong>Final</strong> bars: what forms are there at the end?</li>
+        <li>The bars must <strong>balance</strong>: initial + W<sub>ext</sub> = final. Heights only need to be right relative to each other.</li>
+      </ol>
+      <p><strong>Example:</strong> A ball is rolled up a hill and stops partway up. Ignore friction.</p>
+      <svg viewBox="0 0 600 150" role="img" aria-label="A ball rolling up a hill, stopping partway up">
+        <path d="M20 130 L250 130 Q420 130 580 30 L580 140 L20 140 Z" fill="var(--track)" opacity=".45"/>
+        <circle cx="120" cy="116" r="14" fill="var(--cartA)"/>
+        <line x1="140" y1="104" x2="200" y2="104" stroke="var(--ink)" stroke-width="4"/><polygon points="200,96 216,104 200,112" fill="var(--ink)"/>
+        <text x="120" y="88" text-anchor="middle" font-size="15">moving at the bottom</text>
+        <circle cx="447" cy="80" r="14" fill="none" stroke="var(--cartA)" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="447" y="50" text-anchor="middle" font-size="15">stops here</text>
+      </svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: System.</strong> Ball + Earth. Nothing outside pushes on the ball and there's no friction, so the system is <strong>closed</strong>: W<sub>ext</sub> = 0.</div>
+        <div class="reveal step-line"><strong>Step 2: Initial.</strong> Put zero height at the bottom, so U<sub>g</sub> = 0 there. The ball is moving, so the energy is all <strong>K</strong>.
+          <div class="chartbox" data-chart='{"i":{"K":4},"w":0,"f":{},"hideF":true}'></div></div>
+        <div class="reveal step-line"><strong>Step 3: Final.</strong> At the highest point the ball is stopped (K = 0), so it's all <strong>U<sub>g</sub></strong>. Four blocks in, four blocks out.
+          <div class="chartbox" data-chart='{"i":{"K":4},"w":0,"f":{"Ug":4}}'></div></div>
+        <div class="reveal step-line"><strong>Step 4: The chart is the equation.</strong> Each bar that isn't zero becomes a term:
+          <div class="eq" style="font-size:28px">½mv<sub>i</sub>² = mgh<sub>f</sub></div></div>
+        <div class="reveal step-line"><strong>Step 5: What if the hill has friction?</strong> Put the hill's surface in the system. Some K becomes E<sub>th</sub>, so less is left for U<sub>g</sub>. The ball doesn't get as high.
+          <div class="chartbox" data-chart='{"i":{"K":4},"w":0,"f":{"Ug":3,"Eth":1}}'></div>
+          <div class="notes-box"><strong>Box C:</strong> Initial + W<sub>ext</sub> = Final. Every nonzero bar becomes a term in the equation.</div></div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- STEP 5: Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Check 1 of 3</h2>
+      <p>A cart is held at rest against a compressed spring at the <strong>bottom</strong> of a frictionless ramp. It's released, rolls up the ramp, and stops at the top. System: cart + spring + Earth. <strong>Which bar chart is correct?</strong></p>
+      <div data-mc="q1">
+        <button class="big-btn chart-opt" data-opt="a"><div class="optlabel">A</div><div data-chart='{"i":{"Us":4},"w":0,"f":{"K":4}}'></div></button>
+        <button class="big-btn chart-opt" data-opt="b"><div class="optlabel">B</div><div data-chart='{"i":{"K":4},"w":0,"f":{"Ug":4}}'></div></button>
+        <button class="big-btn chart-opt" data-opt="c"><div class="optlabel">C</div><div data-chart='{"i":{"Us":4},"w":0,"f":{"Ug":4}}'></div></button>
+        <button class="big-btn chart-opt" data-opt="d"><div class="optlabel">D</div><div data-chart='{"i":{"Us":4},"w":0,"f":{"Ug":2,"Us":2}}'></div></button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 6: Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Check 2 of 3</h2>
+      <p>A box slides across a rough floor and comes to a stop. The system is <strong>the box only</strong>. Which statement is correct?</p>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="closedTh">Closed. The box's K turns into thermal energy inside the system.</button>
+        <button class="big-btn" data-opt="open">Open. Friction from the floor is external and does negative work, so energy leaves the system.</button>
+        <button class="big-btn" data-opt="destroyed">Closed. Friction destroys the kinetic energy.</button>
+        <button class="big-btn" data-opt="gravity">Open. Gravity does negative work on the box.</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 7: Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Check 3 of 3</h2>
+      <p>Rank the <strong>kinetic energies</strong> of these four balls, greatest first.</p>
+      <table class="wx">
+        <tr><th>Ball</th><th>m</th><th>v</th></tr>
+        <tr><td>A</td><td>4 kg</td><td>2 m/s</td></tr>
+        <tr><td>B</td><td>2 kg</td><td>4 m/s</td></tr>
+        <tr><td>C</td><td>1 kg</td><td>4 m/s</td></tr>
+        <tr><td>D</td><td>8 kg</td><td>1 m/s</td></tr>
+      </table>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="mass">D &gt; A &gt; B &gt; C</button>
+        <button class="big-btn" data-opt="mom">A = B = D &gt; C</button>
+        <button class="big-btn" data-opt="right">B &gt; A = C &gt; D</button>
+        <button class="big-btn" data-opt="speed">B = C &gt; A &gt; D</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 8: Wrap-up -->
+  <section class="step" data-title="Wrap-up">
+    <div class="card">
+      <h2>Before you go</h2>
+      <p>Check that Boxes A–D on your notes sheet are filled in, then write the big idea at the bottom in your own words.</p>
+      <ul>
+        <li><strong>Name the system first.</strong> It decides whether gravity is U<sub>g</sub> or work, and whether friction is E<sub>th</sub> or work.</li>
+        <li><strong>Closed:</strong> E<sub>i</sub> = E<sub>f</sub>. <strong>Open:</strong> E<sub>i</sub> + W<sub>ext</sub> = E<sub>f</sub>.</li>
+        <li><strong>The bar chart is the equation.</strong> Every nonzero bar becomes a term.</li>
+      </ul>
+    </div>
+    <div class="card next-card">
+      <p style="margin:0"><strong>Next:</strong> R2, Work. Find it on the <a href="index.html">Unit 3 review page</a>.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // ---------- Theme (auto / light / dark) ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Energy bar chart (inline SVG) ----------
+  var FORMS = ['K', 'Ug', 'Us', 'Eth'];
+  var LAB = { K: ['K', ''], Ug: ['U', 'g'], Us: ['U', 's'], Eth: ['E', 'th'] };
+  var NAMES = { K: 'K', Ug: 'U sub g', Us: 'U sub s', Eth: 'E thermal' };
+  function lbl(x, y, k) {
+    var l = LAB[k];
+    return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="17" font-weight="700">' + l[0] +
+      (l[1] ? '<tspan font-size="12" dy="4">' + l[1] + '</tspan>' : '') + '</text>';
+  }
+  function chart(st) {
+    var U = 22, Z = 120, s = [], w = st.w || 0, LY = Z + Math.max(0, -w) * U + 26, H = LY + 12;
+    s.push('<line x1="10" y1="' + Z + '" x2="250" y2="' + Z + '" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<line x1="270" y1="' + Z + '" x2="330" y2="' + Z + '" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<line x1="350" y1="' + Z + '" x2="590" y2="' + Z + '" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<line x1="260" y1="26" x2="260" y2="' + (H - 4) + '" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>');
+    s.push('<line x1="340" y1="26" x2="340" y2="' + (H - 4) + '" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>');
+    s.push('<text x="130" y="18" text-anchor="middle" font-size="16" font-weight="800">Initial</text>');
+    s.push('<text x="300" y="18" text-anchor="middle" font-size="16" font-weight="800">W<tspan font-size="11" dy="4">ext</tspan></text>');
+    s.push('<text x="470" y="18" text-anchor="middle" font-size="16" font-weight="800">Final</text>');
+    function side(vals, x0, hide) {
+      FORMS.forEach(function (k, j) {
+        var cx = x0 + 30 + j * 60, v = (vals && vals[k]) || 0;
+        if (!hide && v) s.push('<rect x="' + (cx - 20) + '" y="' + (Z - v * U) + '" width="40" height="' + (v * U) + '" rx="3" fill="var(--cartA)"/>');
+        s.push(lbl(cx, LY, k));
+      });
+    }
+    side(st.i, 10, false);
+    side(st.f, 350, st.hideF);
+    if (st.hideF) s.push('<text x="470" y="84" text-anchor="middle" font-size="36" font-weight="800" style="fill:var(--muted)">?</text>');
+    if (w > 0) s.push('<rect x="280" y="' + (Z - w * U) + '" width="40" height="' + (w * U) + '" rx="3" fill="var(--cartA)"/>');
+    if (w < 0) s.push('<rect x="280" y="' + Z + '" width="40" height="' + (-w * U) + '" rx="3" fill="var(--cartA)"/>');
+    s.push('<text x="300" y="' + LY + '" text-anchor="middle" font-size="17" font-weight="700">W</text>');
+    function d(vals) { var o = FORMS.filter(function (k) { return vals && vals[k]; }).map(function (k) { return NAMES[k] + ' ' + vals[k]; }); return o.length ? o.join(', ') : 'nothing'; }
+    var aria = 'Bar chart. Initial: ' + d(st.i) + '. External work: ' + w + '. Final: ' + (st.hideF ? 'not shown yet' : d(st.f)) + '.';
+    return '<svg viewBox="0 0 600 ' + H + '" role="img" aria-label="' + aria + '">' + s.join('') + '</svg>';
+  }
+  document.querySelectorAll('[data-chart]').forEach(function (el) { el.innerHTML = chart(JSON.parse(el.getAttribute('data-chart'))); });
+
+  // ---------- Step navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var state = { saw: { ball: true, earth: false }, q1: null, q2: null, q3: null, tries: { q1: 0, q2: 0, q3: 0 } };
+
+  function canAdvance() {
+    if (cur === 1) return state.saw.ball && state.saw.earth;
+    var q = steps[cur].getAttribute('data-q');
+    if (q) return !!state[q + 'Done'];
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'Finish' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+
+  function fb(id, ok, html) {
+    var el = document.getElementById(id);
+    el.className = 'feedback show ' + (ok ? 'good' : 'bad');
+    el.innerHTML = html;
+  }
+
+  // ---------- Step 1: system toggle ----------
+  var SYS = {
+    ball: { chart: { i: {}, w: 4, f: { K: 4 } },
+      text: '<strong>Ball only.</strong> The Earth is outside the boundary, so gravity is an <strong>external force</strong>. A single ball can\'t store gravitational energy, so the initial bars are all zero. Gravity does <strong>positive work</strong> (W = +mgh) on the way down, and that work becomes the ball\'s K.' },
+    earth: { chart: { i: { Ug: 4 }, w: 0, f: { K: 4 } },
+      text: '<strong>Ball + Earth.</strong> Both objects in the gravity interaction are inside, so gravity is <strong>internal</strong> and does no external work. The energy starts stored as <strong>U<sub>g</sub></strong> and changes form into K. Total energy stays the same.' }
+  };
+  function showSys(k) {
+    document.getElementById('sysBall').classList.toggle('on', k === 'ball');
+    document.getElementById('sysEarth').classList.toggle('on', k === 'earth');
+    document.getElementById('bndBall').style.display = k === 'ball' ? '' : 'none';
+    document.getElementById('bndAll').style.display = k === 'earth' ? '' : 'none';
+    document.getElementById('sysChart').innerHTML = chart(SYS[k].chart);
+    document.getElementById('sysText').innerHTML = SYS[k].text;
+    state.saw[k] = true;
+    if (state.saw.ball && state.saw.earth) {
+      document.getElementById('sysMore').classList.add('show');
+      document.getElementById('sysHint').textContent = 'Tap between the two systems as often as you like.';
+    }
+    nextBtn.disabled = !canAdvance();
+  }
+  document.getElementById('sysBall').addEventListener('click', function () { showSys('ball'); });
+  document.getElementById('sysEarth').addEventListener('click', function () { showSys('earth'); });
+  showSys('ball');
+
+  // ---------- Step 2: open/closed practice ----------
+  var QUICK = {
+    push: { ans: 'open', good: '<strong>Yes, open.</strong> You aren\'t in the system, so your push is an external force doing positive work. Energy enters the system.',
+            bad: '<strong>Not quite.</strong> Who\'s pushing? You are outside the system, so your push is external work.' },
+    air: { ans: 'closed', good: '<strong>Yes, closed.</strong> The air is inside the boundary, so air resistance is internal. Energy turns into E<sub>th</sub> of the ball and air, but none leaves.',
+           bad: '<strong>Look at the boundary.</strong> The air is inside the system, so air resistance is an internal force. Nothing outside does work.' }
+  };
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var g = b.getAttribute('data-quick'), ok = b.getAttribute('data-v') === QUICK[g].ans;
+      document.querySelectorAll('[data-quick="' + g + '"]').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+      b.classList.add(ok ? 'right' : 'wrong');
+      fb(g + 'Fb', ok, ok ? QUICK[g].good : QUICK[g].bad);
+    });
+  });
+
+  // ---------- Step 3: energy forms chips ----------
+  var picked = {};
+  document.querySelectorAll('#formChips .chip').forEach(function (c) {
+    c.addEventListener('click', function () { var f = c.getAttribute('data-f'); picked[f] = !picked[f]; c.classList.toggle('on', picked[f]); });
+  });
+  document.getElementById('formCheck').addEventListener('click', function () {
+    var p = FORMS.filter(function (f) { return picked[f]; });
+    var s = p.join(',');
+    if (s === 'Ug,Us') fb('formFb', true, '<strong>Right: U<sub>g</sub> and U<sub>s</sub>.</strong> The cart is up high with the Earth in the system, and the spring is compressed. It hasn\'t moved yet, so K = 0, and nothing has rubbed yet, so E<sub>th</sub> = 0.');
+    else if (!p.length) fb('formFb', false, 'Tap at least one form first.');
+    else if (picked.K) fb('formFb', false, '<strong>Check K.</strong> The cart is held still before release, so it has no kinetic energy yet.');
+    else if (picked.Eth) fb('formFb', false, '<strong>Check E<sub>th</sub>.</strong> Nothing has slid or rubbed yet, so no thermal energy has been made.');
+    else if (!picked.Ug) fb('formFb', false, '<strong>You\'re missing one.</strong> The cart is at the top of the ramp, and the Earth is in the system.');
+    else fb('formFb', false, '<strong>You\'re missing one.</strong> The spring is compressed, and it\'s inside the system.');
+  });
+
+  // ---------- Step 4: worked example ----------
+  var wxParts = document.querySelectorAll('#wxSteps .reveal'), wxI = 0, wxBtn = document.getElementById('wxNext');
+  wxBtn.addEventListener('click', function () {
+    if (wxI < wxParts.length) { wxParts[wxI].classList.add('show'); wxI++; }
+    if (wxI >= wxParts.length) { wxBtn.style.display = 'none'; }
+  });
+
+  // ---------- Check questions (3 tries, then move on) ----------
+  function record(q, correct) {
+    state.tries[q]++;
+    if (state[q] === null) state[q] = correct;
+    if (correct) state[q + 'Done'] = true;
+    if (!correct && state.tries[q] >= 3) state[q + 'Done'] = true;
+    nextBtn.disabled = !canAdvance();
+  }
+  var key = {
+    q1: { ans: 'c', good: '<strong>Correct: C.</strong> At the start the cart is at rest and the spring is compressed, so it\'s all U<sub>s</sub>. At the top the cart is stopped and the spring is relaxed, so it\'s all U<sub>g</sub>. No friction and no outside pushes, so W<sub>ext</sub> = 0. Equation: ½kx² = mgh.',
+          bad: { a: 'The cart <strong>stops</strong> at the top, so K<sub>f</sub> = 0. It\'s higher than where it started. Which form does that give it?',
+                 b: 'The cart starts <strong>at rest</strong>, so K<sub>i</sub> = 0. Before release, where is the energy stored?',
+                 d: 'Once the cart leaves the spring, the spring is back to its natural length, so U<sub>s</sub> = 0 at the end.' },
+          show: 'C' },
+    q2: { ans: 'open', good: '<strong>Correct.</strong> The floor is outside the system, so friction is an external force pointing opposite the motion. It does negative work: K<sub>i</sub> + W<sub>ext</sub> = 0.',
+          bad: { closedTh: 'That would be right if the floor were <strong>in</strong> the system. Here the system is the box only, so the floor\'s friction comes from outside.',
+                 destroyed: 'Energy is never destroyed. With only the box in the system, ask where the energy goes: across the boundary, as work done by the floor.',
+                 gravity: 'The box moves sideways and gravity points straight down, so gravity does <strong>zero</strong> work here. Which force takes the energy out?' },
+          show: 'the "Open. Friction from the floor…" choice', chart: { i: { K: 4 }, w: -4, f: {} } },
+    q3: { ans: 'right', good: '<strong>Correct.</strong> K = ½mv²: A = 8 J, B = 16 J, C = 8 J, D = 4 J. Speed is squared, so doubling v quadruples K, while doubling m only doubles it.',
+          bad: { mass: 'That ranks by <strong>mass</strong> only. K = ½mv², and the speed is squared, so it counts more than the mass.',
+                 mom: 'That ranks by <strong>mv</strong>, which is momentum. Kinetic energy is ½mv², so the speed is squared.',
+                 speed: 'That ranks by <strong>speed</strong> only. B and C have the same speed but B has twice the mass, so twice the K.' },
+          show: 'B > A = C > D' }
+  };
+  function more(q) { return state[q + 'Done'] ? '<br>The answer is <strong>' + key[q].show + '</strong> (shown in green). Tap Next to move on.' : ''; }
+  function goodHtml(q) { return key[q].good + (key[q].chart ? '<div class="chartbox">' + chart(key[q].chart) + '</div>' : ''); }
+  document.querySelectorAll('[data-mc]').forEach(function (group) {
+    var q = group.getAttribute('data-mc');
+    group.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q + 'Done'] && group.querySelector('.right')) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === key[q].ans;
+        group.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        if (!ok && state[q + 'Done']) group.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+        fb(q + 'Fb', ok, ok ? goodHtml(q) : '<strong>Not quite.</strong> ' + key[q].bad[opt] + more(q));
+      });
+    });
+  });
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var l = document.createElement('div'); l.className = 'part-label';
+      l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(l, s.firstChild);
+    });
+    function note(afterId, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      var a = document.getElementById(afterId); a.parentNode.insertBefore(n, a.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    document.getElementById('wxNext').style.display = 'none';
+    // Part 2: both systems side by side
+    showSys('earth');
+    var extra = document.createElement('div');
+    extra.innerHTML = '<div class="part-label" style="display:block;margin-top:14px">Other choice: ball only</div><div class="chartbox">' + chart(SYS.ball.chart) + '</div><div class="explain">' + SYS.ball.text + '</div>';
+    document.getElementById('sysText').parentNode.insertBefore(extra, document.getElementById('sysText').nextSibling);
+    document.getElementById('sysHint').style.display = 'none';
+    note('sysMore', 'Students see the "ball only" view first and must tap "ball + Earth" before Next unlocks.');
+    // Part 3: open/closed practice
+    ['push', 'air'].forEach(function (g) {
+      document.querySelector('[data-quick="' + g + '"][data-v="' + QUICK[g].ans + '"]').classList.add('right');
+      fb(g + 'Fb', true, QUICK[g].good);
+      note(g + 'Fb', '<strong>If they pick the other choice:</strong> "' + QUICK[g].bad.replace(/<[^>]+>/g, '') + '" (Practice only, not gated.)');
+    });
+    // Part 4: chips
+    document.querySelectorAll('#formChips .chip').forEach(function (c) { var f = c.getAttribute('data-f'); if (f === 'Ug' || f === 'Us') { c.classList.add('on'); picked[f] = true; } });
+    document.getElementById('formCheck').click();
+    note('formFb', '<strong>Feedback for other picks</strong> (practice, not gated):' + list([
+      'Includes K: "The cart is held still before release, so it has no kinetic energy yet."',
+      'Includes E<sub>th</sub>: "Nothing has slid or rubbed yet, so no thermal energy has been made."',
+      'Missing U<sub>g</sub>: "The cart is at the top of the ramp, and the Earth is in the system."',
+      'Missing U<sub>s</sub>: "The spring is compressed, and it\'s inside the system."']));
+    // Checks
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+      fb(q + 'Fb', true, goodHtml(q));
+      var items = Object.keys(key[q].bad).map(function (o) {
+        var b = g.querySelector('[data-opt="' + o + '"]'), t = b.querySelector('.optlabel') ? 'Chart ' + b.querySelector('.optlabel').textContent : b.textContent;
+        return '"' + t + '": ' + key[q].bad[o];
+      });
+      note(q + 'Fb', '<strong>Feedback for wrong choices</strong> (up to 3 tries, then the answer is shown):' + list(items));
+    });
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
