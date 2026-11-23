@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy Review R2: Work</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- R2 additions ---- */
+  .explain { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+  .mini-q { margin-top: 14px; }
+  .mini-q .big-btn { min-height: 52px; }
+  .rule-list { padding-left: 22px; margin: 6px 0 12px; }
+  .rule-list li { margin-bottom: 6px; }
+  .next-card a { color: var(--accent); font-weight: 700; }
+  .sgn-item { border-top: 1px solid var(--line); padding: 12px 0 4px; }
+  .sgn-item p { margin: 0 0 8px; }
+  .sgn-row { display: flex; gap: 10px; }
+  .sgn-row button { flex: 1; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-weight: 800; font-size: 22px; }
+  .sgn-row button.right { border-color: var(--good); background: var(--good-soft); }
+  .sgn-row button.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .sgn-item .feedback { margin-top: 8px; }
+  .wread { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .wread > div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: center; }
+  .wread .lab { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .wread .val { font-size: 24px; font-weight: 800; }
+  .wsign { text-align: center; font-weight: 800; font-size: 20px; margin-top: 10px; }
+  .wsign.pos { color: var(--good); } .wsign.neg { color: var(--bad); } .wsign.zero { color: var(--muted); }
+  table.sign { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.sign th, table.sign td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; vertical-align: top; }
+  table.sign td:nth-child(2) { font-weight: 800; white-space: nowrap; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 3: Work, Energy, and Power</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml2-work.html">regular lesson link</a>. · <a href="ml2-work-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 3 Review · R2</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- STEP 0: Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Work</h1>
+      <p class="muted">About 12 minutes · Review for the Energy reassessment</p>
+      <p>In R1, energy crossed the system boundary as <strong>work</strong>. This lesson is about how to calculate that work, how to tell its <strong>sign</strong>, and how net work changes an object's <strong>kinetic energy</strong>.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> When you see an orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag, fill in that box on your sheet. The diagrams are already drawn, so you only write the key ideas.
+      </div>
+      <p class="hint">Tap Start when you're ready.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1: W = Fd cos theta (slider) -->
+  <section class="step" data-title="W = Fd cos θ">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Only the parallel part does work</h2>
+      <p>A box slides <strong>6.00 m to the right</strong>. You pull on it with a <strong>50.0 N</strong> force. Drag the slider to change the angle θ between your force and the box's motion.</p>
+      <svg viewBox="0 0 600 280" id="angSvg" role="img" aria-label="A box sliding right, pulled by a force at an angle theta">
+        <rect x="20" y="208" width="560" height="12" rx="4" fill="var(--track)" opacity=".45"/>
+        <rect x="235" y="150" width="90" height="58" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="210" y1="252" x2="370" y2="252" stroke="var(--ink)" stroke-width="3"/><polygon points="368,245 384,252 368,259" fill="var(--ink)"/>
+        <text x="300" y="276" text-anchor="middle" font-size="16">d = 6.00 m (direction of motion)</text>
+        <line x1="280" y1="150" x2="430" y2="150" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <path id="angArc" fill="none" stroke="var(--muted)" stroke-width="2"/>
+        <text id="angLbl" font-size="17" font-weight="700" style="fill:var(--muted)">θ</text>
+        <line id="perpLine" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>
+        <line id="parLine" stroke-width="7" stroke-linecap="round"/>
+        <text id="parLbl" font-size="16" font-weight="700">F<tspan font-size="12" dy="4">∥</tspan></text>
+        <line id="fLine" stroke="var(--cartA)" stroke-width="5"/>
+        <polygon id="fHead" fill="var(--cartA)"/>
+        <text id="fLbl" font-size="17" font-weight="700" style="fill:var(--cartA)">F = 50.0 N</text>
+        <circle cx="280" cy="150" r="5" fill="var(--ink)"/>
+      </svg>
+      <div class="slider-row">
+        <label for="angSlider"><span>Angle θ between F and d</span><span id="angVal">30°</span></label>
+        <input type="range" id="angSlider" min="0" max="180" step="1" value="30" aria-label="Angle theta in degrees">
+      </div>
+      <div class="wread">
+        <div><div class="lab">F<sub>∥</sub> = F cos θ</div><div class="val" id="parVal"></div></div>
+        <div><div class="lab">W = F<sub>∥</sub> d = Fd cos θ</div><div class="val" id="wVal"></div></div>
+      </div>
+      <div class="wsign" id="wSign"></div>
+      <p class="hint" id="angHint">Drag θ past 90° to see what happens. (Next unlocks once you do.)</p>
+      <div class="reveal" id="angMore">
+        <div class="notes-box"><strong>Box A:</strong> Only the component of F <strong>parallel</strong> to the displacement does work:
+          <div class="eq" style="font-size:30px">W = Fd cos θ</div>
+          • θ is the angle <strong>between F and d</strong>, whether you pull or push at an angle.
+          <br>• Work is a <strong>scalar</strong> measured in <strong>joules</strong>: 1 J = 1 N·m.
+          <br>• The perpendicular part of F does <strong>no</strong> work.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2: Sign of work -->
+  <section class="step" data-title="Sign of work">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Positive, negative, or zero?</h2>
+      <table class="sign">
+        <tr><th>Angle between F and d</th><th>Work</th><th>Energy of the object</th></tr>
+        <tr><td>0° (same direction)</td><td>+ (biggest)</td><td>increases</td></tr>
+        <tr><td>less than 90°</td><td>+</td><td>increases</td></tr>
+        <tr><td>exactly 90°, or no displacement</td><td>0</td><td>no change</td></tr>
+        <tr><td>more than 90° (180° = opposite)</td><td>−</td><td>decreases</td></tr>
+      </table>
+      <div class="notes-box"><strong>Box B:</strong> Work is positive when the force has a part <strong>along</strong> the motion, negative when it has a part <strong>against</strong> the motion, and zero when the force is <strong>perpendicular</strong> to the motion or nothing moves.</div>
+      <p><strong>Try it.</strong> What is the sign of the work done by the named force?</p>
+      <div class="sgn-item">
+        <p>1. The <strong>normal force</strong> on a box sliding across a level floor.</p>
+        <div class="sgn-row" data-sgn="normal"><button data-v="+">+</button><button data-v="0">0</button><button data-v="-">−</button></div>
+        <div class="feedback" id="normalFb"></div>
+      </div>
+      <div class="sgn-item">
+        <p>2. <strong>Friction</strong> on that same sliding box.</p>
+        <div class="sgn-row" data-sgn="fric"><button data-v="+">+</button><button data-v="0">0</button><button data-v="-">−</button></div>
+        <div class="feedback" id="fricFb"></div>
+      </div>
+      <div class="sgn-item">
+        <p>3. <strong>Gravity</strong> on a ball as it falls.</p>
+        <div class="sgn-row" data-sgn="grav"><button data-v="+">+</button><button data-v="0">0</button><button data-v="-">−</button></div>
+        <div class="feedback" id="gravFb"></div>
+      </div>
+      <div class="sgn-item">
+        <p>4. A librarian's <strong>hand</strong> holding a heavy book still for 20 s.</p>
+        <div class="sgn-row" data-sgn="hold"><button data-v="+">+</button><button data-v="0">0</button><button data-v="-">−</button></div>
+        <div class="feedback" id="holdFb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3: Work-KE theorem -->
+  <section class="step" data-title="Work–energy theorem">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Net work changes kinetic energy</h2>
+      <p>Add up the work done by <strong>every</strong> force on an object. That total, the <strong>net work</strong>, equals the change in its kinetic energy:</p>
+      <div class="eq" style="font-size:30px">W<sub>net</sub> = ΔK = ½mv<sub>f</sub>² − ½mv<sub>i</sub>²</div>
+      <ul>
+        <li>W<sub>net</sub> &gt; 0: the object <strong>speeds up</strong>.</li>
+        <li>W<sub>net</sub> &lt; 0: the object <strong>slows down</strong>.</li>
+        <li>W<sub>net</sub> = 0: the speed <strong>stays the same</strong> (even if some forces do work, they cancel).</li>
+      </ul>
+      <p>K depends on v <strong>squared</strong>. Drag the speed of a 2.0 kg cart and watch K.</p>
+      <svg viewBox="0 0 600 90" id="kSvg" role="img" aria-label="Kinetic energy bar for the cart">
+        <text x="10" y="30" font-size="17" font-weight="700">K</text>
+        <rect x="40" y="12" width="540" height="28" rx="6" fill="var(--line)" opacity=".5"/>
+        <rect id="kBar" x="40" y="12" height="28" rx="6" fill="var(--cartA)"/>
+        <text x="10" y="76" font-size="17" font-weight="700">v</text>
+        <rect x="40" y="58" width="540" height="28" rx="6" fill="var(--line)" opacity=".5"/>
+        <rect id="vBar" x="40" y="58" height="28" rx="6" fill="var(--muted)"/>
+      </svg>
+      <div class="slider-row">
+        <label for="vSlider"><span>Speed v</span><span id="vVal">2.0 m/s</span></label>
+        <input type="range" id="vSlider" min="0" max="6" step="0.5" value="2" aria-label="Speed in meters per second">
+      </div>
+      <div class="readout" id="kVal"></div>
+      <div class="mini-q">
+        <p><strong>Try it.</strong> Go from 2 m/s to 4 m/s. When the speed doubles, K becomes…</p>
+        <button class="big-btn" data-kq="x2">2 times as big</button>
+        <button class="big-btn" data-kq="x4">4 times as big</button>
+        <button class="big-btn" data-kq="same">the same</button>
+        <div class="feedback" id="kqFb"></div>
+      </div>
+      <div class="notes-box"><strong>Box C:</strong> W<sub>net</sub> = ΔK. Double the speed → <strong>4×</strong> the K. Triple the speed → <strong>9×</strong> the K. So stopping a car going twice as fast takes 4× the (negative) work.</div>
+    </div>
+  </section>
+
+  <!-- STEP 4: Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example</h2>
+      <p>A 50.0 N force pulls an object at an angle of θ = 53.0° to its direction of motion. Its displacement is d = 6.00 m. How much work is done by the force on the object?</p>
+      <svg viewBox="0 0 600 170" role="img" aria-label="A box pulled by a rope at 53 degrees above its direction of motion">
+        <rect x="20" y="120" width="560" height="12" rx="4" fill="var(--track)" opacity=".45"/>
+        <rect x="190" y="70" width="90" height="50" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="235" y1="70" x2="330" y2="70" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="235" y1="70" x2="273.5" y2="18.9" stroke="var(--cartA)" stroke-width="5"/>
+        <polygon points="280.1,10.1 277.5,26.9 264.7,17.3" fill="var(--cartA)"/>
+        <text x="290" y="24" font-size="17" font-weight="700" style="fill:var(--cartA)">F = 50.0 N</text>
+        <path d="M 269 70 A 34 34 0 0 0 255.5 42.8" fill="none" stroke="var(--muted)" stroke-width="2"/>
+        <text x="276" y="58" font-size="16" font-weight="700" style="fill:var(--muted)">53.0°</text>
+        <circle cx="235" cy="70" r="4" fill="var(--ink)"/>
+        <line x1="170" y1="154" x2="300" y2="154" stroke="var(--ink)" stroke-width="3"/><polygon points="298,147 314,154 298,161" fill="var(--ink)"/>
+        <text x="330" y="160" font-size="16">d = 6.00 m</text>
+      </svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: Givens.</strong> F = 50.0 N, d = 6.00 m, and θ = 53.0°. The 53.0° is already the angle <strong>between F and d</strong>, so we can use it directly.</div>
+        <div class="reveal step-line"><strong>Step 2: The parallel part.</strong> Only the part of F along the motion pulls the box forward:
+          <div class="eq" style="font-size:24px">F<sub>∥</sub> = F cos θ = (50.0 N)(cos 53.0°) = 30.1 N</div></div>
+        <div class="reveal step-line"><strong>Step 3: Work.</strong>
+          <div class="eq" style="font-size:24px">W = Fd cos θ = (50.0 N)(6.00 m)(cos 53.0°) = 181 J</div>
+          Positive, because θ is less than 90°. Units: N·m = J.</div>
+        <div class="reveal step-line"><strong>Step 4: Does it make sense?</strong> Pulling straight along the motion (θ = 0°) would do (50.0)(6.00) = 300 J. Pulling at an angle wastes some of the force lifting up on the box, so 181 J (less than 300 J) is reasonable.</div>
+        <div class="reveal step-line"><strong>Step 5: Going further.</strong> Say the object is a <strong>10.0 kg</strong> box that starts <strong>at rest</strong> on a <strong>frictionless</strong> floor. How fast is it moving after 6.00 m?
+          <br>The normal force and gravity are perpendicular to d, so they do 0 J. The net work is just the 181 J from the pull:
+          <div class="eq" style="font-size:24px">W<sub>net</sub> = ½mv<sub>f</sub>² − 0</div>
+          <div class="eq" style="font-size:24px">v<sub>f</sub> = √(2W<sub>net</sub>/m) = √(2·181/10.0) = 6.01 m/s</div>
+          <div class="notes-box"><strong>Box D:</strong> F<sub>∥</sub> = 30.1 N, W = 181 J. Forces perpendicular to d do zero work, so W<sub>net</sub> = 181 J = ΔK, and v<sub>f</sub> = 6.01 m/s.</div></div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- STEP 5: Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3</h2>
+      <p>You lower a suitcase from a shelf to the floor at a <strong>constant speed</strong>. What are the signs of the work done on the suitcase by <strong>your hand</strong> and by <strong>gravity</strong>?</p>
+      <svg viewBox="0 0 600 150" role="img" aria-label="A suitcase moving down; the hand pushes up and gravity pulls down">
+        <rect x="250" y="40" width="80" height="56" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="276" y="30" width="28" height="12" rx="4" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="290" y1="30" x2="290" y2="6" stroke="var(--cartA)" stroke-width="4"/><polygon points="283,10 290,0 297,10" fill="var(--cartA)"/>
+        <text x="300" y="16" font-size="16" font-weight="700" style="fill:var(--cartA)">F<tspan font-size="12" dy="4">hand</tspan></text>
+        <line x1="290" y1="96" x2="290" y2="136" stroke="var(--cartB)" stroke-width="4"/><polygon points="283,132 290,146 297,132" fill="var(--cartB)"/>
+        <text x="300" y="136" font-size="16" font-weight="700" style="fill:var(--cartB)">mg</text>
+        <line x1="420" y1="30" x2="420" y2="110" stroke="var(--ink)" stroke-width="3"/><polygon points="413,106 420,122 427,106" fill="var(--ink)"/>
+        <text x="434" y="78" font-size="16">d (down)</text>
+      </svg>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="pp">Hand: positive · Gravity: positive</button>
+        <button class="big-btn" data-opt="np">Hand: negative · Gravity: positive</button>
+        <button class="big-btn" data-opt="pn">Hand: positive · Gravity: negative</button>
+        <button class="big-btn" data-opt="zp">Hand: zero · Gravity: positive</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 6: Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3</h2>
+      <p>A runaway truck drives into a sand-filled escape ramp on level ground and stops. A second ramp has softer sand, and the <strong>same truck at the same speed</strong> takes <strong>twice the distance</strong> to stop. Compared with the first ramp, the average stopping force from the sand is…</p>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="half">half as big</button>
+        <button class="big-btn" data-opt="same">the same</button>
+        <button class="big-btn" data-opt="double">twice as big</button>
+        <button class="big-btn" data-opt="quarter">one-fourth as big</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 7: Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3</h2>
+      <p>A horizontal rope pulls a crate 5 m across a rough floor at a <strong>constant speed of 1 m/s</strong>. Then the rope pulls the same crate the same 5 m at a <strong>constant speed of 2 m/s</strong>. How does the work done by the <strong>rope</strong> the second time compare?</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="more">More, because the crate has more kinetic energy.</button>
+        <button class="big-btn" data-opt="less">Less, because it takes less time.</button>
+        <button class="big-btn" data-opt="same">The same, because the rope's force and the distance are the same.</button>
+        <button class="big-btn" data-opt="zero">Zero both times, because the speed is constant.</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 8: Wrap-up -->
+  <section class="step" data-title="Wrap-up">
+    <div class="card">
+      <h2>Before you go</h2>
+      <p>Check that Boxes A–E on your notes sheet are filled in, then write the big idea at the bottom in your own words.</p>
+      <ul>
+        <li><strong>W = Fd cos θ.</strong> Only the part of the force along the motion does work. θ is the angle between F and d.</li>
+        <li><strong>Sign:</strong> along the motion +, against it −, perpendicular (or no motion) 0.</li>
+        <li><strong>W<sub>net</sub> = ΔK.</strong> K grows with v², so double the speed means 4× the K.</li>
+      </ul>
+    </div>
+    <div class="card next-card">
+      <p style="margin:0"><strong>Next:</strong> R3, Stored Energy. Find it on the <a href="index.html">Unit 3 review page</a>.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // ---------- Theme (auto / light / dark) ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Step navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var state = { sawNeg: false, q1: null, q2: null, q3: null, tries: { q1: 0, q2: 0, q3: 0 } };
+
+  function canAdvance() {
+    if (cur === 1) return state.sawNeg;
+    var q = steps[cur].getAttribute('data-q');
+    if (q) return !!state[q + 'Done'];
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'Finish' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+
+  function fb(id, ok, html) {
+    var el = document.getElementById(id);
+    el.className = 'feedback show ' + (ok ? 'good' : 'bad');
+    el.innerHTML = html;
+  }
+  function $(id) { return document.getElementById(id); }
+  function set(el, attrs) { for (var k in attrs) el.setAttribute(k, attrs[k]); }
+
+  // ---------- Step 1: angle slider ----------
+  var F = 50.0, D = 6.00, CX = 280, CY = 150, L = 130, S = 2.6; // S = px per newton for the F-parallel bar
+  function fmt(x, n) { var s = x.toFixed(n); return (Math.abs(x) < 0.05 ? (0).toFixed(n) : s).replace('-', '−'); }
+  function drawAngle(deg) {
+    var r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    if (Math.abs(c) < 1e-9) c = 0;
+    var tx = CX + L * c, ty = CY - L * s;
+    set($('fLine'), { x1: CX, y1: CY, x2: CX + (L - 14) * c, y2: CY - (L - 14) * s });
+    var bx = CX + (L - 16) * c, by = CY - (L - 16) * s, px = -s * 9, py = -c * 9;
+    set($('fHead'), { points: tx + ',' + ty + ' ' + (bx + px) + ',' + (by + py) + ' ' + (bx - px) + ',' + (by - py) });
+    var fl = $('fLbl'); set(fl, { x: tx + (c >= 0 ? 10 : -10), y: Math.max(18, ty - 6), 'text-anchor': c >= 0 ? 'start' : 'end' });
+    var par = F * c, pEnd = CX + par * S;
+    set($('parLine'), { x1: CX, y1: CY, x2: pEnd, y2: CY, stroke: par >= 0 ? 'var(--good)' : 'var(--bad)' });
+    $('parLine').style.display = Math.abs(par) < 0.05 ? 'none' : '';
+    set($('perpLine'), { x1: CX + L * c, y1: CY, x2: tx, y2: ty });
+    set($('parLbl'), { x: pEnd + (par >= 0 ? 10 : -10), y: CY - 8, 'text-anchor': par >= 0 ? 'start' : 'end' });
+    $('parLbl').style.display = Math.abs(par) < 2 ? 'none' : '';
+    var ar = 34, ex = CX + ar * c, ey = CY - ar * s;
+    set($('angArc'), { d: 'M ' + (CX + ar) + ' ' + CY + ' A ' + ar + ' ' + ar + ' 0 0 0 ' + ex + ' ' + ey });
+    var mr = (deg / 2) * Math.PI / 180;
+    set($('angLbl'), { x: CX + 54 * Math.cos(mr) - 5, y: CY - 54 * Math.sin(mr) + 6 });
+    $('angLbl').style.display = deg < 8 ? 'none' : '';
+    $('angVal').textContent = deg + '°';
+    $('parVal').textContent = fmt(par, 1) + ' N';
+    var W = F * D * c;
+    $('wVal').textContent = fmt(W, 0) + ' J';
+    var ws = $('wSign');
+    if (Math.abs(W) < 0.5) { ws.className = 'wsign zero'; ws.textContent = 'Zero work: F is perpendicular to the motion.'; }
+    else if (W > 0) { ws.className = 'wsign pos'; ws.textContent = 'Positive work: F has a part along the motion.'; }
+    else { ws.className = 'wsign neg'; ws.textContent = 'Negative work: F has a part against the motion.'; }
+    if (deg >= 120 && !state.sawNeg) {
+      state.sawNeg = true;
+      $('angMore').classList.add('show');
+      $('angHint').textContent = 'Keep exploring. Try 0°, 90°, and 180°.';
+      nextBtn.disabled = !canAdvance();
+    }
+  }
+  $('angSlider').addEventListener('input', function () { drawAngle(+this.value); });
+  drawAngle(30);
+
+  // ---------- Step 2: sign practice ----------
+  var SGN = {
+    normal: { ans: '0', good: '<strong>Zero.</strong> The normal force points straight up and the box moves sideways: θ = 90°, so cos θ = 0.',
+              bad: 'The normal force is <strong>perpendicular</strong> to the floor, and the box slides along the floor. What is cos 90°?' },
+    fric:   { ans: '-', good: '<strong>Negative.</strong> Friction points opposite the motion (θ = 180°), so it takes kinetic energy away.',
+              bad: 'Which way does friction point compared with the motion? It points <strong>against</strong> it.' },
+    grav:   { ans: '+', good: '<strong>Positive.</strong> Gravity points down and the ball moves down (θ = 0°). That\'s why the ball speeds up.',
+              bad: 'Gravity points down, and the falling ball also moves down. Same direction means θ = 0°.' },
+    hold:   { ans: '0', good: '<strong>Zero.</strong> The book doesn\'t move, so d = 0. Holding something heavy is tiring, but it isn\'t work in physics.',
+              bad: 'It feels like work, but in physics W = Fd cos θ. How far does the book move?' }
+  };
+  document.querySelectorAll('[data-sgn]').forEach(function (row) {
+    var g = row.getAttribute('data-sgn');
+    row.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var ok = b.getAttribute('data-v') === SGN[g].ans;
+        row.querySelectorAll('button').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        fb(g + 'Fb', ok, ok ? SGN[g].good : '<strong>Not quite.</strong> ' + SGN[g].bad);
+      });
+    });
+  });
+
+  // ---------- Step 3: K vs v slider + quick question ----------
+  var M = 2.0, KMAX = 0.5 * M * 36;
+  function drawK(v) {
+    var K = 0.5 * M * v * v;
+    $('kBar').setAttribute('width', Math.max(0, 540 * K / KMAX));
+    $('vBar').setAttribute('width', Math.max(0, 540 * v / 6));
+    $('vVal').textContent = v.toFixed(1) + ' m/s';
+    $('kVal').textContent = 'K = ½(2.0 kg)(' + v.toFixed(1) + ' m/s)² = ' + K.toFixed(K < 10 ? 2 : 1) + ' J';
+  }
+  $('vSlider').addEventListener('input', function () { drawK(+this.value); });
+  drawK(2);
+  var KQ = { ans: 'x4', good: '<strong>Yes, 4 times.</strong> At 2 m/s, K = 4 J. At 4 m/s, K = 16 J. The speed is squared, so 2² = 4.',
+             bad: { x2: 'That would be true if K were proportional to v. Check the slider: 2 m/s gives 4 J, 4 m/s gives…?',
+                    same: 'Same mass, but faster. Check the slider: K changes a lot.' } };
+  document.querySelectorAll('[data-kq]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var o = b.getAttribute('data-kq'), ok = o === KQ.ans;
+      document.querySelectorAll('[data-kq]').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+      b.classList.add(ok ? 'right' : 'wrong');
+      fb('kqFb', ok, ok ? KQ.good : '<strong>Not quite.</strong> ' + KQ.bad[o]);
+    });
+  });
+
+  // ---------- Step 4: worked example ----------
+  var wxParts = document.querySelectorAll('#wxSteps .reveal'), wxI = 0, wxBtn = $('wxNext');
+  wxBtn.addEventListener('click', function () {
+    if (wxI < wxParts.length) { wxParts[wxI].classList.add('show'); wxI++; }
+    if (wxI >= wxParts.length) { wxBtn.style.display = 'none'; }
+  });
+
+  // ---------- Check questions (3 tries, then move on) ----------
+  function record(q, correct) {
+    state.tries[q]++;
+    if (state[q] === null) state[q] = correct;
+    if (correct) state[q + 'Done'] = true;
+    if (!correct && state.tries[q] >= 3) state[q + 'Done'] = true;
+    nextBtn.disabled = !canAdvance();
+  }
+  var key = {
+    q1: { ans: 'np', good: '<strong>Correct.</strong> Your hand pushes <strong>up</strong> while the suitcase moves <strong>down</strong> (θ = 180°), so your hand does negative work. Gravity pulls down along the motion (θ = 0°), so it does positive work. The speed is constant, so ΔK = 0 and the two works cancel: W<sub>net</sub> = 0.',
+          bad: { pp: 'Check your hand. Which way does it push, and which way does the suitcase move? They\'re opposite.',
+                 pn: 'That\'s the signs for <strong>lifting</strong> the suitcase. Here it moves down: your hand still pushes up, but now gravity points along the motion.',
+                 zp: 'Your hand does push, and the suitcase does move, so the work isn\'t zero. Force up, motion down: what sign is that?' },
+          show: 'Hand: negative · Gravity: positive' },
+    q2: { ans: 'half', good: '<strong>Correct.</strong> The sand\'s work removes all of the truck\'s K: −F<sub>avg</sub>d = 0 − ½mv<sub>i</sub>². Same truck, same speed, so the same K<sub>i</sub>, so F<sub>avg</sub>·d stays the same. Twice the d means half the F.',
+          bad: { same: 'The sand must remove the same K both times. If it pushes just as hard over twice the distance, it would remove twice the energy.',
+                 double: 'Softer sand stops the truck more gently. The work F<sub>avg</sub>·d has to equal the same K<sub>i</sub>, so if d goes up, F must go down.',
+                 quarter: 'The squared relationship is between K and <strong>v</strong>. Here v doesn\'t change. Only d doubles, and F·d must stay equal to K<sub>i</sub>.' },
+          show: 'half as big' },
+    q3: { ans: 'same', good: '<strong>Correct.</strong> At constant speed the rope\'s pull equals kinetic friction, and friction doesn\'t depend on speed. Same force, same 5 m, so W = Fd is the same. (Doing it faster takes more <strong>power</strong>, which is R5.)',
+          bad: { more: 'The speed is constant both times, so ΔK = 0 during each pull. The rope just has to balance friction, which is the same at either speed.',
+                 less: 'Work doesn\'t depend on time: W = Fd cos θ has no t in it. Doing the same work in less time is more <strong>power</strong>, not less work.',
+                 zero: 'The <strong>net</strong> work is zero, since the speed is constant. But the rope alone does positive work, and friction does an equal amount of negative work.' },
+          show: 'The same' }
+  };
+  function more(q) { return state[q + 'Done'] ? '<br>The answer is <strong>' + key[q].show + '</strong> (shown in green). Tap Next to move on.' : ''; }
+  document.querySelectorAll('[data-mc]').forEach(function (group) {
+    var q = group.getAttribute('data-mc');
+    group.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q + 'Done'] && group.querySelector('.right')) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === key[q].ans;
+        group.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        if (!ok && state[q + 'Done']) group.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+        fb(q + 'Fb', ok, ok ? key[q].good : '<strong>Not quite.</strong> ' + key[q].bad[opt] + more(q));
+      });
+    });
+  });
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var l = document.createElement('div'); l.className = 'part-label';
+      l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(l, s.firstChild);
+    });
+    function note(afterId, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      var a = $(afterId); a.parentNode.insertBefore(n, a.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    // Part 2: slider set to the worked-example angle
+    $('angSlider').value = 53; drawAngle(53);
+    $('angHint').style.display = 'none';
+    note('angMore', 'Slider starts at 30°. Students must drag θ to 120° or more (negative work) before Next unlocks; Box A appears then. Shown here at 53°, the worked-example angle (F<sub>∥</sub> = 30.1 N, W = 181 J).');
+    // Part 3: sign practice
+    Object.keys(SGN).forEach(function (g) {
+      document.querySelector('[data-sgn="' + g + '"] [data-v="' + SGN[g].ans + '"]').classList.add('right');
+      fb(g + 'Fb', true, SGN[g].good);
+    });
+    note('holdFb', '<strong>Wrong-pick feedback</strong> (practice, not gated):' + list(Object.keys(SGN).map(function (g, i) { return (i + 1) + '. ' + SGN[g].bad; })));
+    // Part 4: K question
+    document.querySelector('[data-kq="x4"]').classList.add('right');
+    fb('kqFb', true, KQ.good);
+    note('kqFb', '<strong>Wrong-pick feedback</strong> (practice, not gated):' + list(['2 times: ' + KQ.bad.x2, 'The same: ' + KQ.bad.same]));
+    // Checks
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+      fb(q + 'Fb', true, key[q].good);
+      var items = Object.keys(key[q].bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + key[q].bad[o];
+      });
+      note(q + 'Fb', '<strong>Feedback for wrong choices</strong> (up to 3 tries, then the answer is shown):' + list(items));
+    });
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
