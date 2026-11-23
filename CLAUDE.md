@@ -2,6 +2,7 @@
 
 This repo is published with GitHub Pages at https://luckiphysics.github.io/PhysicsSims/ (repo: LuckiPhysics/PhysicsSims).
 Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentum.html`. Use that file as the reference.
+**Honors Physics lessons:** also read `honors/CLAUDE.md`. It covers Honors notation (E<sub>g</sub>, E<sub>el</sub>, LOL diagrams, no open/closed systems) and how to port the AP Energy review lessons.
 
 ## Ground rules
 - **Never change an existing file without asking first.** Adding new files is fine.
