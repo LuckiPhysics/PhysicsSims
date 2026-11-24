@@ -26,18 +26,18 @@ h1 small{color:var(--muted);font-weight:600;font-size:15px}
 canvas{display:block;width:100%;height:auto;aspect-ratio:900/540;touch-action:manipulation}
 .ov{position:absolute;font-size:max(12px,1.6cqw);line-height:1.2}
 .ov .cap{display:block;font-weight:700;color:var(--muted);margin:0 0 .4cqw .3cqw;text-transform:uppercase;letter-spacing:.04em;font-size:max(11px,1.35cqw)}
-.panel{background:color-mix(in srgb,var(--card) 88%,transparent);border:1px solid var(--line);border-radius:1.4cqw;padding:.8cqw}
+.panel{background:color-mix(in srgb,var(--card) 88%,transparent);border:1px solid var(--line);border-radius:1.2cqw;padding:.6cqw .7cqw}
 .seg{display:flex;border:2px solid var(--line);border-radius:1.3cqw;overflow:hidden;background:var(--card)}
-.seg button{flex:1;min-height:max(40px,5.3cqw);border:0;background:var(--card);color:var(--ink);font:inherit;font-size:max(13px,1.75cqw);font-weight:700;touch-action:manipulation;cursor:pointer;padding:0 .8cqw}
+.seg button{flex:1;min-height:max(36px,4.4cqw);border:0;background:var(--card);color:var(--ink);font:inherit;font-size:max(13px,1.75cqw);font-weight:700;touch-action:manipulation;cursor:pointer;padding:0 .8cqw}
 .seg button+button{border-left:2px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .seg.col{flex-direction:column}.seg.col button+button{border-left:0;border-top:2px solid var(--line)}
-.sq button{width:max(40px,5.3cqw);flex:none}
+.sq button{width:max(36px,4.4cqw);flex:none;padding:0}
 .sq{gap:0}
-select{width:100%;min-height:max(40px,5.3cqw);font:inherit;font-size:max(14px,1.8cqw);font-weight:600;border:2px solid var(--line);border-radius:1.3cqw;background:var(--card);color:var(--ink);padding:0 1cqw}
-#launch{min-height:max(48px,6.7cqw);width:19cqw;border-radius:1.6cqw;border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:max(17px,2.6cqw);font-weight:800;touch-action:manipulation;cursor:pointer;box-shadow:0 .3cqw .9cqw rgba(0,0,0,.25)}
+select{width:100%;min-height:max(36px,4.4cqw);font:inherit;font-size:max(14px,1.7cqw);font-weight:600;border:2px solid var(--line);border-radius:1.3cqw;background:var(--card);color:var(--ink);padding:0 1cqw}
+#launch{min-height:max(42px,5.2cqw);width:14cqw;border-radius:1.3cqw;border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:max(16px,2.1cqw);font-weight:800;touch-action:manipulation;cursor:pointer;box-shadow:0 .3cqw .9cqw rgba(0,0,0,.25)}
 #launch:disabled{opacity:.5}
-#slow{min-height:max(40px,5.3cqw);padding:0 1.4cqw;border-radius:1.3cqw;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:max(13px,1.7cqw);font-weight:700;touch-action:manipulation;cursor:pointer}
+#slow{min-height:max(36px,4.4cqw);padding:0 1.2cqw;border-radius:1.3cqw;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:max(13px,1.7cqw);font-weight:700;touch-action:manipulation;cursor:pointer}
 #slow[aria-pressed="true"]{border-color:var(--accent);color:var(--link)}
 #ovRead{min-width:27cqw;text-align:right;padding:.6cqw 1cqw}
 #r1{font-size:max(22px,3.6cqw);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
@@ -71,9 +71,8 @@ td.n{font-variant-numeric:tabular-nums;font-weight:700}
 
   <div class="stage" id="stage">
     <canvas id="cv" width="900" height="540" aria-label="Lab apparatus"></canvas>
-    <div class="ov" id="ovExp"><div class="seg" id="modeSeg">
-      <button type="button" data-v="pend">Pendulum</button><button type="button" data-v="horiz">Off a bench</button><button type="button" data-v="vert">Straight up</button>
-    </div></div>
+    <div class="ov panel" id="ovExp"><label><span class="cap">Experiment</span>
+      <select id="mode"><option value="pend" selected>Pendulum</option><option value="horiz">Off a bench</option><option value="vert">Straight up</option></select></label></div>
     <button class="ov" id="slow" type="button" aria-pressed="false">Slow-mo</button>
     <div class="ov panel" id="ovRead">
       <span class="cap" id="r1lab">Pointer reading</span><div id="r1">—</div>
@@ -82,10 +81,10 @@ td.n{font-variant-numeric:tabular-nums;font-weight:700}
     <div class="ov panel" id="ovSpring"><label><span class="cap">Spring</span>
       <select id="spring"><option value="0">Weak</option><option value="1" selected>Medium</option><option value="2">Strong</option><option value="3">Super strong</option></select></label></div>
     <div class="ov" id="ovSet"><span class="cap" id="setCap">Launch setting</span><div class="seg sq" id="setSeg">
-      <button type="button" data-v="0">1</button><button type="button" data-v="1">2</button><button type="button" data-v="2">3</button></div></div>
+      <button type="button" data-v="2">3</button><button type="button" data-v="1">2</button><button type="button" data-v="0">1</button></div></div>
     <button class="ov" id="launch" type="button">Launch</button>
-    <div class="ov panel" id="ovMass"><span class="cap">Slotted mass</span><div class="seg col" id="addSeg">
-      <button type="button" data-v="0">None</button><button type="button" data-v="1">+100 g</button><button type="button" data-v="2">+200 g</button></div></div>
+    <div class="ov panel" id="ovMass"><label><span class="cap">Slotted mass</span>
+      <select id="add"><option value="0" selected>None</option><option value="1">+100 g</option><option value="2">+200 g</option></select></label></div>
   </div>
   <div id="banner">Choose your setup, then tap Launch.</div>
 
@@ -177,6 +176,9 @@ function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h
 function fillRR(x,y,w,h,r,c,stroke){rr(x,y,w,h,r);ctx.fillStyle=c;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.stroke();}}
 function ballAt(x,y,r){var gr=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);gr.addColorStop(0,'#f4f6f8');gr.addColorStop(1,C.ball);
   ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();ctx.strokeStyle=C.dark;ctx.lineWidth=1;ctx.stroke();}
+function tag(s,x,y,color,align,size){size=size||16;ctx.font='800 '+size+'px -apple-system,Segoe UI,Roboto,sans-serif';
+  var w=ctx.measureText(s).width+14,h=size+10,x0=align==='right'?x-w:align==='center'?x-w/2:x;
+  fillRR(x0,y-h/2,w,h,6,'#ffffff',color);ctx.fillStyle=color;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x0+7,y+1);}
 function text(s,x,y,size,color,align,weight){ctx.font=(weight||'600')+' '+size+'px -apple-system,Segoe UI,Roboto,sans-serif';ctx.fillStyle=color;ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillText(s,x,y);}
 
 /* launcher: muzzle at (0,0) in local frame, tube runs toward -x */
@@ -203,9 +205,9 @@ function drawLauncher(x,y,rot,len,dia,cock,labels){
 
 /* ---------- PENDULUM VIEW ---------- */
 var PX=560,PY=70,LS=250,CW=58,CH=46,BR=8;
-var NOTCH=[-142,-90,-38]; // local x of notches (muzzle = 0)
+var NOTCH=[-58,-100,-142]; // local x of notches for settings 1,2,3 (muzzle = 0); setting 1 nearest the muzzle
 var DELTA=Math.atan2(CW/2,LS); // pointer zero sits at the catcher's right edge
-var pend={theta:0,omega:0,pointer:0,ballX:null,caught:false,cock:true};
+var pend={theta:0,omega:0,pointer:0,ballX:null,caught:false,cock:true,res:null};
 function drawPend(){
   ctx.fillStyle=C.sky;ctx.fillRect(0,0,W,H);
   // base board
@@ -252,7 +254,22 @@ function drawPend(){
   ctx.fillStyle='#0b0c0e';ctx.beginPath();ctx.ellipse(-CW/2+2,0,4,BR+1,0,0,7);ctx.fill();
   ctx.restore();
   ctx.fillStyle=C.dark;ctx.beginPath();ctx.arc(PX,PY,5,0,7);ctx.fill();
-  // labels
+  // measurement overlays once the pointer has stopped
+  if(pend.res){var R='#b3261e',r=pend.res;
+    var lp=DELTA+Math.min(pend.pointer,60)*Math.PI/180;
+    tag(r.th>OFFSCALE?'off scale':r.th.toFixed(1)+'°',PX+Math.sin(lp)*215+10,PY+Math.cos(lp)*215,R,'left',17);
+    if(r.th<=OFFSCALE){
+      var th=r.th*Math.PI/180,gx=PX+LS*Math.sin(th),gy=PY+LS*Math.cos(th),y0=PY+LS;
+      // ghost of the catcher at its highest point
+      ctx.save();ctx.translate(gx,gy);ctx.rotate(-th);ctx.setLineDash([4,3]);ctx.strokeStyle=R;ctx.lineWidth=1.5;rr(-CW/2,-CH/2,CW,CH,10);ctx.stroke();ctx.restore();
+      ctx.setLineDash([6,4]);ctx.strokeStyle=R;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(PX-CW/2-8,y0);ctx.lineTo(gx+CW/2+46,y0);ctx.stroke();           // starting height
+      ctx.beginPath();ctx.moveTo(gx+CW/2+30,gy);ctx.lineTo(gx-6,gy);ctx.stroke();                 // final height
+      ctx.beginPath();ctx.moveTo(gx+CW/2+22,y0);ctx.lineTo(gx+CW/2+22,gy);ctx.stroke();ctx.setLineDash([]);
+      var ax=gx+CW/2+22;ctx.fillStyle=R;ctx.beginPath();ctx.moveTo(ax,gy);ctx.lineTo(ax-5,gy+8);ctx.lineTo(ax+5,gy+8);ctx.closePath();ctx.fill();
+      var hcm=r.h*100;tag('h = '+(hcm<1?hcm.toFixed(3):hcm.toFixed(2))+' cm',ax+10,y0+22,R,'left',15);
+    }
+  }
 }
 
 /* ---------- HORIZONTAL VIEW ---------- */
@@ -289,6 +306,8 @@ function drawHoriz(){
   // trail + ball
   if(hz.trail.length>1){ctx.strokeStyle=C.trace;ctx.lineWidth=1.5;ctx.setLineDash([3,5]);ctx.beginPath();hz.trail.forEach(function(q,i){var p=hxy(q[0],q[1]);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});ctx.stroke();ctx.setLineDash([]);}
   if(hz.x!==null){var p=hxy(hz.x,hz.y);ballAt(p[0],p[1],5);}
+  if(!hz.flying&&!hz.wall&&marks.length&&hz.x!==null){var q=hxy(marks[marks.length-1],0);tag(marks[marks.length-1].toFixed(2)+' m',q[0],q[1]-30,'#b3261e','center',17);}
+  if(!hz.flying&&hz.wall)tag('hit the wall',HX0+WALL*HS-8,HFY-60,'#b3261e','right',16);
   else ballAt(HX0-3,ly,4);
 }
 
@@ -299,7 +318,7 @@ function vy(y){return VFY-y*VS;}
 function drawVert(){
   ctx.fillStyle=C.wall;ctx.fillRect(0,0,W,H);
   var cy=vy(CEIL);ctx.fillStyle=C.line;ctx.fillRect(0,0,W,cy);ctx.fillStyle=C.muted;ctx.fillRect(0,cy-3,W,3);
-  text('ceiling (3.00 m above floor)',335,cy+16,14,C.ink,'left','700');
+  text('ceiling (3.00 m above floor)',620,cy+16,14,C.ink,'left','700');
   ctx.fillStyle=C.floor;ctx.fillRect(0,VFY,W,H-VFY);text('floor',20,VFY+14,14,'#fff','left');
   // stand and vertical launcher
   fillRR(VX-40,VFY-8,80,8,2,C.metal2);ctx.fillStyle=C.metal2;ctx.fillRect(VX-20,vy(MUZ_V)+4,5,(VFY-8)-(vy(MUZ_V)+4));
@@ -314,6 +333,8 @@ function drawVert(){
   marks.forEach(function(h,ix){if(ix===marks.length-1)return;ctx.strokeStyle=C.muted;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx-10,vy(MUZ_V+h));ctx.lineTo(sx,vy(MUZ_V+h));ctx.stroke();});
   // current peak marker
   if(vt.peak!==null&&!vt.ceil){var py=vy(MUZ_V+vt.peak);ctx.strokeStyle=C.bad;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(VX-20,py);ctx.lineTo(sx,py);ctx.stroke();ctx.setLineDash([]);}
+  if(vt.peak!==null&&!vt.ceil)tag(vt.peak.toFixed(2)+' m',VX-26,vy(MUZ_V+vt.peak),'#b3261e','right',17);
+  if(vt.ceil)tag('hit the ceiling',VX-26,vy(CEIL)+46,'#b3261e','right',16);
   if(vt.y!==null)ballAt(VX,vy(vt.y),5);else ballAt(VX,vy(MUZ_V)+3,4);
 }
 
@@ -336,7 +357,7 @@ function finish(){st.busy=false;$('launch').disabled=false;}
 
 function launchPend(v){
   var res=pendResult(v);
-  pend.theta=0;pend.omega=0;pend.pointer=0;pend.caught=false;pend.cock=false;
+  pend.theta=0;pend.omega=0;pend.pointer=0;pend.caught=false;pend.cock=false;pend.res=null;
   var mz=PX-CW/2-44,x0=mz-BR,x1=PX-CW/2+BR,travel=0,flyT=Math.max(0.05,0.044/v),reported=false,tAfter=0;
   setBanner('Launching…');
   start({step:function(dt){
@@ -360,6 +381,7 @@ function launchPend(v){
   }});
 }
 function reportPend(r){
+  pend.res=r;
   var reading;
   if(r.th>OFFSCALE){
     setR('Off the scale',true,r.over?'The catcher swung all the way over the top':'Past 30° — can\'t be read','—');
@@ -375,7 +397,7 @@ function reportPend(r){
 }
 
 function launchHoriz(v){
-  var res=horizResult(v),t=0;hz.trail=[];hz.flying=true;
+  var res=horizResult(v),t=0;hz.trail=[];hz.flying=true;hz.wall=false;
   setBanner('Launching…');
   start({step:function(dt){t+=dt;var x=v*t,y=LAUNCH_H-0.5*G*t*t,done=false;
     if(res.wall&&v*t>=WALL){ // hit wall, then drop straight down
@@ -383,7 +405,7 @@ function launchHoriz(v){
       var tt=t-hz.wt;x=WALL-0.01;y=hz.wy+hz.wvy*tt-0.5*G*tt*tt;}
     if(y<=0){y=0;done=true;}
     hz.x=x;hz.y=y;hz.trail.push([x,y]);
-    if(done){anim=null;hz.flying=false;delete hz.wt;
+    if(done){anim=null;hz.flying=false;delete hz.wt;hz.wall=res.wall;
       if(res.wall){setR('Hit the wall',true,'Ball hit the wall 4.00 m away','');setBanner('The ball hit the far wall before landing. Range can\'t be measured.',true);addTrial('hit wall');}
       else{marks.push(res.R);setR(res.R.toFixed(2)+' m',false,null,'');setBanner('Landed '+res.R.toFixed(2)+' m from the point directly below the muzzle.');addTrial(res.R.toFixed(2)+' m');}
       finish();}
@@ -447,25 +469,24 @@ function renderLog(){
   $('log').innerHTML=trials.slice().reverse().map(function(t){return '<tr><td>'+t.n+'</td><td>'+t.mode+'</td><td>'+t.spring+'</td><td>'+t.set+'</td><td>'+t.add+'</td><td class="n">'+t.reading+'</td></tr>';}).join('')||'<tr><td colspan="6" style="color:var(--muted)">No trials yet.</td></tr>';
 }
 var LAYOUT={
-  pend:{ovSpring:[24,84,230],ovSet:[319,196],launch:[30,290],ovMass:[768,214,118],ovRead:[600,62]},
-  horiz:{ovSpring:[24,84,230],ovSet:[24,176],launch:[205,232],ovRead:[600,64]},
-  vert:{ovSpring:[24,84,230],ovSet:[226,348],launch:[226,428],ovRead:[600,64]}
+  pend:{ovSpring:[200,12,170],ovSet:[323,214],launch:[62,297],ovMass:[772,196,114]},
+  horiz:{ovSpring:[200,12,170],ovSet:[24,120],launch:[24,200]},
+  vert:{ovSpring:[200,12,170],ovSet:[260,364],launch:[260,432]}
 };
 function place(){
   var L=LAYOUT[st.mode];
-  ['ovSpring','ovSet','launch','ovMass','ovRead'].forEach(function(id){var el=$(id),p=L[id];
+  $('ovRead').style.display='none';
+  ['ovSpring','ovSet','launch','ovMass'].forEach(function(id){var el=$(id),p=L[id];
     if(!p){el.style.display='none';return;}
     el.style.display='';el.style.left=(p[0]/9)+'%';el.style.top=(p[1]/5.4)+'%';
     if(p[2])el.style.width=(p[2]/9)+'cqw';});
-  $('ovExp').style.left='1.5%';$('ovExp').style.top='1.8%';
+  $('ovExp').style.left='1.5%';$('ovExp').style.top=(12/5.4)+'%';$('ovExp').style.width=(170/9)+'cqw';
   $('slow').style.right='1.5%';$('slow').style.top='1.8%';
-  if(st.mode==='pend'){$('ovRead').style.left='';$('ovRead').style.right='1.5%';}
-  else{$('ovRead').style.left='';$('ovRead').style.right='1.5%';}
 }
 function resetScene(){
   anim=null;st.busy=false;$('launch').disabled=false;marks=[];
-  pend.theta=0;pend.omega=0;pend.pointer=0;pend.caught=false;pend.ballX=null;pend.cock=true;
-  hz.x=null;hz.y=null;hz.trail=[];hz.flying=false;delete hz.wt;
+  pend.theta=0;pend.omega=0;pend.pointer=0;pend.caught=false;pend.ballX=null;pend.cock=true;pend.res=null;
+  hz.x=null;hz.y=null;hz.trail=[];hz.flying=false;hz.wall=false;delete hz.wt;
   vt.y=null;vt.peak=null;vt.ceil=false;vt.flying=false;
   resetReadout();known();
   place();
@@ -478,7 +499,9 @@ function seg(id,key,num){
   btns.forEach(function(b){b.addEventListener('click',function(){if(st.busy&&anim)return;st[key]=num?+b.dataset.v:b.dataset.v;sync();resetScene();});});
   sync();
 }
-seg('modeSeg','mode',false);seg('setSeg','set',true);seg('addSeg','add',true);
+seg('setSeg','set',true);
+$('mode').addEventListener('change',function(e){st.mode=e.target.value;resetScene();});
+$('add').addEventListener('change',function(e){st.add=+e.target.value;resetScene();});
 $('spring').addEventListener('change',function(e){st.spring=+e.target.value;resetScene();});
 $('launch').addEventListener('click',function(){
   // re-arm the launcher if a previous shot is still settling
