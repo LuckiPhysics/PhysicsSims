@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy Review R6: Checking Derivations</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- R6 additions ---- */
+  .mini-q { margin-top: 14px; }
+  .mini-q .big-btn { min-height: 52px; }
+  .next-card a { color: var(--accent); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .chip { flex: 1; min-height: 56px; min-width: 88px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-weight: 700; font-size: 18px; padding: 0 12px; }
+  .chip.on { border-color: var(--accent); background: var(--accent-soft); }
+  .chip.seen:not(.on) { border-color: var(--good); }
+  .ctl-label { font-weight: 700; margin: 12px 0 -4px; font-size: 17px; }
+  .wread { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .wread.two { grid-template-columns: 1fr 1fr; }
+  .wread > div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .wread .lab { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .wread .val { font-size: 22px; font-weight: 800; }
+  .wread .hi { border-color: var(--accent); }
+  .eqline { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 8px; font-size: 18px; text-align: center; font-weight: 600; }
+  .key-line { font-size: 16px; color: var(--muted); text-align: center; margin: 4px 0 10px; }
+  .tpts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+  .tpts .chip { min-width: 0; }
+  .xchips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .xchips .chip { min-width: 0; font-family: Georgia, "Times New Roman", serif; font-size: 20px; }
+  .uline { display: none; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 10px; font-size: 18px; }
+  .uline.show { display: block; }
+  .uline .ok { color: var(--good); font-weight: 800; } .uline .no { color: var(--bad); font-weight: 800; }
+  .expr { font-family: Georgia, "Times New Roman", serif; font-size: 26px; text-align: center; margin: 8px 0; font-weight: 700; }
+  .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; }
+  .frac > span:first-child { border-bottom: 2px solid currentColor; padding: 0 4px; }
+  .frac > span:last-child { padding: 0 4px; }
+  .verdict { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .verdict > div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .verdict .lab { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .verdict .val { font-size: 20px; font-weight: 800; }
+  .verdict .why { font-size: 16px; color: var(--muted); }
+  .stamp { text-align: center; font-size: 20px; font-weight: 800; margin-top: 10px; border-radius: 12px; padding: 8px; }
+  .stamp.ok { color: var(--good); background: var(--good-soft); } .stamp.no { color: var(--bad); background: var(--bad-soft); }
+  .dir-row { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; margin: 10px 0; }
+  .dir-row .q { font-weight: 700; margin-bottom: 6px; }
+  .dir-row .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dir-row .btns button { min-height: 52px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); font-weight: 700; font-size: 18px; }
+  .dir-row .btns button.right { border-color: var(--good); background: var(--good-soft); }
+  .dir-row .btns button.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .dir-row .res { display: none; font-size: 16px; margin-top: 8px; }
+  .dir-row .res.show { display: block; }
+  .tmpl { background: var(--bg); border: 1px dashed var(--muted); border-radius: 12px; padding: 12px 14px; font-size: 18px; }
+  .tmpl b { color: var(--accent); }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 3: Work, Energy, and Power</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml6-checking-derivations.html">regular lesson link</a>. · <a href="ml6-checking-derivations-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 3 Review · R6 (optional)</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- STEP 0: Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Checking Derivations</h1>
+      <p class="muted">About 15 minutes · Optional · Works for every unit, not just Energy</p>
+      <p>AP free-response questions often say "derive an expression" and then "is your answer reasonable? Justify." This lesson gives you three quick tests that check a symbolic answer <strong>without redoing the algebra</strong>: units, limiting cases, and direction of change. Then you'll practice writing the justification.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> When you see an orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag, fill in that box on your sheet. The diagrams are already drawn, so you only write the key ideas.
+      </div>
+      <p class="hint">Tap Start when you're ready.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1: Unit check -->
+  <section class="step" data-title="Test 1: Units">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Test 1: Do the units work?</h2>
+      <p>A ball is dropped from rest from a height h. Four students give an answer for its speed at the ground. A speed must come out in <strong>m/s</strong>. Tap each one to check its units (h in m, g in m/s²).</p>
+      <div class="xchips" id="uChips">
+        <button class="chip" data-u="a">√(2gh)</button>
+        <button class="chip" data-u="b">2gh</button>
+        <button class="chip" data-u="c">√(2h/g)</button>
+        <button class="chip" data-u="d">√(gh)</button>
+      </div>
+      <div class="uline" id="uLine"></div>
+      <p class="hint" id="uHint">Check all four. (Next unlocks once you do.)</p>
+      <div class="reveal" id="uMore">
+        <div class="notes-box"><strong>Box A:</strong> Replace each symbol with its units and simplify. Both sides of the equation must match.
+          <br>• Handy units: N = kg·m/s², J = kg·m²/s², k in N/m = kg/s², μ and angles have <strong>no</strong> units.
+          <br>• Wrong units → the answer is <strong>definitely wrong</strong> (2gh, √(2h/g)).
+          <br>• Right units → it <strong>might</strong> be right. √(gh) passes but is missing the 2. Units can't catch missing numbers or unitless factors like μ.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2: Limiting cases -->
+  <section class="step" data-title="Test 2: Limiting cases">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Test 2: Limiting cases</h2>
+      <p>A spring (constant k) is squeezed a distance x and launches a block of mass m across a rough floor (coefficient μ). Two students derive how far it slides before stopping:</p>
+      <div class="chips" id="eChips">
+        <button class="chip on" data-e="ana">Ana: d = kx²/(2μmg)</button>
+        <button class="chip" data-e="ben">Ben: d = μkx²/(2mg)</button>
+      </div>
+      <p style="margin-bottom:4px">Both have units of meters. Pick a variable and push it to an extreme. Does the expression do what the physics says?</p>
+      <div class="chips" id="vChips">
+        <button class="chip on" data-v="k">k</button><button class="chip" data-v="x">x</button><button class="chip" data-v="mu">μ</button><button class="chip" data-v="m">m</button>
+      </div>
+      <div class="chips" id="lChips">
+        <button class="chip on" data-l="0">→ 0</button><button class="chip" data-l="inf">→ ∞</button>
+      </div>
+      <div class="verdict">
+        <div><div class="lab">Physics predicts</div><div class="val" id="bPhys"></div><div class="why" id="bWhy"></div></div>
+        <div><div class="lab" id="bWho">Ana's expression gives</div><div class="val" id="bExpr"></div><div class="why" id="bHow"></div></div>
+      </div>
+      <div class="stamp" id="bStamp"></div>
+      <p class="hint" id="bHint">Try at least 3 different tests, and try μ on both students. (Next unlocks once you do.)</p>
+      <div class="reveal" id="bMore">
+        <div class="notes-box"><strong>Box B:</strong> Limiting case: let one variable → 0 or → ∞. First predict from the <strong>physics</strong> what should happen, then see what the expression does. They must agree.
+          <br>• μ → 0 (no friction): the block should slide forever, d → ∞. Ana's gives ∞ ✓. Ben's gives 0 ✗, so Ben is wrong.
+          <br>• Ben's units are fine (μ has no units), so <strong>only</strong> the limiting case caught his mistake.
+          <br>• Pick limits you can picture: no friction, a huge mass, no spring.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3: Direction of change -->
+  <section class="step" data-title="Test 3: Direction of change">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Test 3: Which way should it change?</h2>
+      <p>The same spring launches a ball of mass m on a <strong>frictionless</strong> floor. Kai derives its launch speed:</p>
+      <div class="expr">v = x√(k/m)</div>
+      <p>For each change, decide from the physics whether the speed should go <strong>up</strong> or <strong>down</strong>. Then see if Kai's expression agrees.</p>
+      <div id="dirRows">
+        <div class="dir-row" data-row="k"><div class="q">A stiffer spring (bigger k)</div><div class="btns"><button data-d="up">Faster ↑</button><button data-d="down">Slower ↓</button></div><div class="res"></div></div>
+        <div class="dir-row" data-row="m"><div class="q">A heavier ball (bigger m)</div><div class="btns"><button data-d="up">Faster ↑</button><button data-d="down">Slower ↓</button></div><div class="res"></div></div>
+        <div class="dir-row" data-row="x"><div class="q">Squeeze the spring farther (bigger x)</div><div class="btns"><button data-d="up">Faster ↑</button><button data-d="down">Slower ↓</button></div><div class="res"></div></div>
+      </div>
+      <p class="hint" id="cHint">Answer all three. (Next unlocks once you do.)</p>
+      <div class="reveal" id="cMore">
+        <div class="notes-box"><strong>Box C:</strong> Direction of change: if a variable goes <strong>up</strong>, should the answer go up or down? A variable in the numerator makes the answer grow; in the denominator, shrink.
+          <br>• Kai's v = x√(k/m) passes all three: bigger k → faster, bigger m → slower, bigger x → faster.
+          <br>• Going further: how <strong>much</strong>? Double x → double v (v ∝ x). Double k → v only grows by √2.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4: Writing the justification -->
+  <section class="step" data-title="Writing the justification">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Writing "reasonable" on an FRQ</h2>
+      <p>A full justification has <strong>two halves</strong>: what the physics says should happen, and what your expression does. Use this frame:</p>
+      <div class="tmpl">"Consider <b>[the limit or change]</b>. Physically, <b>[what should happen]</b> because <b>[reason]</b>. My expression gives <b>[what it does]</b>, so it <b>[is / is not]</b> reasonable."</div>
+      <div class="mini-q">
+        <p><strong>Try it.</strong> Which is the best justification that Ana's d = kx²/(2μmg) is reasonable?</p>
+        <button class="big-btn" data-jq="math">"μ is in the denominator, so as μ → 0, d → ∞."</button>
+        <button class="big-btn" data-jq="phys">"With no friction, the block would never stop."</button>
+        <button class="big-btn" data-jq="full">"With no friction (μ → 0), nothing would stop the block, so d should be infinite. Ana's expression has μ in the denominator, so d → ∞. It agrees, so it's reasonable."</button>
+        <button class="big-btn" data-jq="vague">"It has all the right variables and the units are meters."</button>
+        <div class="feedback" id="jqFb"></div>
+      </div>
+      <div class="notes-box"><strong>Box D:</strong> A "reasonable" justification needs <strong>both</strong>: (1) the physics prediction with a reason, and (2) what the expression does in that case. One limit that agrees is enough unless the question asks for more. One limit that disagrees proves the expression is wrong.</div>
+    </div>
+  </section>
+
+  <!-- STEP 5: Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Worked example: R4's water slide</h2>
+      <p>In R4 you derived the speed at the bottom of a water slide (drop h, length L, friction force f, starting speed v<sub>i</sub>). Is it reasonable?</p>
+      <div class="expr">v<sub>f</sub> = √(v<sub>i</sub>² + 2gh − 2fL/m)</div>
+      <svg viewBox="0 0 600 170" role="img" aria-label="A curved water slide of length L dropping a height h">
+        <line x1="20" y1="160" x2="580" y2="160" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M 90 30 C 250 30 300 155 520 155" fill="none" stroke="var(--cartA)" stroke-width="6" stroke-linecap="round"/>
+        <rect x="60" y="30" width="30" height="130" fill="var(--track)" opacity=".45"/>
+        <circle cx="105" cy="18" r="11" fill="var(--cartB)"/>
+        <line x1="40" y1="32" x2="40" y2="156" stroke="var(--muted)" stroke-width="2"/>
+        <text x="32" y="100" text-anchor="end" font-size="17" font-weight="800" style="fill:var(--muted)">h</text>
+        <text x="300" y="88" font-size="17" font-weight="800" style="fill:var(--cartA)">L (friction f)</text>
+      </svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: Units.</strong> v<sub>i</sub>² and gh are m²/s². fL/m is N·m/kg = (kg·m/s²)(m)/kg = m²/s². Every term under the root matches, and √(m²/s²) = m/s ✓.</div>
+        <div class="reveal step-line"><strong>Step 2: Limiting case f → 0.</strong> With no friction we expect the frictionless answer. The expression becomes √(v<sub>i</sub>² + 2gh), which is exactly what mgh + ½mv<sub>i</sub>² = ½mv<sub>f</sub>² gives ✓.</div>
+        <div class="reveal step-line"><strong>Step 3: Direction, longer slide.</strong> A longer slide means friction acts over more distance, so v<sub>f</sub> should go <strong>down</strong>. L is in a subtracted term, so bigger L → smaller v<sub>f</sub> ✓.</div>
+        <div class="reveal step-line"><strong>Step 4: Limiting case m → ∞.</strong> With the same friction force, a very heavy rider should barely be slowed. The fL/m term → 0, leaving the frictionless answer ✓.</div>
+        <div class="reveal step-line"><strong>Step 5: Write it up.</strong>
+          <div class="tmpl" style="margin-top:8px">"Consider f → 0. Physically, with no friction the rider should reach the frictionless speed, √(v<sub>i</sub>² + 2gh), because all of U<sub>g</sub> becomes K. My expression gives √(v<sub>i</sub>² + 2gh) when f = 0, so it is reasonable."</div>
+          <div class="notes-box"><strong>Box E:</strong> Units: every term is m²/s² ✓. f → 0 gives √(v<sub>i</sub>² + 2gh) ✓. Bigger L → smaller v<sub>f</sub> ✓. m → ∞ → frictionless answer ✓. Going further: if 2fL/m is bigger than v<sub>i</sub>² + 2gh, the root has no answer: the rider stops before the bottom.</div></div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- STEP 6: Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 1 of 3</h2>
+      <p>A spring (k, squeezed x) fires a dart of mass m into a foam block of mass M resting on a rough floor (coefficient μ). The dart sticks, and the two slide a distance s. Devin's answer:</p>
+      <div class="expr">s = <span class="frac"><span>kmx²</span><span>2(m + M)²μg</span></span></div>
+      <svg viewBox="0 0 600 120" role="img" aria-label="A spring fires a dart into a foam block on a rough floor; together they slide a distance s">
+        <line x1="10" y1="100" x2="590" y2="100" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="14" y="56" width="10" height="44" fill="var(--track)"/>
+        <polyline points="24,78 32,78 38,68 46,88 54,68 62,88 70,68 76,78 82,78" fill="none" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="84" y="72" width="26" height="12" rx="3" fill="var(--cartB)"/>
+        <text x="97" y="64" text-anchor="middle" font-size="15" font-weight="800">m</text>
+        <rect x="250" y="56" width="70" height="44" rx="6" fill="var(--note)" opacity=".55"/>
+        <text x="285" y="84" text-anchor="middle" font-size="16" font-weight="800">M</text>
+        <rect x="430" y="56" width="70" height="44" rx="6" fill="none" stroke="var(--note)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <line x1="285" y1="36" x2="465" y2="36" stroke="var(--muted)" stroke-width="2"/><polygon points="458,30 470,36 458,42" fill="var(--muted)"/>
+        <text x="375" y="28" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--muted)">s</text>
+        <text x="375" y="118" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--bad)">rough floor, μ</text>
+      </svg>
+      <p>Test μ → 0 (a very slippery floor). What should happen, and what does Devin's expression do?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="pass">Should: s → ∞. Expression: s → ∞. It passes.</button>
+        <button class="big-btn" data-opt="zero">Should: s → 0. Expression: s → 0. It passes.</button>
+        <button class="big-btn" data-opt="failA">Should: s → ∞. Expression: s → 0. It fails.</button>
+        <button class="big-btn" data-opt="failB">Should: s → 0. Expression: s → ∞. It fails.</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 7: Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 2 of 3</h2>
+      <p>Same dart and foam block. Kim got a different answer, with m and M swapped on top:</p>
+      <div class="expr">s = <span class="frac"><span>kMx²</span><span>2(m + M)²μg</span></span></div>
+      <p>Which test shows that Kim's answer is wrong?</p>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="Minf">M → ∞ (a huge foam block)</button>
+        <button class="big-btn" data-opt="mu0">μ → 0 (no friction)</button>
+        <button class="big-btn" data-opt="m0">m → 0 (a dart with almost no mass)</button>
+        <button class="big-btn" data-opt="units">A unit check</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 8: Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 3 of 3</h2>
+      <p>A spring (constant k, squeezed x) launches a ball of mass m across a frictionless floor. Which expression for the ball's speed has the right units?</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="nosq">kx²/m</button>
+        <button class="big-btn" data-opt="ok">√(kx²/m)</button>
+        <button class="big-btn" data-opt="x1">√(kx/m)</button>
+        <button class="big-btn" data-opt="flip">√(mx²/k)</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 9: Wrap-up -->
+  <section class="step" data-title="Wrap-up">
+    <div class="card">
+      <h2>Before you go</h2>
+      <p>Check that Boxes A–F on your notes sheet are filled in, then write the big idea at the bottom in your own words.</p>
+      <ul>
+        <li><strong>Units:</strong> wrong units → definitely wrong. Right units → maybe right.</li>
+        <li><strong>Limiting cases:</strong> push one variable → 0 or → ∞, predict from physics, compare.</li>
+        <li><strong>Direction:</strong> if a variable goes up, should the answer go up or down?</li>
+        <li><strong>Write both halves:</strong> what physics predicts (and why) + what the expression does.</li>
+      </ul>
+      <p>These tests work in every unit. Come back to this lesson whenever an FRQ asks if an answer is reasonable.</p>
+    </div>
+    <div class="card next-card">
+      <p style="margin:0"><strong>Next:</strong> the Mixed Energy Practice page. Find it on the <a href="index.html">Unit 3 review page</a>.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // ---------- Theme (auto / light / dark) ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Step navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var state = { units: {}, uOk: false, tests: {}, muSeen: {}, bOk: false, dirs: {}, cOk: false, q1: null, q2: null, q3: null, tries: { q1: 0, q2: 0, q3: 0 } };
+
+  function canAdvance() {
+    if (cur === 1) return state.uOk;
+    if (cur === 2) return state.bOk;
+    if (cur === 3) return state.cOk;
+    var q = steps[cur].getAttribute('data-q');
+    if (q) return !!state[q + 'Done'];
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'Finish' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+
+  function $(id) { return document.getElementById(id); }
+  function fb(id, ok, html) {
+    var el = $(id);
+    el.className = 'feedback show ' + (ok ? 'good' : 'bad');
+    el.innerHTML = html;
+  }
+  function practice(attr, Q, fbId) {
+    document.querySelectorAll('[' + attr + ']').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var o = b.getAttribute(attr), ok = o === Q.ans;
+        document.querySelectorAll('[' + attr + ']').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        fb(fbId, ok, ok ? Q.good : '<strong>Not quite.</strong> ' + Q.bad[o]);
+      });
+    });
+  }
+
+  // ---------- Step 1: unit check ----------
+  var UN = {
+    a: { ok: true, html: '√(2gh) → √((m/s²)(m)) = √(m²/s²) = <strong>m/s</strong> <span class="ok">✓ right units</span>. (This one is the correct answer.)' },
+    b: { ok: false, html: '2gh → (m/s²)(m) = <strong>m²/s²</strong> <span class="no">✗ not a speed</span>. That\'s a speed <em>squared</em>: the square root is missing.' },
+    c: { ok: false, html: '√(2h/g) → √(m ÷ m/s²) = √(s²) = <strong>s</strong> <span class="no">✗ that\'s a time</span>. (It\'s actually the fall time.)' },
+    d: { ok: true, html: '√(gh) → √(m²/s²) = <strong>m/s</strong> <span class="ok">✓ right units</span>… but it\'s missing the 2. Units can\'t catch a missing number.' }
+  };
+  document.querySelectorAll('[data-u]').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var u = c.getAttribute('data-u'); state.units[u] = true; c.classList.add('seen');
+      document.querySelectorAll('[data-u]').forEach(function (x) { x.classList.toggle('on', x === c); });
+      $('uLine').innerHTML = UN[u].html; $('uLine').classList.add('show');
+      if (Object.keys(state.units).length === 4 && !state.uOk) {
+        state.uOk = true; $('uMore').classList.add('show'); $('uHint').style.display = 'none';
+        nextBtn.disabled = !canAdvance();
+      }
+    });
+  });
+
+  // ---------- Step 2: limiting cases ----------
+  var PHYS = {
+    k0: ['d → 0', 'A spring with no stiffness stores no energy.'],
+    kinf: ['d → ∞', 'An infinitely stiff spring stores unlimited energy.'],
+    x0: ['d → 0', 'An unsqueezed spring stores no energy.'],
+    xinf: ['d → ∞', 'Unlimited squeeze, unlimited energy.'],
+    mu0: ['d → ∞', 'No friction: nothing stops the block.'],
+    muinf: ['d → 0', 'Huge friction stops it right away.'],
+    m0: ['d → ∞', 'Friction (μmg) → 0, but the block still gets ½kx² of K.'],
+    minf: ['d → 0', 'Friction (μmg) is huge, so the same energy is used up almost at once.']
+  };
+  var POS = { ana: { k: 'top', x: 'top', mu: 'bottom', m: 'bottom' }, ben: { k: 'top', x: 'top', mu: 'top', m: 'bottom' } };
+  var B = { e: 'ana', v: 'k', l: '0' };
+  var VN = { k: 'k', x: 'x', mu: 'μ', m: 'm' };
+  function drawB() {
+    var key = B.v + B.l, ph = PHYS[key], pos = POS[B.e][B.v];
+    var res = (pos === 'top') === (B.l === '0') ? 'd → 0' : 'd → ∞';
+    var ok = res === ph[0];
+    $('bPhys').textContent = ph[0]; $('bWhy').textContent = ph[1];
+    $('bWho').textContent = (B.e === 'ana' ? 'Ana' : 'Ben') + '\'s expression gives';
+    $('bExpr').textContent = res;
+    $('bHow').textContent = VN[B.v] + ' is on the ' + pos + (B.v === 'x' ? ' (squared)' : '') + ', so as ' + VN[B.v] + (B.l === '0' ? ' → 0' : ' → ∞') + ', d ' + (res === 'd → 0' ? 'shrinks to 0.' : 'grows without limit.');
+    $('bStamp').className = 'stamp ' + (ok ? 'ok' : 'no');
+    $('bStamp').textContent = ok ? '✓ Agrees: this test passes' : '✗ Disagrees: the expression is wrong';
+    [['eChips', 'e'], ['vChips', 'v'], ['lChips', 'l']].forEach(function (pr) {
+      document.querySelectorAll('#' + pr[0] + ' .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-' + pr[1]) === B[pr[1]]); });
+    });
+  }
+  function noteB() {
+    state.tests[B.e + B.v + B.l] = true;
+    if (B.v === 'mu') state.muSeen[B.e] = true;
+    if (Object.keys(state.tests).length >= 3 && state.muSeen.ana && state.muSeen.ben && !state.bOk) {
+      state.bOk = true; $('bMore').classList.add('show'); $('bHint').style.display = 'none';
+      nextBtn.disabled = !canAdvance();
+    }
+  }
+  [['eChips', 'e'], ['vChips', 'v'], ['lChips', 'l']].forEach(function (pr) {
+    document.querySelectorAll('#' + pr[0] + ' .chip').forEach(function (c) {
+      c.addEventListener('click', function () { B[pr[1]] = c.getAttribute('data-' + pr[1]); drawB(); noteB(); });
+    });
+  });
+  drawB();
+
+  // ---------- Step 3: direction of change ----------
+  var DIR = {
+    k: { ans: 'up', res: 'A stiffer spring stores more energy at the same x, so the ball should go faster. In x√(k/m), k is on top → v goes up ✓.' },
+    m: { ans: 'down', res: 'The same energy has to move more mass, so the ball should go slower. m is under the root on the bottom → v goes down ✓.' },
+    x: { ans: 'up', res: 'More squeeze stores more energy (½kx²), so it should go faster. x is on top → v goes up ✓.' }
+  };
+  document.querySelectorAll('.dir-row').forEach(function (row) {
+    var r = row.getAttribute('data-row');
+    row.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var ok = b.getAttribute('data-d') === DIR[r].ans;
+        row.querySelectorAll('button').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        var res = row.querySelector('.res'); res.classList.add('show');
+        res.innerHTML = (ok ? '<strong>Yes.</strong> ' : '<strong>Think again.</strong> ') + (ok ? DIR[r].res : 'Picture it: does that make the launch more or less energetic, or the ball easier or harder to speed up?');
+        if (ok) state.dirs[r] = true;
+        if (Object.keys(state.dirs).length === 3 && !state.cOk) {
+          state.cOk = true; $('cMore').classList.add('show'); $('cHint').style.display = 'none';
+          nextBtn.disabled = !canAdvance();
+        }
+      });
+    });
+  });
+
+  // ---------- Step 4: justification practice ----------
+  var JQ = { ans: 'full',
+    good: '<strong>Yes.</strong> It names the case, says what physics predicts and why, says what the expression does, and draws the conclusion. Both halves are there.',
+    bad: { math: 'This has only the math half. It never says what <strong>should</strong> happen physically, so there\'s nothing to compare against.',
+           phys: 'This has only the physics half. It never says what Ana\'s <strong>expression</strong> does when μ → 0.',
+           vague: 'Units are a good first check, but right units don\'t prove it\'s right (Ben\'s units were fine too). Use a limiting case and write both halves.' } };
+  practice('data-jq', JQ, 'jqFb');
+
+  // ---------- Step 5: worked example ----------
+  var wxParts = document.querySelectorAll('#wxSteps .reveal'), wxI = 0, wxBtn = $('wxNext');
+  wxBtn.addEventListener('click', function () {
+    if (wxI < wxParts.length) { wxParts[wxI].classList.add('show'); wxI++; }
+    if (wxI >= wxParts.length) { wxBtn.style.display = 'none'; }
+  });
+
+  // ---------- Check questions (3 tries, then move on) ----------
+  function record(q, correct) {
+    state.tries[q]++;
+    if (state[q] === null) state[q] = correct;
+    if (correct) state[q + 'Done'] = true;
+    if (!correct && state.tries[q] >= 3) state[q + 'Done'] = true;
+    nextBtn.disabled = !canAdvance();
+  }
+  var key = {
+    q1: { ans: 'pass', good: '<strong>Correct.</strong> With no friction, nothing stops the dart and block once they\'re moving, so s should be infinite. μ is in the denominator, so as μ → 0, s → ∞. It agrees.',
+          bad: { zero: 'Think about the physics first: on a frictionless floor, what would ever stop the block? And μ is in the <strong>denominator</strong>.',
+                 failA: 'Look again at where μ is: it\'s in the <strong>denominator</strong>. Dividing by something tiny makes s huge.',
+                 failB: 'The expression part is right (s → ∞), but the physics prediction is backward: with no friction, nothing stops the block.' },
+          show: 'Should: s → ∞. Expression: s → ∞. It passes.' },
+    q2: { ans: 'm0', good: '<strong>Correct.</strong> A dart with almost no mass carries almost no momentum, so it can\'t get the block moving: s should → 0. But Kim\'s expression gives kMx²/(2M²μg) = kx²/(2Mμg), which isn\'t 0. One failed test proves it\'s wrong. (Devin\'s, with m on top, gives 0 ✓.)',
+          bad: { Minf: 'Try it: Kim\'s top grows like M, but the bottom grows like M², so s → 0. That\'s what should happen with a huge block, so this test <strong>passes</strong>. Look for one that fails.',
+                 mu0: 'μ is still in the denominator, so s → ∞, which is right for no friction. This test <strong>passes</strong>.',
+                 units: 'Kim only swapped two masses, so her units are the same as Devin\'s (meters). Units can\'t catch it. Try pushing one of the masses to an extreme.' },
+          show: 'm → 0' },
+    q3: { ans: 'ok', good: '<strong>Correct.</strong> k is N/m = kg/s². kx²/m → (kg/s²)(m²)/kg = m²/s², and its square root is m/s ✓. It also matches ½kx² = ½mv².',
+          bad: { nosq: 'kx²/m has units of m²/s², a speed <strong>squared</strong>. The square root is missing.',
+                 x1: 'kx/m → (kg/s²)(m)/kg = m/s², so √ gives √(m)/s. The x needs to be squared (from ½kx²).',
+                 flip: 'mx²/k → kg·m² ÷ (kg/s²) = m²·s², so √ gives m·s. That\'s upside down: k should be on top, m on the bottom.' },
+          show: '√(kx²/m)' }
+  };
+  function more(q) { return state[q + 'Done'] ? '<br>The answer is <strong>' + key[q].show + '</strong> (shown in green). Tap Next to move on.' : ''; }
+  document.querySelectorAll('[data-mc]').forEach(function (group) {
+    var q = group.getAttribute('data-mc');
+    group.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q + 'Done'] && group.querySelector('.right')) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === key[q].ans;
+        group.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        if (!ok && state[q + 'Done']) group.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+        fb(q + 'Fb', ok, ok ? key[q].good : '<strong>Not quite.</strong> ' + key[q].bad[opt] + more(q));
+      });
+    });
+  });
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var l = document.createElement('div'); l.className = 'part-label';
+      l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(l, s.firstChild);
+    });
+    function note(afterId, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      var a = $(afterId); a.parentNode.insertBefore(n, a.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    // Part 2
+    $('uHint').style.display = 'none';
+    $('uLine').classList.add('show');
+    $('uLine').innerHTML = ['a', 'b', 'c', 'd'].map(function (u) { return UN[u].html; }).join('<br><br>');
+    note('uLine', 'Students tap all four chips (each shows its own unit line, all four shown here) before Next unlocks; Box A appears then.');
+    // Part 3
+    B.e = 'ben'; B.v = 'mu'; B.l = '0'; drawB(); $('bHint').style.display = 'none';
+    note('bStamp', 'Shown: Ben, μ → 0 (fails). Students must try at least 3 different tests, including μ on both Ana and Ben, before Next unlocks. Ana passes every test. Ben passes the k, x and m tests and fails both μ tests, with correct units, so only a limiting case catches him.');
+    // Part 4
+    document.querySelectorAll('.dir-row').forEach(function (row) {
+      var r = row.getAttribute('data-row');
+      row.querySelector('[data-d="' + DIR[r].ans + '"]').classList.add('right');
+      var res = row.querySelector('.res'); res.classList.add('show'); res.innerHTML = '<strong>Yes.</strong> ' + DIR[r].res;
+    });
+    $('cHint').style.display = 'none';
+    note('dirRows', 'Each row must be answered correctly before Next unlocks. A wrong pick shows a nudge ("Picture it…") and the student tries again.');
+    // Part 5
+    document.querySelector('[data-jq="full"]').classList.add('right');
+    fb('jqFb', true, JQ.good);
+    note('jqFb', '<strong>Wrong-pick feedback</strong> (practice, not gated):' + list(Object.keys(JQ.bad).map(function (o) {
+      return document.querySelector('[data-jq="' + o + '"]').textContent + ': ' + JQ.bad[o];
+    })));
+    // Checks
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+      fb(q + 'Fb', true, key[q].good);
+      var items = Object.keys(key[q].bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + key[q].bad[o];
+      });
+      note(q + 'Fb', '<strong>Feedback for wrong choices</strong> (up to 3 tries, then the answer is shown):' + list(items));
+    });
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
