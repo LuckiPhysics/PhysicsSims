@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy Review R4: Conservation with Friction</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- R4 additions ---- */
+  .mini-q { margin-top: 14px; }
+  .mini-q .big-btn { min-height: 52px; }
+  .next-card a { color: var(--accent); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .chip { flex: 1; min-height: 56px; min-width: 88px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-weight: 700; font-size: 18px; padding: 0 12px; }
+  .chip.on { border-color: var(--accent); background: var(--accent-soft); }
+  .chip.seen:not(.on) { border-color: var(--good); }
+  .wread { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .wread > div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .wread .lab { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .wread .val { font-size: 22px; font-weight: 800; }
+  .wread .val.neg { color: var(--bad); }
+  .chartbox { margin: 10px 0; }
+  .eqline { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 8px; font-size: 18px; text-align: center; font-weight: 600; }
+  .key-line { font-size: 16px; color: var(--muted); text-align: center; margin: 4px 0 10px; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 3: Work, Energy, and Power</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml4-conservation.html">regular lesson link</a>. · <a href="ml4-conservation-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 3 Review · R4</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- STEP 0: Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Conservation with Friction</h1>
+      <p class="muted">About 15 minutes · Review for the Energy reassessment</p>
+      <p>R1–R3 gave you the energy forms and the work that moves energy in or out. This lesson puts them together: which forces can store energy, how friction takes energy <strong>out</strong> of a system, and how to solve a problem with several stages.</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> When you see an orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag, fill in that box on your sheet. The diagrams are already drawn, so you only write the key ideas.
+      </div>
+      <p class="hint">Tap Start when you're ready.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1: Conservative vs nonconservative -->
+  <section class="step" data-title="Conservative forces">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Does the path matter?</h2>
+      <p>A <strong>2.0 kg</strong> box is moved from point 1 down to point 2, which is <strong>3.0 m lower</strong>. Friction on it is <strong>4.0 N</strong> along whatever path it takes. Tap a path and compare the work done by gravity and by friction.</p>
+      <svg viewBox="0 0 600 260" role="img" aria-label="Two paths from point 1 down to point 2: a straight ramp and a longer curvy path">
+        <line x1="10" y1="240" x2="590" y2="240" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="40" y="60" width="90" height="180" fill="var(--track)" opacity=".45"/>
+        <line x1="22" y1="62" x2="22" y2="238" stroke="var(--muted)" stroke-width="2"/>
+        <polygon points="16,72 22,60 28,72" fill="var(--muted)"/><polygon points="16,228 22,240 28,228" fill="var(--muted)"/>
+        <text x="30" y="155" font-size="15" font-weight="700" style="fill:var(--muted)">3.0 m</text>
+        <path id="pathC" d="M 130 60 Q 330 60 250 140 Q 170 220 370 240" fill="none" stroke-width="5" stroke-linecap="round"/>
+        <path id="pathS" d="M 130 60 L 370 240" fill="none" stroke-width="5" stroke-linecap="round"/>
+        <text id="lblS" x="150" y="128" font-size="16" font-weight="800">5.0 m</text>
+        <text id="lblC" x="300" y="92" font-size="16" font-weight="800">7.5 m</text>
+        <rect x="100" y="38" width="30" height="22" rx="4" fill="var(--card)" stroke="var(--cartA)" stroke-width="3"/>
+        <rect x="372" y="218" width="30" height="22" rx="4" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <text x="115" y="30" text-anchor="middle" font-size="17" font-weight="800">1</text>
+        <text x="387" y="210" text-anchor="middle" font-size="17" font-weight="800">2</text>
+        <text id="backLbl" x="420" y="236" font-size="15" font-weight="700" style="fill:var(--accent)">…and back to 1</text>
+      </svg>
+      <div class="chips" id="pathChips">
+        <button class="chip on" data-path="S">Straight ramp</button>
+        <button class="chip" data-path="C">Curvy path</button>
+      </div>
+      <div class="chips"><button class="chip" id="roundBtn">Add the trip back to 1</button></div>
+      <div class="wread">
+        <div><div class="lab">Distance traveled</div><div class="val" id="aDist"></div></div>
+        <div><div class="lab">Work by gravity</div><div class="val" id="aWg"></div></div>
+        <div><div class="lab">Work by friction</div><div class="val neg" id="aWf"></div></div>
+      </div>
+      <p class="hint" id="aHint">Try both paths. (Next unlocks once you do.)</p>
+      <div class="reveal" id="aMore">
+        <div class="notes-box"><strong>Box A:</strong> A <strong>conservative</strong> force (gravity, a spring) does work that depends only on the <strong>start and end points</strong>, not the path. Around a closed path (back to the start) its work is <strong>zero</strong>. That's why it has a stored energy, U.
+          <br>A <strong>nonconservative</strong> force (friction, air resistance) does work that depends on the <strong>path</strong>: a longer path means more negative work, and a round trip doesn't cancel. It has <strong>no</strong> U.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2: Delta E = W_ext -->
+  <section class="step" data-title="ΔE = W with friction">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Friction takes energy out of the system</h2>
+      <p>Now the box <strong>slides from rest</strong> at point 1 down to point 2. Choose the <strong>box + Earth</strong> as the system. Friction comes from the surface, which is <strong>outside</strong> the system, so it does external work:</p>
+      <div class="eq" style="font-size:28px">K<sub>i</sub> + U<sub>i</sub> + W<sub>ext</sub> = K<sub>f</sub> + U<sub>f</sub></div>
+      <p class="key-line">with W<sub>friction</sub> = −fd, where d is the distance traveled along the path</p>
+      <div class="chips" id="bChips">
+        <button class="chip on" data-bpath="S">Straight ramp (5.0 m)</button>
+        <button class="chip" data-bpath="C">Curvy path (7.5 m)</button>
+      </div>
+      <div class="chartbox" id="bChart"></div>
+      <div class="eqline" id="bEq"></div>
+      <div class="mini-q">
+        <p><strong>Try it.</strong> Without looking at the chart: on the <strong>curvy</strong> path, what is the box's K at point 2?</p>
+        <button class="big-btn" data-bq="58">58.8 J</button>
+        <button class="big-btn" data-bq="28">28.8 J</button>
+        <button class="big-btn" data-bq="88">88.8 J</button>
+        <div class="feedback" id="bqFb"></div>
+      </div>
+      <div class="notes-box"><strong>Box B:</strong> ΔE<sub>sys</sub> = W<sub>ext</sub>, or K<sub>i</sub> + U<sub>i</sub> + W<sub>ext</sub> = K<sub>f</sub> + U<sub>f</sub>.
+        <br>• Friction from outside the system does W = <strong>−fd</strong>, with d the <strong>path length</strong>. It takes energy <strong>out</strong>.
+        <br>• Straight ramp: 58.8 J − 20 J = <strong>38.8 J</strong> of K. Curvy path: 58.8 J − 30 J = <strong>28.8 J</strong>.
+        <br>• No external work (W<sub>ext</sub> = 0)? Then K + U stays constant.</div>
+    </div>
+  </section>
+
+  <!-- STEP 3: Multi-stage -->
+  <section class="step" data-title="Multi-stage problems">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Label the stages a, b, c</h2>
+      <p>A <strong>0.50 kg</strong> block is pushed against a spring (k = 400 N/m), squeezing it <strong>0.20 m</strong>, and let go. The level track is frictionless. Then the block slides up a rough ramp (friction <strong>1.5 N</strong> over <strong>1.4 m</strong>) to a top <strong>1.0 m</strong> higher.</p>
+      <svg viewBox="0 0 600 200" role="img" aria-label="Spring launcher on a level track, then a rough ramp up to a higher level; locations a, b and c are marked">
+        <rect x="10" y="80" width="12" height="90" fill="var(--track)"/>
+        <line x1="10" y1="170" x2="330" y2="170" stroke="var(--ink)" stroke-width="3"/>
+        <polygon points="330,170 480,110 590,110 590,170" fill="var(--track)" opacity=".35"/>
+        <line x1="330" y1="170" x2="480" y2="110" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="480" y1="110" x2="590" y2="110" stroke="var(--ink)" stroke-width="3"/>
+        <g stroke="var(--bad)" stroke-width="2"><line x1="350" y1="168" x2="344" y2="176"/><line x1="380" y1="156" x2="374" y2="164"/><line x1="410" y1="144" x2="404" y2="152"/><line x1="440" y1="132" x2="434" y2="140"/><line x1="470" y1="120" x2="464" y2="128"/></g>
+        <polyline points="22,150 32,150 40,138 50,162 60,138 70,162 80,138 90,162 98,150 100,150" fill="none" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="100" y="136" width="40" height="34" rx="5" fill="var(--cartA)"/>
+        <rect x="190" y="136" width="40" height="34" rx="5" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <rect x="510" y="76" width="40" height="34" rx="5" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <text x="120" y="126" text-anchor="middle" font-size="20" font-weight="800">a</text>
+        <text x="210" y="126" text-anchor="middle" font-size="20" font-weight="800">b</text>
+        <text x="530" y="66" text-anchor="middle" font-size="20" font-weight="800">c</text>
+        <line x1="575" y1="112" x2="575" y2="168" stroke="var(--muted)" stroke-width="2"/>
+        <text x="570" y="146" text-anchor="end" font-size="14" font-weight="700" style="fill:var(--muted)">1.0 m</text>
+        <text x="392" y="196" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--bad)">rough: f = 1.5 N, 1.4 m</text>
+      </svg>
+      <p class="key-line"><strong>a</strong> spring squeezed · <strong>b</strong> block leaves the spring · <strong>c</strong> top of the ramp</p>
+      <p>Tap each stage to see its bar chart.</p>
+      <div class="chips" id="cChips">
+        <button class="chip" data-stage="ab">a → b</button>
+        <button class="chip" data-stage="bc">b → c</button>
+        <button class="chip" data-stage="ac">a → c</button>
+      </div>
+      <div class="chartbox" id="cChart"></div>
+      <div class="eqline" id="cEq">Tap a stage above.</div>
+      <p class="hint" id="cHint">Look at all three stages. (Next unlocks once you do.)</p>
+      <div class="reveal" id="cMore">
+        <div class="notes-box"><strong>Box C:</strong> For a problem with stages, <strong>label the moments</strong> (a, b, c) on the diagram and list the energy at each one.
+          <br>• a: U<sub>s</sub> = ½(400)(0.20)² = 8.0 J. &nbsp; b: K = 8.0 J (no friction yet).
+          <br>• b → c: 8.0 J − (1.5 N)(1.4 m) = U<sub>g</sub> + K → 8.0 − 2.1 = 4.9 + K, so K<sub>c</sub> = 1.0 J and v<sub>c</sub> = 2.0 m/s.
+          <br>• You can skip b and go straight from a to c. Count friction <strong>only where it acts</strong>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4: Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Worked example</h2>
+      <p>A rider of mass m starts down a water slide at speed v<sub>i</sub>. The bottom is a height h lower, and the slide is L long. The water and slide exert an average friction force f. Find the rider's speed v<sub>f</sub> at the bottom <strong>in terms of these variables</strong>.</p>
+      <svg viewBox="0 0 600 200" role="img" aria-label="A curved water slide of length L dropping a height h">
+        <line x1="20" y1="180" x2="580" y2="180" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M 90 40 C 250 40 300 175 520 175" fill="none" stroke="var(--cartA)" stroke-width="6" stroke-linecap="round"/>
+        <rect x="60" y="40" width="30" height="140" fill="var(--track)" opacity=".45"/>
+        <circle cx="105" cy="28" r="11" fill="var(--cartB)"/>
+        <line x1="122" y1="22" x2="160" y2="22" stroke="var(--ink)" stroke-width="2.5"/><polygon points="158,16 170,22 158,28" fill="var(--ink)"/>
+        <text x="176" y="27" font-size="16" font-weight="700">v<tspan font-size="12" dy="4">i</tspan></text>
+        <circle cx="520" cy="161" r="11" fill="none" stroke="var(--cartB)" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <line x1="537" y1="148" x2="572" y2="148" stroke="var(--ink)" stroke-width="2.5"/><polygon points="566,142 578,148 566,154" fill="var(--ink)"/>
+        <text x="540" y="138" font-size="16" font-weight="700">v<tspan font-size="12" dy="4">f</tspan></text>
+        <line x1="40" y1="42" x2="40" y2="176" stroke="var(--muted)" stroke-width="2"/>
+        <text x="32" y="115" text-anchor="end" font-size="17" font-weight="800" style="fill:var(--muted)">h</text>
+        <text x="300" y="100" font-size="17" font-weight="800" style="fill:var(--cartA)">L (friction f)</text>
+      </svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: System and stages.</strong> System = rider + Earth. Start = top, end = bottom (h = 0 there). Friction is external and acts along the whole length L, so W<sub>ext</sub> = −fL.</div>
+        <div class="reveal step-line"><strong>Step 2: Energy equation.</strong>
+          <div class="eq" style="font-size:24px">½mv<sub>i</sub>² + mgh − fL = ½mv<sub>f</sub>²</div></div>
+        <div class="reveal step-line"><strong>Step 3: Solve for v<sub>f</sub>.</strong> Multiply every term by 2/m:
+          <div class="eq" style="font-size:24px">v<sub>f</sub>² = v<sub>i</sub>² + 2gh − 2fL/m</div>
+          <div class="eq" style="font-size:24px">v<sub>f</sub> = √(v<sub>i</sub>² + 2gh − 2fL/m)</div></div>
+        <div class="reveal step-line"><strong>Step 4: Does it make sense?</strong> If f = 0, it becomes √(v<sub>i</sub>² + 2gh), the frictionless answer. Friction is subtracted, so it makes v<sub>f</sub> smaller. (R6 checks results like this in more depth.)</div>
+        <div class="reveal step-line"><strong>Step 5: Plug in.</strong> m = 60 kg, v<sub>i</sub> = 1.0 m/s, h = 8.0 m, L = 20 m, f = 90 N:
+          <div class="eq" style="font-size:24px">v<sub>f</sub> = √(1.0 + 2·9.8·8.0 − 2·90·20/60) = √97.8 = 9.89 m/s</div>
+          <div class="notes-box"><strong>Box D:</strong> ½mv<sub>i</sub>² + mgh − fL = ½mv<sub>f</sub>², so v<sub>f</sub> = √(v<sub>i</sub>² + 2gh − 2fL/m). With f = 0 it's the frictionless answer. Numbers: v<sub>f</sub> = 9.89 m/s.</div></div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- STEP 5: Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 1 of 3</h2>
+      <p>A <strong>12,000 kg</strong> truck moving at <strong>15 m/s</strong> runs out of fuel on a level road and coasts to a stop. The total resisting force (friction and air) is a steady <strong>9,000 N</strong>. How far does it coast?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="20">20 m</button>
+        <button class="big-btn" data-opt="75">75 m</button>
+        <button class="big-btn" data-opt="150">150 m</button>
+        <button class="big-btn" data-opt="300">300 m</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 6: Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 2 of 3</h2>
+      <p>A <strong>30 kg</strong> kid goes down a steep, straight slide. A <strong>60 kg</strong> adult goes down a long, curvy slide. Both slides are frictionless, and both start from rest at the <strong>same height</strong>. At the bottom…</p>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="adult">the adult is faster, because more mass means more U<sub>g</sub>.</button>
+        <button class="big-btn" data-opt="kid">the kid is faster, because the steep slide is more direct.</button>
+        <button class="big-btn" data-opt="same">they have the same speed.</button>
+        <button class="big-btn" data-opt="curvy">the adult is faster, because the curvy slide is longer.</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 7: Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Check 3 of 3</h2>
+      <p>The bowling-ball pendulum from the binder: the ball hangs on a <strong>1.10 m</strong> rope from a ceiling <strong>4.0 m</strong> high, so its lowest point B is 2.9 m above the ground. It is pushed at point A (<strong>3.2 m</strong> up) and swings through B up to its highest point C (<strong>3.6 m</strong> up). Ignore air resistance. How fast is it moving at B?</p>
+      <svg viewBox="0 0 600 240" role="img" aria-label="A bowling ball on a rope swinging from point A through the lowest point B up to point C">
+        <line x1="150" y1="16" x2="450" y2="16" stroke="var(--ink)" stroke-width="4"/>
+        <circle cx="300" cy="16" r="4" fill="var(--ink)"/>
+        <line x1="300" y1="16" x2="300" y2="176" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>
+        <line x1="300" y1="16" x2="186" y2="132" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>
+        <line x1="300" y1="16" x2="439" y2="73" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>
+        <path d="M 186 132 Q 300 230 439 73" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="2 4"/>
+        <circle cx="186" cy="132" r="15" fill="var(--cartA)"/><circle cx="300" cy="176" r="15" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="439" cy="73" r="15" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <text x="160" y="138" text-anchor="end" font-size="16" font-weight="800">A · 3.2 m</text>
+        <text x="300" y="214" text-anchor="middle" font-size="16" font-weight="800">B · 2.9 m <tspan font-weight="700" style="fill:var(--muted)">(lowest)</tspan></text>
+        <text x="462" y="72" font-size="16" font-weight="800">C · 3.6 m</text><text x="462" y="92" font-size="15" font-weight="700" style="fill:var(--muted)">(highest)</text>
+        <line x1="212" y1="140" x2="240" y2="152" stroke="var(--ink)" stroke-width="2.5"/><polygon points="236,145 250,156 234,158" fill="var(--ink)"/>
+        <text x="226" y="128" font-size="14" style="fill:var(--muted)">push</text>
+      </svg>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="2.42">2.42 m/s</button>
+        <button class="big-btn" data-opt="2.80">2.80 m/s</button>
+        <button class="big-btn" data-opt="3.70">3.70 m/s</button>
+        <button class="big-btn" data-opt="5.22">5.22 m/s</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 8: Wrap-up -->
+  <section class="step" data-title="Wrap-up">
+    <div class="card">
+      <h2>Before you go</h2>
+      <p>Check that Boxes A–E on your notes sheet are filled in, then write the big idea at the bottom in your own words.</p>
+      <ul>
+        <li><strong>Conservative</strong> forces (gravity, springs): work depends only on start and end, so they have a U. <strong>Friction</strong> depends on the path.</li>
+        <li><strong>K<sub>i</sub> + U<sub>i</sub> + W<sub>ext</sub> = K<sub>f</sub> + U<sub>f</sub></strong>, with friction from outside the system as W = −fd.</li>
+        <li><strong>Multi-stage:</strong> label a, b, c, write the energy at each, and count friction only where it acts.</li>
+      </ul>
+    </div>
+    <div class="card next-card">
+      <p style="margin:0"><strong>Next:</strong> R5, Power and Efficiency. Find it on the <a href="index.html">Unit 3 review page</a>.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // ---------- Theme (auto / light / dark) ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Energy bar chart (inline SVG, from R1) ----------
+  var FORMS = ['K', 'Ug', 'Us', 'Eth'];
+  var LAB = { K: ['K', ''], Ug: ['U', 'g'], Us: ['U', 's'], Eth: ['E', 'th'] };
+  var NAMES = { K: 'K', Ug: 'U sub g', Us: 'U sub s', Eth: 'E thermal' };
+  function lbl(x, y, k) {
+    var l = LAB[k];
+    return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="17" font-weight="700">' + l[0] +
+      (l[1] ? '<tspan font-size="12" dy="4">' + l[1] + '</tspan>' : '') + '</text>';
+  }
+  function chart(st) {
+    var U = 22, Z = 120, s = [], w = st.w || 0, LY = Z + Math.max(0, -w) * U + 26, H = LY + 12;
+    s.push('<line x1="10" y1="' + Z + '" x2="250" y2="' + Z + '" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<line x1="270" y1="' + Z + '" x2="330" y2="' + Z + '" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<line x1="350" y1="' + Z + '" x2="590" y2="' + Z + '" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<line x1="260" y1="26" x2="260" y2="' + (H - 4) + '" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>');
+    s.push('<line x1="340" y1="26" x2="340" y2="' + (H - 4) + '" stroke="var(--line)" stroke-width="2" stroke-dasharray="4 4"/>');
+    s.push('<text x="130" y="18" text-anchor="middle" font-size="16" font-weight="800">' + (st.iT || 'Initial') + '</text>');
+    s.push('<text x="300" y="18" text-anchor="middle" font-size="16" font-weight="800">W<tspan font-size="11" dy="4">ext</tspan></text>');
+    s.push('<text x="470" y="18" text-anchor="middle" font-size="16" font-weight="800">' + (st.fT || 'Final') + '</text>');
+    function side(vals, x0, hide) {
+      FORMS.forEach(function (k, j) {
+        var cx = x0 + 30 + j * 60, v = (vals && vals[k]) || 0;
+        if (!hide && v) s.push('<rect x="' + (cx - 20) + '" y="' + (Z - v * U) + '" width="40" height="' + (v * U) + '" rx="3" fill="var(--cartA)"/>');
+        s.push(lbl(cx, LY, k));
+      });
+    }
+    side(st.i, 10, false);
+    side(st.f, 350, st.hideF);
+    if (w > 0) s.push('<rect x="280" y="' + (Z - w * U) + '" width="40" height="' + (w * U) + '" rx="3" fill="var(--cartA)"/>');
+    if (w < 0) s.push('<rect x="280" y="' + Z + '" width="40" height="' + (-w * U) + '" rx="3" fill="var(--cartA)"/>');
+    s.push('<text x="300" y="' + LY + '" text-anchor="middle" font-size="17" font-weight="700">W</text>');
+    function d(vals) { var o = FORMS.filter(function (k) { return vals && vals[k]; }).map(function (k) { return NAMES[k] + ' ' + vals[k]; }); return o.length ? o.join(', ') : 'nothing'; }
+    var aria = 'Bar chart. Initial: ' + d(st.i) + '. External work: ' + w + '. Final: ' + d(st.f) + '.';
+    return '<svg viewBox="0 0 600 ' + H + '" role="img" aria-label="' + aria + '">' + s.join('') + '</svg>';
+  }
+
+  // ---------- Step navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var state = { paths: { S: true }, aOk: false, stages: {}, cOk: false, q1: null, q2: null, q3: null, tries: { q1: 0, q2: 0, q3: 0 } };
+
+  function canAdvance() {
+    if (cur === 1) return state.aOk;
+    if (cur === 3) return state.cOk;
+    var q = steps[cur].getAttribute('data-q');
+    if (q) return !!state[q + 'Done'];
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'Finish' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+
+  function $(id) { return document.getElementById(id); }
+  function fb(id, ok, html) {
+    var el = $(id);
+    el.className = 'feedback show ' + (ok ? 'good' : 'bad');
+    el.innerHTML = html;
+  }
+  function practice(attr, Q, fbId) {
+    document.querySelectorAll('[' + attr + ']').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var o = b.getAttribute(attr), ok = o === Q.ans;
+        document.querySelectorAll('[' + attr + ']').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        fb(fbId, ok, ok ? Q.good : '<strong>Not quite.</strong> ' + Q.bad[o]);
+      });
+    });
+  }
+
+  // ---------- Step 1: path comparison ----------
+  var M = 2.0, G = 9.8, H = 3.0, F = 4.0, LEN = { S: 5.0, C: 7.5 }, path = 'S', round = false;
+  function drawA() {
+    var on = 'var(--accent)', off = 'var(--line)';
+    $('pathS').setAttribute('stroke', path === 'S' ? on : off);
+    $('pathC').setAttribute('stroke', path === 'C' ? on : off);
+    $('pathS').setAttribute('stroke-dasharray', path === 'S' ? '' : '8 6');
+    $('pathC').setAttribute('stroke-dasharray', path === 'C' ? '' : '8 6');
+    if (path === 'S') $('pathS').parentNode.appendChild($('pathS')); else $('pathC').parentNode.appendChild($('pathC'));
+    $('lblS').style.opacity = path === 'S' ? 1 : .4; $('lblC').style.opacity = path === 'C' ? 1 : .4;
+    $('backLbl').style.display = round ? '' : 'none';
+    var d = LEN[path] * (round ? 2 : 1), wg = round ? 0 : M * G * H, wf = -F * d;
+    $('aDist').textContent = d.toFixed(1) + ' m';
+    $('aWg').textContent = (wg > 0 ? '+' : '') + wg.toFixed(1) + ' J';
+    $('aWf').textContent = '−' + Math.abs(wf).toFixed(0) + ' J';
+    document.querySelectorAll('[data-path]').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-path') === path); });
+    $('roundBtn').classList.toggle('on', round);
+    $('roundBtn').textContent = round ? 'Round trip (tap for one way)' : 'Add the trip back to 1';
+  }
+  document.querySelectorAll('[data-path]').forEach(function (c) {
+    c.addEventListener('click', function () {
+      path = c.getAttribute('data-path'); state.paths[path] = true; drawA();
+      if (state.paths.S && state.paths.C && !state.aOk) {
+        state.aOk = true; $('aMore').classList.add('show');
+        $('aHint').textContent = 'Gravity did the same work on both paths. Now try the round trip.';
+        nextBtn.disabled = !canAdvance();
+      }
+    });
+  });
+  $('roundBtn').addEventListener('click', function () { round = !round; drawA(); });
+  drawA();
+
+  // ---------- Step 2: bar chart for each path (bars in units of 20 J) ----------
+  var BST = {
+    S: { st: { i: { Ug: 2.94 }, w: -1.0, f: { K: 1.94 } }, eq: 'K<sub>i</sub> + U<sub>i</sub> − fd = K<sub>f</sub> → 0 + 58.8 J − (4.0 N)(5.0 m) = <strong>38.8 J</strong>' },
+    C: { st: { i: { Ug: 2.94 }, w: -1.5, f: { K: 1.44 } }, eq: 'K<sub>i</sub> + U<sub>i</sub> − fd = K<sub>f</sub> → 0 + 58.8 J − (4.0 N)(7.5 m) = <strong>28.8 J</strong>' }
+  };
+  function drawB(p) {
+    $('bChart').innerHTML = chart(BST[p].st);
+    $('bEq').innerHTML = BST[p].eq;
+    document.querySelectorAll('[data-bpath]').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-bpath') === p); });
+  }
+  document.querySelectorAll('[data-bpath]').forEach(function (c) { c.addEventListener('click', function () { drawB(c.getAttribute('data-bpath')); }); });
+  drawB('S');
+  var BQ = { ans: '28',
+    good: '<strong>Yes, 28.8 J.</strong> U<sub>g</sub> = (2.0)(9.8)(3.0) = 58.8 J at the start. Friction does −(4.0 N)(7.5 m) = −30 J along the curvy path. 58.8 − 30 = 28.8 J.',
+    bad: { '58': 'That would be true with no friction. Friction from the surface is external and takes out fd = (4.0 N)(7.5 m).',
+           '88': 'Friction takes energy <strong>out</strong> of the system: its work is −fd, so subtract it.' } };
+  practice('data-bq', BQ, 'bqFb');
+
+  // ---------- Step 3: stages (bars in units of 2 J) ----------
+  var STG = {
+    ab: { st: { iT: 'a', fT: 'b', i: { Us: 4 }, w: 0, f: { K: 4 } }, eq: 'a → b: U<sub>s</sub> = ½(400)(0.20)² = 8.0 J → K<sub>b</sub> = 8.0 J (no friction on the level track)' },
+    bc: { st: { iT: 'b', fT: 'c', i: { K: 4 }, w: -1.05, f: { Ug: 2.45, K: 0.5 } }, eq: 'b → c: 8.0 J − (1.5 N)(1.4 m) = (0.50)(9.8)(1.0) + K<sub>c</sub> → 8.0 − 2.1 = 4.9 + K<sub>c</sub> → K<sub>c</sub> = <strong>1.0 J</strong>, v<sub>c</sub> = 2.0 m/s' },
+    ac: { st: { iT: 'a', fT: 'c', i: { Us: 4 }, w: -1.05, f: { Ug: 2.45, K: 0.5 } }, eq: 'a → c in one step: 8.0 J − 2.1 J = 4.9 J + K<sub>c</sub> → same answer, K<sub>c</sub> = 1.0 J' }
+  };
+  function drawC(s) {
+    $('cChart').innerHTML = chart(STG[s].st);
+    $('cEq').innerHTML = STG[s].eq;
+    document.querySelectorAll('[data-stage]').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-stage') === s); });
+  }
+  document.querySelectorAll('[data-stage]').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var s = c.getAttribute('data-stage'); state.stages[s] = true; c.classList.add('seen'); drawC(s);
+      if (Object.keys(state.stages).length === 3 && !state.cOk) {
+        state.cOk = true; $('cMore').classList.add('show'); $('cHint').style.display = 'none';
+        nextBtn.disabled = !canAdvance();
+      }
+    });
+  });
+
+  // ---------- Step 4: worked example ----------
+  var wxParts = document.querySelectorAll('#wxSteps .reveal'), wxI = 0, wxBtn = $('wxNext');
+  wxBtn.addEventListener('click', function () {
+    if (wxI < wxParts.length) { wxParts[wxI].classList.add('show'); wxI++; }
+    if (wxI >= wxParts.length) { wxBtn.style.display = 'none'; }
+  });
+
+  // ---------- Check questions (3 tries, then move on) ----------
+  function record(q, correct) {
+    state.tries[q]++;
+    if (state[q] === null) state[q] = correct;
+    if (correct) state[q + 'Done'] = true;
+    if (!correct && state.tries[q] >= 3) state[q + 'Done'] = true;
+    nextBtn.disabled = !canAdvance();
+  }
+  var key = {
+    q1: { ans: '150', good: '<strong>Correct.</strong> The resisting force removes all the K: −fd = 0 − ½mv<sub>i</sub>², so d = ½mv<sub>i</sub>²/f = ½(12,000)(15)²/9,000 = 1,350,000/9,000 = 150 m.',
+          bad: { '20': 'Check your K: it\'s ½mv<sub>i</sub>², with v <strong>squared</strong>. It looks like v wasn\'t squared (and the ½ is missing).',
+                 '75': 'That\'s half the answer. Check the ½ in ½mv²: use it once, not twice.',
+                 '300': 'Close, but K = <strong>½</strong>mv². Without the ½ you get twice the distance.' },
+          show: '150 m' },
+    q2: { ans: 'same', good: '<strong>Correct.</strong> mgh = ½mv², so v = √(2gh). The mass cancels, and gravity is conservative, so the shape of the slide doesn\'t matter either. Same height, same speed.',
+          bad: { adult: 'The adult does have more U<sub>g</sub>, but also needs more K to reach the same speed. In mgh = ½mv², m cancels.',
+                 kid: 'With no friction, the path doesn\'t matter: gravity is conservative. Only the height dropped counts.',
+                 curvy: 'A longer path matters for <strong>friction</strong>, but these slides are frictionless. Gravity\'s work depends only on the height.' },
+          show: 'the same speed' },
+    q3: { ans: '3.70', good: '<strong>Correct.</strong> Use C, where the ball is momentarily at rest: mg(3.6 − 2.9) = ½mv<sub>B</sub>², so v<sub>B</sub> = √(2·9.8·0.70) = 3.70 m/s. (Starting from A works too, but you\'d need its speed first.)',
+          bad: { '2.42': 'That\'s √(2g·0.30), the drop from A to B. But the ball was <strong>pushed</strong> at A, so it already had K there. Start from C, where it\'s at rest.',
+                 '2.80': 'That\'s the speed at A (from C down to A: √(2g·0.40)). The ball keeps speeding up all the way down to B.',
+                 '5.22': 'That adds two speeds (2.80 + 2.42). Energies add, speeds don\'t. Start from C, where K = 0, and drop 0.70 m to B.' },
+          show: '3.70 m/s' }
+  };
+  function more(q) { return state[q + 'Done'] ? '<br>The answer is <strong>' + key[q].show + '</strong> (shown in green). Tap Next to move on.' : ''; }
+  document.querySelectorAll('[data-mc]').forEach(function (group) {
+    var q = group.getAttribute('data-mc');
+    group.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q + 'Done'] && group.querySelector('.right')) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === key[q].ans;
+        group.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        if (!ok && state[q + 'Done']) group.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+        fb(q + 'Fb', ok, ok ? key[q].good : '<strong>Not quite.</strong> ' + key[q].bad[opt] + more(q));
+      });
+    });
+  });
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var l = document.createElement('div'); l.className = 'part-label';
+      l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(l, s.firstChild);
+    });
+    function note(afterId, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      var a = $(afterId); a.parentNode.insertBefore(n, a.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    // Part 2: paths
+    path = 'C'; drawA(); $('aHint').style.display = 'none';
+    note('aMore', 'Starts on the straight ramp. Students must tap the curvy path too before Next unlocks; Box A appears then. Values: straight ramp W<sub>g</sub> = +58.8 J, W<sub>f</sub> = −20 J; curvy W<sub>g</sub> = +58.8 J, W<sub>f</sub> = −30 J; round trip W<sub>g</sub> = 0, W<sub>f</sub> = −40 J or −60 J.');
+    // Part 3: path chart + question
+    drawB('C');
+    document.querySelector('[data-bq="28"]').classList.add('right');
+    fb('bqFb', true, BQ.good);
+    note('bqFb', 'Chart shown for the curvy path (bars in units of 20 J). <strong>Wrong-pick feedback</strong> (practice, not gated):' + list(['58.8 J: ' + BQ.bad['58'], '88.8 J: ' + BQ.bad['88']]));
+    // Part 4: stages
+    drawC('ac'); $('cHint').style.display = 'none';
+    note('cMore', 'Students tap a → b, b → c and a → c (each shows its bar chart and equation) before Next unlocks; Box C appears then. Shown here: a → c (bars in units of 2 J).');
+    // Checks
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+      fb(q + 'Fb', true, key[q].good);
+      var items = Object.keys(key[q].bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + key[q].bad[o];
+      });
+      note(q + 'Fb', '<strong>Feedback for wrong choices</strong> (up to 3 tries, then the answer is shown):' + list(items));
+    });
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
