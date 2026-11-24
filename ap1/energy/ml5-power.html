@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energy Review R5: Power and Efficiency</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- R5 additions ---- */
+  .mini-q { margin-top: 14px; }
+  .mini-q .big-btn { min-height: 52px; }
+  .next-card a { color: var(--accent); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .chip { flex: 1; min-height: 56px; min-width: 88px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); font-weight: 700; font-size: 18px; padding: 0 12px; }
+  .chip.on { border-color: var(--accent); background: var(--accent-soft); }
+  .chip.seen:not(.on) { border-color: var(--good); }
+  .ctl-label { font-weight: 700; margin: 12px 0 -4px; font-size: 17px; }
+  .wread { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .wread.two { grid-template-columns: 1fr 1fr; }
+  .wread > div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .wread .lab { font-size: 15px; color: var(--muted); font-weight: 600; }
+  .wread .val { font-size: 22px; font-weight: 800; }
+  .wread .hi { border-color: var(--accent); }
+  .eqline { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 8px; font-size: 18px; text-align: center; font-weight: 600; }
+  .key-line { font-size: 16px; color: var(--muted); text-align: center; margin: 4px 0 10px; }
+  .tpts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+  .tpts .chip { min-width: 0; }
+  body.teacher #derivNext { display: none !important; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 3: Work, Energy, and Power</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="ml5-power.html">regular lesson link</a>. · <a href="ml5-power-notes.pdf">Notes sheet (PDF)</a>
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 3 Review · R5</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- STEP 0: Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Power and Efficiency</h1>
+      <p class="muted">About 15 minutes · Review for the Energy reassessment</p>
+      <p>R2–R4 were about <strong>how much</strong> energy moves into or out of a system. This lesson adds <strong>how fast</strong> it moves (power), how to read power off a K–t graph, and what happens when a machine wastes part of the energy it uses (efficiency).</p>
+      <div class="notes-box">
+        <strong>Have your notes sheet out.</strong> When you see an orange <span class="notes-tag" style="margin:0">Notes · Box A</span> tag, fill in that box on your sheet. The diagrams are already drawn, so you only write the key ideas.
+      </div>
+      <p class="hint">Tap Start when you're ready.</p>
+    </div>
+  </section>
+
+  <!-- STEP 1: P = W/t -->
+  <section class="step" data-title="Power = rate of work">
+    <div class="card">
+      <span class="notes-tag">Notes · Box A</span>
+      <h2>Power is how fast energy moves</h2>
+      <p>A motor lifts a box at constant speed. The work it does goes into U<sub>g</sub>: W = mgh. <strong>Power</strong> is that work divided by the time it takes:</p>
+      <div class="eq">P = <span style="white-space:nowrap">W/Δt = ΔE/Δt</span></div>
+      <p class="key-line">unit: 1 watt (W) = 1 J/s</p>
+      <svg viewBox="0 0 600 230" role="img" aria-label="A box lifted by a rope from the floor up to a height h">
+        <line x1="20" y1="214" x2="580" y2="214" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="150" y1="10" x2="450" y2="10" stroke="var(--ink)" stroke-width="4"/>
+        <circle cx="300" cy="22" r="11" fill="none" stroke="var(--ink)" stroke-width="3"/>
+        <line id="aRope" x1="300" y1="33" x2="300" y2="100" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect id="aBot" x="270" y="174" width="60" height="40" rx="5" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <rect id="aTop" x="270" y="100" width="60" height="40" rx="5" fill="var(--cartA)"/>
+        <text id="aMlbl" x="300" y="126" text-anchor="middle" font-size="16" font-weight="800" style="fill:#fff">50 kg</text>
+        <line id="aArrow" x1="360" y1="190" x2="360" y2="130" stroke="var(--good)" stroke-width="3"/>
+        <polygon id="aHead" points="353,134 360,120 367,134" fill="var(--good)"/>
+        <line id="aDim" x1="230" y1="120" x2="230" y2="194" stroke="var(--muted)" stroke-width="2"/>
+        <text id="aHlbl" x="222" y="162" text-anchor="end" font-size="16" font-weight="800" style="fill:var(--muted)">h = 3.0 m</text>
+        <circle cx="490" cy="80" r="30" fill="none" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="490" y1="80" x2="490" y2="58" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="490" y1="80" x2="506" y2="88" stroke="var(--ink)" stroke-width="3"/>
+        <text id="aTlbl" x="490" y="136" text-anchor="middle" font-size="16" font-weight="800">Δt = 4.0 s</text>
+      </svg>
+      <div class="ctl-label">Mass</div>
+      <div class="chips" id="mChips"><button class="chip on" data-m="50">50 kg</button><button class="chip" data-m="100">100 kg</button></div>
+      <div class="ctl-label">Height</div>
+      <div class="chips" id="hChips"><button class="chip on" data-h="3">3.0 m</button><button class="chip" data-h="6">6.0 m</button></div>
+      <div class="ctl-label">Time</div>
+      <div class="chips" id="tChips"><button class="chip" data-t="2">2.0 s</button><button class="chip on" data-t="4">4.0 s</button><button class="chip" data-t="8">8.0 s</button></div>
+      <div class="wread">
+        <div><div class="lab">Work = mgh</div><div class="val" id="aW"></div></div>
+        <div class="hi"><div class="lab">Power = W/Δt</div><div class="val" id="aP"></div></div>
+        <div><div class="lab">vs. 50 kg, 3 m, 4 s</div><div class="val" id="aX"></div></div>
+      </div>
+      <p class="hint" id="aHint">Change the mass, the height, and the time at least once each. (Next unlocks once you do.)</p>
+      <div class="reveal" id="aMore">
+        <div class="notes-box"><strong>Box A:</strong> Power is the <strong>rate</strong> energy is transferred: P = W/Δt = ΔE/Δt, in watts (1 W = 1 J/s).
+          <br>• Lifting at constant speed: P = mgh/Δt. Double m or h → <strong>double</strong> P. Half the time → <strong>double</strong> P.
+          <br>• Same work done faster means more power, not more energy.</div>
+        <div class="mini-q">
+          <p><strong>Try it.</strong> Crane A lifts a load of mass 2m up a height h in time t. Crane B lifts mass m up 2h in time 2t. What is P<sub>A</sub>/P<sub>B</sub>?</p>
+          <button class="big-btn" data-aq="half">½</button>
+          <button class="big-btn" data-aq="1">1 (same power)</button>
+          <button class="big-btn" data-aq="2">2</button>
+          <button class="big-btn" data-aq="4">4</button>
+          <div class="feedback" id="aqFb"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2: P = Fv -->
+  <section class="step" data-title="P = Fv">
+    <div class="card">
+      <span class="notes-tag">Notes · Box B</span>
+      <h2>Power from force and speed</h2>
+      <p>If a force acts on something that's moving, you can find its power without a time. Tap to build the formula.</p>
+      <div id="derivSteps">
+        <div class="reveal step-line show">P = W/Δt <span class="muted">(definition)</span></div>
+        <div class="reveal step-line">P = F<sub>∥</sub>d/Δt <span class="muted">(W = F<sub>∥</sub>d)</span></div>
+        <div class="reveal step-line">P = F<sub>∥</sub>(d/Δt) <span class="muted">(regroup)</span></div>
+        <div class="reveal step-line"><strong>P = F<sub>∥</sub>v = Fv cosθ</strong> <span class="muted">(d/Δt = v)</span></div>
+      </div>
+      <button class="ghost" id="derivNext" style="width:100%;margin-top:12px">Tap to show the next line</button>
+      <div class="reveal" id="bMore">
+        <p style="margin-top:16px">A car's engine puts out a steady <strong>15.0 kW</strong>. Slide its speed and watch the driving force.</p>
+        <svg viewBox="0 0 600 150" role="img" aria-label="A car on a road with a forward force arrow and a velocity arrow">
+          <line x1="10" y1="120" x2="590" y2="120" stroke="var(--ink)" stroke-width="3"/>
+          <rect x="60" y="72" width="130" height="34" rx="8" fill="var(--cartA)"/>
+          <path d="M 90 72 L 105 50 L 150 50 L 168 72 Z" fill="var(--cartA)"/>
+          <circle cx="90" cy="108" r="12" fill="var(--ink)"/><circle cx="160" cy="108" r="12" fill="var(--ink)"/>
+          <line id="bF" x1="190" y1="80" x2="300" y2="80" stroke="var(--cartB)" stroke-width="5"/>
+          <polygon id="bFh" points="300,72 316,80 300,88" fill="var(--cartB)"/>
+          <text id="bFl" x="200" y="68" font-size="16" font-weight="800" style="fill:var(--cartB)">F</text>
+          <line id="bV" x1="190" y1="40" x2="260" y2="40" stroke="var(--good)" stroke-width="4"/>
+          <polygon id="bVh" points="260,33 274,40 260,47" fill="var(--good)"/>
+          <text x="200" y="28" font-size="16" font-weight="800" style="fill:var(--good)">v</text>
+        </svg>
+        <div class="slider-row">
+          <label for="vSlider"><span>Speed v</span><span id="vOut"></span></label>
+          <input type="range" id="vSlider" min="2" max="30" step="1" value="10" aria-label="Speed in meters per second">
+        </div>
+        <div class="wread">
+          <div><div class="lab">Power</div><div class="val">15.0 kW</div></div>
+          <div><div class="lab">Speed</div><div class="val" id="bVv"></div></div>
+          <div class="hi"><div class="lab">F = P/v</div><div class="val" id="bFv"></div></div>
+        </div>
+        <div class="notes-box"><strong>Box B:</strong> P = F<sub>∥</sub>v = Fv cosθ, where θ is the angle between F and v.
+          <br>• <strong>Average</strong> power: P = W/Δt over the whole time. <strong>Instantaneous</strong> power: P = Fv at one moment, with that moment's speed.
+          <br>• Same power, slower speed → <strong>bigger</strong> force (why trucks downshift on hills).</div>
+        <div class="mini-q">
+          <p><strong>Try it.</strong> A 15.0 kW motor drives a cart at a constant 6.0 m/s, with the force along the motion. What force does the motor supply?</p>
+          <button class="big-btn" data-bq="2.5">2.5 N</button>
+          <button class="big-btn" data-bq="2500">2,500 N</button>
+          <button class="big-btn" data-bq="90000">90,000 N</button>
+          <button class="big-btn" data-bq="0.4">0.40 N</button>
+          <div class="feedback" id="bqFb"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3: K-t graph -->
+  <section class="step" data-title="Reading K–t graphs">
+    <div class="card">
+      <span class="notes-tag">Notes · Box C</span>
+      <h2>Reading a K–t graph</h2>
+      <p>A <strong>0.50 kg</strong> ball is dropped from rest and falls through the air. Here is its kinetic energy vs. time. Tap a time to see what the graph tells you there.</p>
+      <svg viewBox="0 0 600 280" role="img" aria-label="Kinetic energy versus time for a ball falling through air: it rises steeply, then levels off" id="ktSvg">
+        <g id="ktGrid"></g>
+        <path id="ktCurve" fill="none" stroke="var(--cartA)" stroke-width="4"/>
+        <line id="ktSec" stroke="var(--note)" stroke-width="3" stroke-dasharray="7 5" style="display:none"/>
+        <line id="ktTan" stroke="var(--cartB)" stroke-width="3" style="display:none"/>
+        <line id="ktDrop" stroke="var(--good)" stroke-width="3" style="display:none"/>
+        <circle id="ktDot" r="8" fill="var(--cartA)" stroke="var(--card)" stroke-width="3" style="display:none"/>
+      </svg>
+      <div class="tpts" id="tPts">
+        <button class="chip" data-tp="0.4">0.4 s</button><button class="chip" data-tp="0.8">0.8 s</button><button class="chip" data-tp="1.2">1.2 s</button>
+        <button class="chip" data-tp="1.6">1.6 s</button><button class="chip" data-tp="2.0">2.0 s</button><button class="chip" data-tp="2.4">2.4 s</button>
+      </div>
+      <div class="wread">
+        <div style="border-color:var(--good)"><div class="lab">Value: W<sub>net</sub> from t = 0</div><div class="val" id="cK">—</div></div>
+        <div style="border-color:var(--cartB)"><div class="lab">Tangent slope: instant. P</div><div class="val" id="cTan">—</div></div>
+        <div style="border-color:var(--note)"><div class="lab">Slope from origin: average P</div><div class="val" id="cSec">—</div></div>
+      </div>
+      <p class="hint" id="cHint">Tap at least three times. (Next unlocks once you do.)</p>
+      <div class="reveal" id="cMore">
+        <div class="notes-box"><strong>Box C:</strong> On a K–t graph:
+          <br>• <strong>Slope</strong> = ΔK/Δt = rate of net work = power. Tangent line → instantaneous power; line between two points → average power.
+          <br>• <strong>Change in value</strong> ΔK = net work (work–energy theorem). Starting from rest, W<sub>net</sub> = the value of the graph.
+          <br>• Area under a K–t graph means nothing useful in this class.
+          <br>• Here the slope shrinks as air resistance grows: the ball still speeds up, but more slowly.</div>
+        <div class="mini-q">
+          <p><strong>Try it.</strong> The net work done on the ball from t = 0 to t = 1.2 s equals…</p>
+          <button class="big-btn" data-cq="sec">the slope of the line from the origin to the graph at 1.2 s.</button>
+          <button class="big-btn" data-cq="area">the area under the curve from 0 to 1.2 s.</button>
+          <button class="big-btn" data-cq="val">the value of the graph at 1.2 s.</button>
+          <button class="big-btn" data-cq="tan">the slope of the tangent line at 1.2 s.</button>
+          <div class="feedback" id="cqFb"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4: Efficiency -->
+  <section class="step" data-title="Efficiency">
+    <div class="card">
+      <span class="notes-tag">Notes · Box D</span>
+      <h2>Efficiency: not all the energy is useful</h2>
+      <p>An electric motor lifts a <strong>20 kg</strong> box up <strong>3.0 m</strong>. The useful energy out is mgh = (20)(9.8)(3.0) = <strong>588 J</strong>. Real motors also heat up, so they need <strong>more</strong> than 588 J in. Slide the efficiency.</p>
+      <div class="eq" style="font-size:28px">efficiency = useful energy out ÷ energy in</div>
+      <div class="slider-row">
+        <label for="eSlider"><span>Efficiency</span><span id="eOut"></span></label>
+        <input type="range" id="eSlider" min="10" max="100" step="5" value="25" aria-label="Efficiency in percent">
+      </div>
+      <svg viewBox="0 0 600 170" role="img" aria-label="Bar showing energy in, split into useful energy and wasted thermal energy" id="eSvg"></svg>
+      <div class="wread">
+        <div class="hi"><div class="lab">Energy in</div><div class="val" id="eIn"></div></div>
+        <div><div class="lab">Useful out</div><div class="val">588 J</div></div>
+        <div><div class="lab">Wasted (thermal)</div><div class="val" id="eW"></div></div>
+      </div>
+      <div class="notes-box"><strong>Box D:</strong> efficiency = E<sub>useful out</sub> / E<sub>in</sub> (or P<sub>out</sub>/P<sub>in</sub>), always less than 1 (100%).
+        <br>• Energy in = useful ÷ efficiency. <strong>Divide</strong>, so the input is <strong>bigger</strong> than the useful part.
+        <br>• The rest isn't destroyed: it becomes thermal energy (and sound).</div>
+      <div class="mini-q">
+        <p><strong>Try it.</strong> A winch is 25% efficient. It must give a load 600 J of useful energy. How much energy does it take in?</p>
+        <button class="big-btn" data-dq="150">150 J</button>
+        <button class="big-btn" data-dq="750">750 J</button>
+        <button class="big-btn" data-dq="2400">2,400 J</button>
+        <div class="feedback" id="dqFb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5: Worked example -->
+  <section class="step" data-title="Worked example">
+    <div class="card">
+      <span class="notes-tag">Notes · Box E</span>
+      <h2>Worked example: the elevator</h2>
+      <p>A <strong>1000 kg</strong> elevator car carries a maximum load of <strong>800 kg</strong>. A constant friction force of <strong>4000 N</strong> resists its motion. What minimum power must the motor deliver to lift the fully loaded car at a constant <strong>3.0 m/s</strong> upward? (Use g = 10 m/s², as on the class slide.)</p>
+      <svg viewBox="0 0 600 230" role="img" aria-label="Free-body diagram of the elevator moving up: tension up, weight and friction down">
+        <rect x="250" y="80" width="100" height="80" rx="6" fill="var(--track)" opacity=".5" stroke="var(--ink)" stroke-width="2"/>
+        <text x="300" y="126" text-anchor="middle" font-size="16" font-weight="800">1800 kg</text>
+        <line x1="300" y1="80" x2="300" y2="18" stroke="var(--cartA)" stroke-width="5"/><polygon points="292,22 300,6 308,22" fill="var(--cartA)"/>
+        <text x="314" y="30" font-size="17" font-weight="800" style="fill:var(--cartA)">T (motor)</text>
+        <line x1="285" y1="160" x2="285" y2="214" stroke="var(--cartB)" stroke-width="5"/><polygon points="277,210 285,226 293,210" fill="var(--cartB)"/>
+        <text x="270" y="210" text-anchor="end" font-size="17" font-weight="800" style="fill:var(--cartB)">mg</text>
+        <line x1="318" y1="160" x2="318" y2="190" stroke="var(--note)" stroke-width="5"/><polygon points="310,186 318,202 326,186" fill="var(--note)"/>
+        <text x="332" y="196" font-size="17" font-weight="800" style="fill:var(--note)">f = 4000 N</text>
+        <line x1="440" y1="150" x2="440" y2="96" stroke="var(--good)" stroke-width="4"/><polygon points="433,100 440,86 447,100" fill="var(--good)"/>
+        <text x="454" y="124" font-size="17" font-weight="800" style="fill:var(--good)">v = 3.0 m/s</text>
+      </svg>
+      <div id="wxSteps">
+        <div class="reveal step-line"><strong>Step 1: Constant speed means balanced forces.</strong> Moving up, friction points <strong>down</strong> (against the motion), along with the weight. So T = mg + f.</div>
+        <div class="reveal step-line"><strong>Step 2: Find T.</strong>
+          <div class="eq" style="font-size:24px">T = (1800)(10) + 4000 = 22,000 N</div></div>
+        <div class="reveal step-line"><strong>Step 3: Use P = Fv.</strong> T points the same way as v, so cosθ = 1:
+          <div class="eq" style="font-size:24px">P = Tv = (22,000 N)(3.0 m/s) = 66,000 W = 66 kW</div></div>
+        <div class="reveal step-line"><strong>Step 4: Where does it go?</strong> Each second the motor supplies 66,000 J: (1800)(10)(3.0) = 54,000 J into U<sub>g</sub>, and (4000)(3.0) = 12,000 J lost to friction. K doesn't change.</div>
+        <div class="reveal step-line"><strong>Going further: moving down at 3.0 m/s.</strong> Now friction points <strong>up</strong>, so T = mg − f = 18,000 − 4000 = 14,000 N, still up. But v is down, so θ = 180°:
+          <div class="eq" style="font-size:24px">P = Tv cos180° = −42,000 W = −42 kW</div>
+          Negative power means the motor takes energy <strong>out</strong>: it works as a brake.
+          <div class="notes-box"><strong>Box E:</strong> Constant speed → T = mg + f = 22,000 N. P = Tv = <strong>66 kW</strong> (54 kW into U<sub>g</sub> + 12 kW to friction). Going down: T = 14,000 N, P = <strong>−42 kW</strong> (motor acts as a brake).</div></div>
+      </div>
+      <button class="ghost" id="wxNext" style="width:100%;margin-top:12px">Tap to show the next step</button>
+    </div>
+  </section>
+
+  <!-- STEP 6: Check 1 -->
+  <section class="step" data-title="Check 1 of 3" data-q="q1">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 1 of 3</h2>
+      <p>Motor X does <strong>twice</strong> as much work as motor Y, in <strong>half</strong> the time. How does X's average power compare with Y's?</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="half">P<sub>X</sub> = ½ P<sub>Y</sub></button>
+        <button class="big-btn" data-opt="1">P<sub>X</sub> = P<sub>Y</sub></button>
+        <button class="big-btn" data-opt="2">P<sub>X</sub> = 2 P<sub>Y</sub></button>
+        <button class="big-btn" data-opt="4">P<sub>X</sub> = 4 P<sub>Y</sub></button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 7: Check 2 -->
+  <section class="step" data-title="Check 2 of 3" data-q="q2">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 2 of 3</h2>
+      <p>A rope pulls a <strong>4.0 kg</strong> package up a frictionless ramp tilted <strong>75°</strong> above horizontal, at a constant <strong>0.50 m/s</strong> along the ramp. At what rate does the rope do work on the package?</p>
+      <svg viewBox="0 0 600 220" role="img" aria-label="A package pulled by a rope up a steep 75 degree frictionless ramp at constant speed">
+        <polygon points="230,205 282,12 282,205" fill="var(--track)" opacity=".4"/>
+        <line x1="60" y1="205" x2="560" y2="205" stroke="var(--ink)" stroke-width="3"/>
+        <line x1="230" y1="205" x2="282" y2="12" stroke="var(--ink)" stroke-width="3"/>
+        <circle cx="282" cy="12" r="7" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+        <g transform="translate(250,130) rotate(-75)"><rect x="-20" y="-30" width="40" height="30" rx="4" fill="var(--cartA)"/></g>
+        <line x1="247" y1="99" x2="276" y2="13" stroke="var(--ink)" stroke-width="2.5"/>
+        <line x1="198" y1="150" x2="216" y2="84" stroke="var(--good)" stroke-width="4"/><polygon points="209,86 220,70 223,90" fill="var(--good)"/>
+        <text x="190" y="120" text-anchor="end" font-size="16" font-weight="800" style="fill:var(--good)">0.50 m/s</text>
+        <path d="M 256 205 A 26 26 0 0 0 237 180" fill="none" stroke="var(--muted)" stroke-width="2"/>
+        <text x="262" y="196" font-size="15" font-weight="700" style="fill:var(--muted)">75°</text>
+        <text x="320" y="70" font-size="16" font-weight="700" style="fill:var(--muted)">4.0 kg package</text>
+        <text x="320" y="92" font-size="16" font-weight="700" style="fill:var(--muted)">frictionless ramp</text>
+        <text x="252" y="48" text-anchor="end" font-size="15" style="fill:var(--muted)">rope</text>
+      </svg>
+      <div data-mc="q2">
+        <button class="big-btn" data-opt="1.93">1.93 W</button>
+        <button class="big-btn" data-opt="5.07">5.07 W</button>
+        <button class="big-btn" data-opt="18.9">18.9 W</button>
+        <button class="big-btn" data-opt="19.6">19.6 W</button>
+      </div>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 8: Check 3 -->
+  <section class="step" data-title="Check 3 of 3" data-q="q3">
+    <div class="card">
+      <span class="notes-tag">Notes · Box F</span>
+      <h2>Check 3 of 3</h2>
+      <p>A <strong>60 kg</strong> student climbs a <strong>4.0 m</strong> flight of stairs <strong>10 times</strong>. Her body turns food energy into useful mechanical work with an efficiency of about <strong>20%</strong>. About how much food energy does she use for the climbing?</p>
+      <div data-mc="q3">
+        <button class="big-btn" data-opt="4.7">4.7 kJ</button>
+        <button class="big-btn" data-opt="23.5">23.5 kJ</button>
+        <button class="big-btn" data-opt="28.2">28.2 kJ</button>
+        <button class="big-btn" data-opt="118">118 kJ</button>
+      </div>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- STEP 9: Wrap-up -->
+  <section class="step" data-title="Wrap-up">
+    <div class="card">
+      <h2>Before you go</h2>
+      <p>Check that Boxes A–F on your notes sheet are filled in, then write the big idea at the bottom in your own words.</p>
+      <ul>
+        <li><strong>P = W/Δt = ΔE/Δt</strong>, in watts (J/s). Same work in less time → more power.</li>
+        <li><strong>P = Fv cosθ</strong> for a force on a moving object. Average power uses the whole time; instantaneous uses the speed right then.</li>
+        <li><strong>K–t graph:</strong> slope = power, change in value = net work.</li>
+        <li><strong>Efficiency</strong> = useful out ÷ in. To find the input, <strong>divide</strong> by the efficiency.</li>
+      </ul>
+    </div>
+    <div class="card next-card">
+      <p style="margin:0"><strong>Next:</strong> R6, Checking Derivations (optional). Find it on the <a href="index.html">Unit 3 review page</a>.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  // ---------- Theme (auto / light / dark) ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  // ---------- Step navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = document.getElementById('nextBtn'), backBtn = document.getElementById('backBtn');
+  var state = { changed: {}, aOk: false, bOk: false, tp: {}, cOk: false, q1: null, q2: null, q3: null, tries: { q1: 0, q2: 0, q3: 0 } };
+
+  function canAdvance() {
+    if (cur === 1) return state.aOk;
+    if (cur === 2) return state.bOk;
+    if (cur === 3) return state.cOk;
+    var q = steps[cur].getAttribute('data-q');
+    if (q) return !!state[q + 'Done'];
+    return true;
+  }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    document.getElementById('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    document.getElementById('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'Finish' : 'Next');
+    nextBtn.disabled = !canAdvance();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+
+  function $(id) { return document.getElementById(id); }
+  function fb(id, ok, html) {
+    var el = $(id);
+    el.className = 'feedback show ' + (ok ? 'good' : 'bad');
+    el.innerHTML = html;
+  }
+  function practice(attr, Q, fbId) {
+    document.querySelectorAll('[' + attr + ']').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var o = b.getAttribute(attr), ok = o === Q.ans;
+        document.querySelectorAll('[' + attr + ']').forEach(function (x) { x.classList.remove('right', 'wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        fb(fbId, ok, ok ? Q.good : '<strong>Not quite.</strong> ' + Q.bad[o]);
+      });
+    });
+  }
+  function fmt(x) { return x.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+
+  // ---------- Step 1: lifting power ----------
+  var G = 9.8, A = { m: 50, h: 3, t: 4 }, P0 = 50 * G * 3 / 4;
+  function drawA() {
+    var W = A.m * G * A.h, P = W / A.t, topY = A.h === 3 ? 100 : 40;
+    $('aTop').setAttribute('y', topY); $('aRope').setAttribute('y2', topY);
+    $('aMlbl').setAttribute('y', topY + 26); $('aMlbl').textContent = A.m + ' kg';
+    $('aTop').setAttribute('width', A.m === 50 ? 60 : 80); $('aTop').setAttribute('x', A.m === 50 ? 270 : 260);
+    $('aArrow').setAttribute('y2', topY + 30); $('aHead').setAttribute('points', '353,' + (topY + 34) + ' 360,' + (topY + 20) + ' 367,' + (topY + 34));
+    $('aDim').setAttribute('y1', topY + 20); $('aHlbl').setAttribute('y', (topY + 20 + 194) / 2 + 6);
+    $('aHlbl').textContent = 'h = ' + A.h.toFixed(1) + ' m'; $('aTlbl').textContent = 'Δt = ' + A.t.toFixed(1) + ' s';
+    $('aW').textContent = fmt(W) + ' J'; $('aP').textContent = (P >= 1000 ? (P / 1000).toFixed(2) + ' kW' : P.toFixed(0) + ' W');
+    var r = P / P0; $('aX').textContent = (r < 1 ? (r === 0.5 ? '½' : r === 0.25 ? '¼' : r.toFixed(2)) : r.toFixed(0)) + '×';
+  }
+  [['m', 'mChips'], ['h', 'hChips'], ['t', 'tChips']].forEach(function (pr) {
+    document.querySelectorAll('#' + pr[1] + ' .chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var v = +c.getAttribute('data-' + pr[0]);
+        if (v !== A[pr[0]]) state.changed[pr[0]] = true;
+        A[pr[0]] = v;
+        document.querySelectorAll('#' + pr[1] + ' .chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+        drawA();
+        if (state.changed.m && state.changed.h && state.changed.t && !state.aOk) {
+          state.aOk = true; $('aMore').classList.add('show'); $('aHint').style.display = 'none';
+          nextBtn.disabled = !canAdvance();
+        }
+      });
+    });
+  });
+  drawA();
+  var AQ = { ans: '2',
+    good: '<strong>Yes, 2.</strong> P<sub>A</sub> = (2m)gh/t = 2mgh/t. P<sub>B</sub> = mg(2h)/(2t) = mgh/t. Both lift the same weight-times-height (2mgh), but A does it in half the time.',
+    bad: { half: 'That\'s flipped. Write each one out: P<sub>A</sub> = (2m)gh/t and P<sub>B</sub> = mg(2h)/(2t). Which is bigger?',
+           '1': 'They do the <strong>same work</strong> (2mgh each), but not in the same time. B takes 2t, so its power is half of A\'s.',
+           '4': 'Check B: doubling h doubles its work, and doubling the time halves its power. Those cancel, so P<sub>B</sub> = mgh/t.' } };
+  practice('data-aq', AQ, 'aqFb');
+
+  // ---------- Step 2: derivation + P = Fv ----------
+  var dParts = document.querySelectorAll('#derivSteps .reveal'), dI = 1;
+  $('derivNext').addEventListener('click', function () {
+    if (dI < dParts.length) { dParts[dI].classList.add('show'); dI++; }
+    if (dI >= dParts.length) {
+      $('derivNext').style.display = 'none'; $('bMore').classList.add('show');
+      state.bOk = true; nextBtn.disabled = !canAdvance();
+    }
+  });
+  function drawB() {
+    var v = +$('vSlider').value, F = 15000 / v, fl = Math.min(380, Math.max(14, F / 7500 * 380)), vl = v / 30 * 300;
+    $('bF').setAttribute('x2', 190 + fl); $('bFh').setAttribute('points', (190 + fl) + ',72 ' + (206 + fl) + ',80 ' + (190 + fl) + ',88');
+    $('bV').setAttribute('x2', 190 + vl); $('bVh').setAttribute('points', (190 + vl) + ',33 ' + (204 + vl) + ',40 ' + (190 + vl) + ',47');
+    $('vOut').textContent = v + ' m/s'; $('bVv').textContent = v + ' m/s'; $('bFv').textContent = fmt(F) + ' N';
+  }
+  $('vSlider').addEventListener('input', drawB); drawB();
+  var BQ = { ans: '2500',
+    good: '<strong>Yes, 2,500 N.</strong> F = P/v = 15,000 W ÷ 6.0 m/s = 2,500 N.',
+    bad: { '2.5': 'Check the units: 15.0 <strong>k</strong>W = 15,000 W. Divide 15,000 by 6.0.',
+           '90000': 'That\'s P × v. Since P = Fv, the force is F = P/v.',
+           '0.4': 'That\'s v/P, upside down. P = Fv, so F = P/v = 15,000/6.0.' } };
+  practice('data-bq', BQ, 'bqFb');
+
+  // ---------- Step 3: K-t graph (0.50 kg ball, terminal speed 12 m/s) ----------
+  var KM = 0.5, VT = 12;
+  function vt(t) { return VT * Math.tanh(G * t / VT); }
+  function K(t) { var v = vt(t); return 0.5 * KM * v * v; }
+  function Pinst(t) { var v = vt(t); return KM * v * G * (1 - (v / VT) * (v / VT)); }
+  function X(t) { return 70 + t / 2.4 * 500; }
+  function Y(k) { return 240 - k * 5; }
+  (function grid() {
+    var s = [];
+    [0, 10, 20, 30, 40].forEach(function (k) {
+      s.push('<line x1="70" y1="' + Y(k) + '" x2="580" y2="' + Y(k) + '" stroke="var(--line)" stroke-width="1"/>');
+      s.push('<text x="62" y="' + (Y(k) + 5) + '" text-anchor="end" font-size="14">' + k + '</text>');
+    });
+    [0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4].forEach(function (t) {
+      s.push('<line x1="' + X(t) + '" y1="40" x2="' + X(t) + '" y2="240" stroke="var(--line)" stroke-width="1"/>');
+      s.push('<text x="' + X(t) + '" y="260" text-anchor="middle" font-size="14">' + t.toFixed(1) + '</text>');
+    });
+    s.push('<line x1="70" y1="240" x2="585" y2="240" stroke="var(--ink)" stroke-width="2"/><line x1="70" y1="35" x2="70" y2="240" stroke="var(--ink)" stroke-width="2"/>');
+    s.push('<text x="330" y="278" text-anchor="middle" font-size="15" font-weight="700">time (s)</text>');
+    s.push('<text x="20" y="30" font-size="15" font-weight="700">K (J)</text>');
+    $('ktGrid').innerHTML = s.join('');
+    var d = 'M ' + X(0) + ' ' + Y(0);
+    for (var t = 0.02; t <= 2.4001; t += 0.02) d += ' L ' + X(t).toFixed(1) + ' ' + Y(K(t)).toFixed(1);
+    $('ktCurve').setAttribute('d', d);
+  })();
+  function drawC(t) {
+    var k = K(t), p = Pinst(t), dt = 0.6;
+    $('ktDot').setAttribute('cx', X(t)); $('ktDot').setAttribute('cy', Y(k)); $('ktDot').style.display = '';
+    var t1 = Math.max(0, t - dt), t2 = Math.min(2.4, t + dt);
+    $('ktTan').setAttribute('x1', X(t1)); $('ktTan').setAttribute('y1', Y(k + p * (t1 - t)));
+    $('ktTan').setAttribute('x2', X(t2)); $('ktTan').setAttribute('y2', Y(k + p * (t2 - t))); $('ktTan').style.display = '';
+    $('ktSec').setAttribute('x1', X(0)); $('ktSec').setAttribute('y1', Y(0));
+    $('ktSec').setAttribute('x2', X(t)); $('ktSec').setAttribute('y2', Y(k)); $('ktSec').style.display = '';
+    $('ktDrop').setAttribute('x1', X(t)); $('ktDrop').setAttribute('y1', Y(0));
+    $('ktDrop').setAttribute('x2', X(t)); $('ktDrop').setAttribute('y2', Y(k)); $('ktDrop').style.display = '';
+    $('cK').textContent = k.toFixed(1) + ' J'; $('cTan').textContent = p.toFixed(1) + ' W'; $('cSec').textContent = (k / t).toFixed(1) + ' W';
+    document.querySelectorAll('[data-tp]').forEach(function (c) { c.classList.toggle('on', +c.getAttribute('data-tp') === t); });
+  }
+  document.querySelectorAll('[data-tp]').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var t = +c.getAttribute('data-tp'); state.tp[t] = true; c.classList.add('seen'); drawC(t);
+      if (Object.keys(state.tp).length >= 3 && !state.cOk) {
+        state.cOk = true; $('cMore').classList.add('show'); $('cHint').style.display = 'none';
+        nextBtn.disabled = !canAdvance();
+      }
+    });
+  });
+  var CQ = { ans: 'val',
+    good: '<strong>Yes.</strong> Net work = ΔK. The ball starts from rest (K = 0), so ΔK is just the value of K at 1.2 s, about 20 J.',
+    bad: { sec: 'That slope is ΔK/Δt, the <strong>average power</strong> over the first 1.2 s, not the work.',
+           area: 'Area under a K–t graph has units of J·s, which isn\'t anything we use. Net work is the <strong>change</strong> in K.',
+           tan: 'The tangent slope is the <strong>instantaneous power</strong> at 1.2 s, not the work.' } };
+  practice('data-cq', CQ, 'cqFb');
+
+  // ---------- Step 4: efficiency ----------
+  var USE = 588;
+  function drawD() {
+    var e = +$('eSlider').value / 100, Ein = USE / e, scale = 520 / (USE / 0.10), wIn = Ein * scale, wU = USE * scale;
+    var s = [];
+    s.push('<text x="40" y="24" font-size="15" font-weight="700">Energy in</text>');
+    s.push('<rect x="40" y="32" width="' + wIn.toFixed(1) + '" height="34" rx="4" fill="var(--track)"/>');
+    s.push('<text x="40" y="96" font-size="15" font-weight="700">Where it goes</text>');
+    s.push('<rect x="40" y="104" width="' + wU.toFixed(1) + '" height="34" rx="4" fill="var(--cartA)"/>');
+    if (wIn - wU > 1) s.push('<rect x="' + (40 + wU).toFixed(1) + '" y="104" width="' + (wIn - wU).toFixed(1) + '" height="34" rx="4" fill="var(--cartB)" opacity=".75"/>');
+    s.push('<text x="40" y="160" font-size="14" font-weight="700" style="fill:var(--cartA)">■ useful (U<tspan font-size="10" dy="3">g</tspan><tspan dy="-3">)</tspan></text>');
+    s.push('<text x="230" y="160" font-size="14" font-weight="700" style="fill:var(--cartB)">■ wasted (thermal)</text>');
+    $('eSvg').innerHTML = s.join('');
+    $('eOut').textContent = Math.round(e * 100) + '%'; $('eIn').textContent = fmt(Ein) + ' J'; $('eW').textContent = fmt(Ein - USE) + ' J';
+    $('eSvg').setAttribute('aria-label', 'Energy in ' + fmt(Ein) + ' joules: 588 useful, ' + fmt(Ein - USE) + ' wasted as thermal energy');
+  }
+  $('eSlider').addEventListener('input', drawD); drawD();
+  var DQ = { ans: '2400',
+    good: '<strong>Yes, 2,400 J.</strong> Energy in = useful ÷ efficiency = 600 J ÷ 0.25 = 2,400 J. Only a quarter of it ends up in the load.',
+    bad: { '150': 'That multiplies by 0.25. The input has to be <strong>bigger</strong> than the useful part, so divide: 600 ÷ 0.25.',
+           '750': 'That adds 25% on top. Efficiency is a fraction of the input: 600 J is 25% of the input, so input = 600 ÷ 0.25.' } };
+  practice('data-dq', DQ, 'dqFb');
+
+  // ---------- Step 5: worked example ----------
+  var wxParts = document.querySelectorAll('#wxSteps .reveal'), wxI = 0, wxBtn = $('wxNext');
+  wxBtn.addEventListener('click', function () {
+    if (wxI < wxParts.length) { wxParts[wxI].classList.add('show'); wxI++; }
+    if (wxI >= wxParts.length) { wxBtn.style.display = 'none'; }
+  });
+
+  // ---------- Check questions (3 tries, then move on) ----------
+  function record(q, correct) {
+    state.tries[q]++;
+    if (state[q] === null) state[q] = correct;
+    if (correct) state[q + 'Done'] = true;
+    if (!correct && state.tries[q] >= 3) state[q + 'Done'] = true;
+    nextBtn.disabled = !canAdvance();
+  }
+  var key = {
+    q1: { ans: '4', good: '<strong>Correct.</strong> P = W/Δt. Doubling W doubles P, and halving Δt doubles it again: 2 × 2 = 4.',
+          bad: { half: 'That\'s upside down. More work <strong>and</strong> less time both make the power bigger.',
+                 '1': 'Twice the work would balance twice the time, but X takes <strong>half</strong> the time. Both changes raise the power.',
+                 '2': 'That counts only one change. Twice the work → 2×, and half the time → another 2×.' },
+          show: 'P<sub>X</sub> = 4 P<sub>Y</sub>' },
+    q2: { ans: '18.9', good: '<strong>Correct.</strong> At constant speed the rope pulls with F = mg sin75° = (4.0)(9.8)(0.966) = 37.9 N along the ramp, so P = Fv = (37.9)(0.50) = 18.9 W. Same thing another way: only the <strong>vertical</strong> part of the speed raises U<sub>g</sub>, so P = mg(v sin75°).',
+          bad: { '19.6': 'That\'s mgv, as if the package went straight up at 0.50 m/s. On the ramp only the <strong>vertical</strong> part of its speed, v sin75°, raises its height.',
+                 '5.07': 'That uses cos75°. The rope only has to balance the part of gravity <strong>along</strong> the ramp, mg sin θ. (Check: a 90° ramp should give the full mg.)',
+                 '1.93': 'That uses m instead of the weight mg. The force is mg sin75° = (4.0)(9.8)(0.966) N.' },
+          show: '18.9 W' },
+    q3: { ans: '118', good: '<strong>Correct.</strong> Useful work = mgh × 10 = (60)(9.8)(4.0)(10) = 23,520 J. Only 20% of food energy becomes work, so food energy = 23,520 ÷ 0.20 = 117,600 J ≈ 118 kJ (about 28 food Calories).',
+          bad: { '4.7': 'That multiplies by 0.20. Her body needs <strong>more</strong> food energy than the work it does, so divide by the efficiency.',
+                 '23.5': 'That\'s the useful work, mgh × 10. Her body is only 20% efficient, so the food energy is bigger: divide by 0.20.',
+                 '28.2': 'That adds 20% to the work. But the work is only 20% <strong>of</strong> the food energy: food energy = work ÷ 0.20.' },
+          show: '118 kJ' }
+  };
+  function more(q) { return state[q + 'Done'] ? '<br>The answer is <strong>' + key[q].show + '</strong> (shown in green). Tap Next to move on.' : ''; }
+  document.querySelectorAll('[data-mc]').forEach(function (group) {
+    var q = group.getAttribute('data-mc');
+    group.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (state[q + 'Done'] && group.querySelector('.right')) return;
+        var opt = b.getAttribute('data-opt'), ok = opt === key[q].ans;
+        group.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        if (!ok && state[q + 'Done']) group.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+        fb(q + 'Fb', ok, ok ? key[q].good : '<strong>Not quite.</strong> ' + key[q].bad[opt] + more(q));
+      });
+    });
+  });
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var l = document.createElement('div'); l.className = 'part-label';
+      l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(l, s.firstChild);
+    });
+    function note(afterId, html) {
+      var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = html;
+      var a = $(afterId); a.parentNode.insertBefore(n, a.nextSibling);
+    }
+    function list(items) { return '<ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    function showPractice(attr, Q, fbId, label) {
+      document.querySelector('[' + attr + '="' + Q.ans + '"]').classList.add('right');
+      fb(fbId, true, Q.good);
+      note(fbId, '<strong>Wrong-pick feedback</strong> (practice, not gated):' + list(Object.keys(Q.bad).map(function (o) {
+        return document.querySelector('[' + attr + '="' + o + '"]').textContent + ': ' + Q.bad[o];
+      })));
+    }
+    document.querySelectorAll('.reveal').forEach(function (r) { r.classList.add('show'); });
+    $('aHint').style.display = 'none'; $('cHint').style.display = 'none';
+    note('aHint', 'Students must change the mass, height and time at least once each before Next unlocks; Box A and the practice question appear then. Baseline 50 kg, 3.0 m, 4.0 s = 368 W (g = 9.8). The third readout shows the ratio to the baseline (½× to 8×).');
+    showPractice('data-aq', AQ, 'aqFb');
+    note('derivSteps', 'Students tap through the four derivation lines; the car slider, Box B and the practice question appear after the last line (that unlocks Next). Slider: 15.0 kW fixed, v from 2 to 30 m/s, F = P/v from 7,500 N down to 500 N.');
+    showPractice('data-bq', BQ, 'bqFb');
+    drawC(1.2);
+    note('tPts', 'Students tap at least three times before Next unlocks. Each tap draws the tangent (red), the line from the origin (amber dashed) and the value (green). Curve: 0.50 kg ball, terminal speed 12 m/s. At 1.2 s: K = 20.4 J, instantaneous P = 19.2 W, average P = 17.0 W. The question mirrors slide question 53.');
+    showPractice('data-cq', CQ, 'cqFb');
+    showPractice('data-dq', DQ, 'dqFb');
+    note('dqFb', 'Efficiency slider: 10% to 100% in 5% steps (starts at 25%). At 25%: 2,352 J in, 1,764 J wasted. Not gated.');
+    ['q1', 'q2', 'q3'].forEach(function (q) {
+      var g = document.querySelector('[data-mc="' + q + '"]');
+      g.querySelector('[data-opt="' + key[q].ans + '"]').classList.add('right');
+      fb(q + 'Fb', true, key[q].good);
+      var items = Object.keys(key[q].bad).map(function (o) {
+        return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + key[q].bad[o];
+      });
+      note(q + 'Fb', '<strong>Feedback for wrong choices</strong> (up to 3 tries, then the answer is shown):' + list(items));
+    });
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
