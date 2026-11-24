@@ -15,104 +15,94 @@
 html{-webkit-text-size-adjust:100%}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:18px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom,0px)}
-.wrap{max-width:980px;margin:0 auto;padding:12px 16px 40px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
-.top a{color:var(--link);text-decoration:none;font-weight:600;min-height:48px;display:inline-flex;align-items:center}
-h1{font-size:28px;line-height:1.2;margin:4px 0 4px}
-.sub{color:var(--muted);margin:0 0 14px;font-size:17px}
-.card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:14px;padding:14px;margin-bottom:14px}
-h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
-canvas{display:block;width:100%;height:auto;aspect-ratio:900/540;border-radius:10px;touch-action:manipulation}
-#banner{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-weight:600;min-height:48px;display:flex;align-items:center}
-#banner.warn{border-color:var(--bad);color:var(--bad)}
-.grid{display:grid;grid-template-columns:1fr;gap:14px}
-@media (min-width:860px){.grid{grid-template-columns:1fr 1fr}}
-.grid .card{margin-bottom:0}
-.lbl{font-weight:700;font-size:16px;margin:12px 0 6px}
-.lbl:first-of-type{margin-top:0}
-.seg{display:flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}
-.seg button{flex:1;min-height:48px;border:0;background:var(--card);color:var(--ink);font:inherit;font-size:16px;font-weight:600;touch-action:manipulation;cursor:pointer;padding:0 6px}
+.wrap{max-width:1180px;margin:0 auto;padding:6px 12px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;min-height:52px}
+.top a{color:var(--link);text-decoration:none;font-weight:600;min-height:48px;display:inline-flex;align-items:center;font-size:16px}
+h1{font-size:21px;line-height:1.2;margin:0;flex:1;text-align:center}
+h1 small{color:var(--muted);font-weight:600;font-size:15px}
+.btn{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;font-size:15px;touch-action:manipulation;cursor:pointer}
+/* stage: sized so the whole window fits a landscape iPad screen */
+.stage{position:relative;container-type:inline-size;width:min(100%,calc((100svh - 64px)*1.6667));margin:0 auto;border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:12px;overflow:hidden;background:var(--card)}
+canvas{display:block;width:100%;height:auto;aspect-ratio:900/540;touch-action:manipulation}
+.ov{position:absolute;font-size:max(12px,1.6cqw);line-height:1.2}
+.ov .cap{display:block;font-weight:700;color:var(--muted);margin:0 0 .4cqw .3cqw;text-transform:uppercase;letter-spacing:.04em;font-size:max(11px,1.35cqw)}
+.panel{background:color-mix(in srgb,var(--card) 88%,transparent);border:1px solid var(--line);border-radius:1.4cqw;padding:.8cqw}
+.seg{display:flex;border:2px solid var(--line);border-radius:1.3cqw;overflow:hidden;background:var(--card)}
+.seg button{flex:1;min-height:max(40px,5.3cqw);border:0;background:var(--card);color:var(--ink);font:inherit;font-size:max(13px,1.75cqw);font-weight:700;touch-action:manipulation;cursor:pointer;padding:0 .8cqw}
 .seg button+button{border-left:2px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
-.seg.dis{opacity:.4;pointer-events:none}
-select{width:100%;min-height:48px;font:inherit;font-size:17px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:0 12px}
-.actions{display:flex;gap:10px;margin-top:16px}
-.btn{min-height:48px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;font-size:16px;touch-action:manipulation;cursor:pointer}
-.btn.pri{flex:1;min-height:56px;background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-size:20px}
-.btn:disabled{opacity:.45}
-.btn[aria-pressed="true"]{border-color:var(--accent);color:var(--link)}
-.big{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
-.big.warn{color:var(--bad);font-size:22px}
-.big2{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
-.rlab{color:var(--muted);font-size:15px;margin-top:10px}
+.seg.col{flex-direction:column}.seg.col button+button{border-left:0;border-top:2px solid var(--line)}
+.sq button{width:max(40px,5.3cqw);flex:none}
+.sq{gap:0}
+select{width:100%;min-height:max(40px,5.3cqw);font:inherit;font-size:max(14px,1.8cqw);font-weight:600;border:2px solid var(--line);border-radius:1.3cqw;background:var(--card);color:var(--ink);padding:0 1cqw}
+#launch{min-height:max(48px,6.7cqw);width:19cqw;border-radius:1.6cqw;border:0;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:max(17px,2.6cqw);font-weight:800;touch-action:manipulation;cursor:pointer;box-shadow:0 .3cqw .9cqw rgba(0,0,0,.25)}
+#launch:disabled{opacity:.5}
+#slow{min-height:max(40px,5.3cqw);padding:0 1.4cqw;border-radius:1.3cqw;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:max(13px,1.7cqw);font-weight:700;touch-action:manipulation;cursor:pointer}
+#slow[aria-pressed="true"]{border-color:var(--accent);color:var(--link)}
+#ovRead{min-width:27cqw;text-align:right;padding:.6cqw 1cqw}
+#r1{font-size:max(22px,3.6cqw);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+#r1.warn{color:var(--bad);font-size:max(17px,2.4cqw)}
+#r2{font-size:max(15px,2.1cqw);font-weight:700;font-variant-numeric:tabular-nums}
+#r2lab{margin-top:.6cqw}
+#banner{margin:10px auto 0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-weight:600;min-height:48px;display:flex;align-items:center;background:var(--card);max-width:100%}
+#banner.warn{border-color:var(--bad);color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:14px;padding:14px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+@media (min-width:860px){.grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}}
 table{width:100%;border-collapse:collapse;font-size:16px}
 td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 th{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 td.n{font-variant-numeric:tabular-nums;font-weight:700}
 .known td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-.hint{color:var(--muted);font-size:15px;margin-top:8px}
-.logwrap{overflow-x:auto}
-.teacher{border-top-color:var(--accent)}
+.hint{color:var(--muted);font-size:15px;margin:8px 0}
+.logwrap{overflow-x:auto;max-height:420px;overflow-y:auto}
+.teacher{border-top-color:var(--accent);margin-top:14px}
 .teacher label{display:flex;align-items:center;gap:10px;min-height:48px;font-weight:600}
 .teacher input{width:24px;height:24px}
 .tag{display:inline-block;font-size:13px;font-weight:700;border-radius:99px;padding:2px 10px;background:var(--amber-soft);color:var(--amber);margin-bottom:8px}
+.big2{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+.rlab{color:var(--muted);font-size:15px;margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="top"><a href="index.html">← Unit 4: Momentum</a><button class="btn" id="themeBtn" type="button">Theme: Auto</button></nav>
-  <h1>Ballistic Pendulum Lab</h1>
-  <p class="sub">Lab 4.3 · A spring launcher fires a steel ball. Catch it with the pendulum, or fire it off a bench or straight up.</p>
+  <nav class="top"><a href="index.html">← Unit 4: Momentum</a><h1>Ballistic Pendulum Lab <small>· Lab 4.2</small></h1><button class="btn" id="themeBtn" type="button">Theme: Auto</button></nav>
 
-  <div class="card">
+  <div class="stage" id="stage">
     <canvas id="cv" width="900" height="540" aria-label="Lab apparatus"></canvas>
-    <div id="banner">Choose your setup, then tap Launch.</div>
+    <div class="ov" id="ovExp"><div class="seg" id="modeSeg">
+      <button type="button" data-v="pend">Pendulum</button><button type="button" data-v="horiz">Off a bench</button><button type="button" data-v="vert">Straight up</button>
+    </div></div>
+    <button class="ov" id="slow" type="button" aria-pressed="false">Slow-mo</button>
+    <div class="ov panel" id="ovRead">
+      <span class="cap" id="r1lab">Pointer reading</span><div id="r1">—</div>
+      <span class="cap" id="r2lab">Catcher's center of mass rose</span><div id="r2">—</div>
+    </div>
+    <div class="ov panel" id="ovSpring"><label><span class="cap">Spring</span>
+      <select id="spring"><option value="0">Weak</option><option value="1" selected>Medium</option><option value="2">Strong</option><option value="3">Super strong</option></select></label></div>
+    <div class="ov" id="ovSet"><span class="cap" id="setCap">Launch setting</span><div class="seg sq" id="setSeg">
+      <button type="button" data-v="0">1</button><button type="button" data-v="1">2</button><button type="button" data-v="2">3</button></div></div>
+    <button class="ov" id="launch" type="button">Launch</button>
+    <div class="ov panel" id="ovMass"><span class="cap">Slotted mass</span><div class="seg col" id="addSeg">
+      <button type="button" data-v="0">None</button><button type="button" data-v="1">+100 g</button><button type="button" data-v="2">+200 g</button></div></div>
   </div>
+  <div id="banner">Choose your setup, then tap Launch.</div>
 
   <div class="grid">
     <div class="card">
-      <h2>Setup</h2>
-      <div class="lbl">Experiment</div>
-      <div class="seg" id="modeSeg">
-        <button type="button" data-v="pend">Pendulum</button><button type="button" data-v="horiz">Off a bench</button><button type="button" data-v="vert">Straight up</button>
-      </div>
-      <div class="lbl">Spring</div>
-      <select id="spring">
-        <option value="0">Weak</option><option value="1" selected>Medium</option><option value="2">Strong</option><option value="3">Super strong</option>
-      </select>
-      <div class="lbl">Launch setting</div>
-      <div class="seg" id="setSeg">
-        <button type="button" data-v="0">Setting 1</button><button type="button" data-v="1">Setting 2</button><button type="button" data-v="2">Setting 3</button>
-      </div>
-      <div class="lbl">Slotted mass added to catcher</div>
-      <div class="seg" id="addSeg">
-        <button type="button" data-v="0">None</button><button type="button" data-v="1">+100 g</button><button type="button" data-v="2">+200 g</button>
-      </div>
-      <div class="actions">
-        <button class="btn pri" id="launch" type="button">Launch</button>
-        <button class="btn" id="slow" type="button" aria-pressed="false">Slow-mo</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Measurement</h2>
-      <div id="r1lab" class="rlab" style="margin-top:0">Pointer reading</div>
-      <div id="r1" class="big">—</div>
-      <div id="r2lab" class="rlab">Rise of catcher's center of mass</div>
-      <div id="r2" class="big2">—</div>
-      <div class="rlab">Known values</div>
+      <h2>Known values</h2>
       <table class="known"><tbody id="known"></tbody></table>
     </div>
-  </div>
-
-  <div class="card" style="margin-top:14px">
-    <h2>Trials</h2>
-    <div class="logwrap"><table>
-      <thead><tr><th>#</th><th>Experiment</th><th>Spring</th><th>Setting</th><th>Added</th><th>Reading</th></tr></thead>
-      <tbody id="log"></tbody>
-    </table></div>
-    <p class="hint" id="logHint">Each launch is a little different, just like a real launcher. Take several trials and average them.</p>
-    <div class="actions" style="margin-top:8px"><button class="btn" id="clearLog" type="button">Clear trials</button></div>
+    <div class="card">
+      <h2>Trials</h2>
+      <p class="hint">Each launch is a little different, just like a real launcher. Take several trials and average them.</p>
+      <div class="logwrap"><table>
+        <thead><tr><th>#</th><th>Experiment</th><th>Spring</th><th>Setting</th><th>Added</th><th>Reading</th></tr></thead>
+        <tbody id="log"></tbody>
+      </table></div>
+      <div style="margin-top:10px"><button class="btn" id="clearLog" type="button">Clear trials</button></div>
+    </div>
   </div>
 
   <div class="card teacher" id="teacher" hidden>
@@ -203,11 +193,9 @@ function drawLauncher(x,y,rot,len,dia,cock,labels){
     ctx.fillStyle='#ffffff';ctx.fillRect(-len*0.62,-dia*0.42,len*0.42,dia*0.5);
     ctx.strokeStyle='#333';ctx.lineWidth=1;
     for(var i=0;i<=12;i++){var tx=-len*0.62+i*len*0.035;ctx.beginPath();ctx.moveTo(tx,-dia*0.42);ctx.lineTo(tx,-dia*0.42+(i%4?dia*0.15:dia*0.28));ctx.stroke();}
-    // setting notches 1-3 with trigger in the chosen notch
-    for(var n=0;n<3;n++){var nx=-len*0.12-n*len*0.1;
-      ctx.fillStyle=C.dark;ctx.fillRect(nx-2,-dia*0.5-3,4,4);
-      text(String(n+1),nx,-dia*0.5-42,14,C.ink,'center','800');}
-    var tx2=-len*0.12-st.set*len*0.1;
+    // setting notches 1-3 (lined up under the Setting buttons); trigger sits in the chosen notch
+    for(var n=0;n<3;n++){ctx.fillStyle=C.dark;ctx.fillRect(NOTCH[n]-3,-dia*0.5-3,6,4);}
+    var tx2=NOTCH[st.set];
     fillRR(tx2-5,-dia*0.5-30,10,26,3,C.dark);
   }
   ctx.restore();
@@ -215,6 +203,7 @@ function drawLauncher(x,y,rot,len,dia,cock,labels){
 
 /* ---------- PENDULUM VIEW ---------- */
 var PX=560,PY=70,LS=250,CW=58,CH=46,BR=8;
+var NOTCH=[-142,-90,-38]; // local x of notches (muzzle = 0)
 var DELTA=Math.atan2(CW/2,LS); // pointer zero sits at the catcher's right edge
 var pend={theta:0,omega:0,pointer:0,ballX:null,caught:false,cock:true};
 function drawPend(){
@@ -264,8 +253,6 @@ function drawPend(){
   ctx.restore();
   ctx.fillStyle=C.dark;ctx.beginPath();ctx.arc(PX,PY,5,0,7);ctx.fill();
   // labels
-  text('Arm: 20.0 cm pivot → catcher center',PX-120,30,14,C.muted,'left','600');
-  if(pend.pointer>OFFSCALE)text('Pointer is past the end of the scale',PX+35,165,15,C.bad,'center','700');
 }
 
 /* ---------- HORIZONTAL VIEW ---------- */
@@ -276,7 +263,7 @@ function drawHoriz(){
   ctx.fillStyle=C.wall;ctx.fillRect(0,0,W,H);
   ctx.fillStyle=C.floor;ctx.fillRect(0,HFY,W,H-HFY);
   // wall at 4 m
-  var wx=HX0+WALL*HS;ctx.fillStyle=C.line;ctx.fillRect(wx,0,W-wx,HFY);text('wall',wx+6,40,14,C.muted,'left');
+  var wx=HX0+WALL*HS;ctx.fillStyle=C.line;ctx.fillRect(wx,0,W-wx,HFY);text('wall',wx+6,HFY-14,14,C.muted,'left');
   // bench
   var by=HFY-BENCH_H*HS;
   ctx.fillStyle=C.wood2;ctx.fillRect(0,by,HX0,14);ctx.fillStyle=C.woodEdge;ctx.fillRect(14,by+14,12,HFY-by-14);ctx.fillRect(HX0-26,by+14,12,HFY-by-14);
@@ -303,17 +290,16 @@ function drawHoriz(){
   if(hz.trail.length>1){ctx.strokeStyle=C.trace;ctx.lineWidth=1.5;ctx.setLineDash([3,5]);ctx.beginPath();hz.trail.forEach(function(q,i){var p=hxy(q[0],q[1]);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);});ctx.stroke();ctx.setLineDash([]);}
   if(hz.x!==null){var p=hxy(hz.x,hz.y);ballAt(p[0],p[1],5);}
   else ballAt(HX0-3,ly,4);
-  text('Pendulum arm is swung up and out of the way.',20,30,15,C.muted,'left');
 }
 
 /* ---------- VERTICAL VIEW ---------- */
-var VS=155,VFY=515,VX=520;
+var VS=155,VFY=515,VX=430;
 var vt={y:null,peak:null,flying:false,ceil:false};
 function vy(y){return VFY-y*VS;}
 function drawVert(){
   ctx.fillStyle=C.wall;ctx.fillRect(0,0,W,H);
   var cy=vy(CEIL);ctx.fillStyle=C.line;ctx.fillRect(0,0,W,cy);ctx.fillStyle=C.muted;ctx.fillRect(0,cy-3,W,3);
-  text('ceiling (3.00 m above floor)',VX+170,cy-16,14,C.ink,'left','700');
+  text('ceiling (3.00 m above floor)',335,cy+16,14,C.ink,'left','700');
   ctx.fillStyle=C.floor;ctx.fillRect(0,VFY,W,H-VFY);text('floor',20,VFY+14,14,'#fff','left');
   // stand and vertical launcher
   fillRR(VX-40,VFY-8,80,8,2,C.metal2);ctx.fillStyle=C.metal2;ctx.fillRect(VX-20,vy(MUZ_V)+4,5,(VFY-8)-(vy(MUZ_V)+4));
@@ -324,13 +310,11 @@ function drawVert(){
   ctx.strokeStyle='#222';ctx.lineWidth=1;
   for(var i=0;i<=25;i++){var y=vy(MUZ_V+i*0.1),w=i%5?7:14;ctx.beginPath();ctx.moveTo(sx,y);ctx.lineTo(sx+w,y);ctx.stroke();
     if(i%5===0)text(i?(i/10).toFixed(1)+' m':'0 m = muzzle',sx+32,y,13,C.ink,'left','700');}
-  text('Meter stick measures height above the muzzle',20,cy+58,15,C.muted,'left');
   // earlier peaks
   marks.forEach(function(h,ix){if(ix===marks.length-1)return;ctx.strokeStyle=C.muted;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx-10,vy(MUZ_V+h));ctx.lineTo(sx,vy(MUZ_V+h));ctx.stroke();});
   // current peak marker
   if(vt.peak!==null&&!vt.ceil){var py=vy(MUZ_V+vt.peak);ctx.strokeStyle=C.bad;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(VX-20,py);ctx.lineTo(sx,py);ctx.stroke();ctx.setLineDash([]);}
   if(vt.y!==null)ballAt(VX,vy(vt.y),5);else ballAt(VX,vy(MUZ_V)+3,4);
-  text('Launcher is clamped to a ring stand, pointing straight up.',20,cy+30,15,C.muted,'left');
 }
 
 function draw(){readColors();ctx.clearRect(0,0,W,H);
@@ -427,12 +411,13 @@ function launchVert(v){
 
 /* ---------- UI ---------- */
 function setBanner(s,warn){var b=$('banner');b.textContent=s;b.className=warn?'warn':'';}
-function setR(main,warn,sub,second){var r=$('r1');r.textContent=main;r.className='big'+(warn?' warn':'');
+function setR(main,warn,sub,second){var r=$('r1');r.textContent=main;r.className=warn?'warn':'';
   if(st.mode==='pend')$('r2').textContent=warn?'—':second;}
 function resetReadout(){
-  var labs={pend:'Pointer reading (max angle)',horiz:'Horizontal range',vert:'Max height above the muzzle'};
-  $('r1lab').textContent=labs[st.mode];$('r1').textContent='—';$('r1').className='big';
+  var labs={pend:'Pointer reading',horiz:'Horizontal range',vert:'Max height above muzzle'};
+  $('r1lab').textContent=labs[st.mode];$('r1').textContent='—';$('r1').className='';
   var show=st.mode==='pend';$('r2lab').style.display=show?'':'none';$('r2').style.display=show?'':'none';$('r2').textContent='—';
+  $('r2lab').textContent="Catcher's center of mass rose";
 }
 function known(){
   var rows=[['Ball (steel, ½ in)','8.4 g'],['Spring compression, Setting '+(st.set+1),(XS[st.set]*100).toFixed(2)+' cm']];
@@ -461,14 +446,30 @@ function addTrial(reading){
 function renderLog(){
   $('log').innerHTML=trials.slice().reverse().map(function(t){return '<tr><td>'+t.n+'</td><td>'+t.mode+'</td><td>'+t.spring+'</td><td>'+t.set+'</td><td>'+t.add+'</td><td class="n">'+t.reading+'</td></tr>';}).join('')||'<tr><td colspan="6" style="color:var(--muted)">No trials yet.</td></tr>';
 }
+var LAYOUT={
+  pend:{ovSpring:[24,84,230],ovSet:[319,196],launch:[30,290],ovMass:[768,214,118],ovRead:[600,62]},
+  horiz:{ovSpring:[24,84,230],ovSet:[24,176],launch:[205,232],ovRead:[600,64]},
+  vert:{ovSpring:[24,84,230],ovSet:[226,348],launch:[226,428],ovRead:[600,64]}
+};
+function place(){
+  var L=LAYOUT[st.mode];
+  ['ovSpring','ovSet','launch','ovMass','ovRead'].forEach(function(id){var el=$(id),p=L[id];
+    if(!p){el.style.display='none';return;}
+    el.style.display='';el.style.left=(p[0]/9)+'%';el.style.top=(p[1]/5.4)+'%';
+    if(p[2])el.style.width=(p[2]/9)+'cqw';});
+  $('ovExp').style.left='1.5%';$('ovExp').style.top='1.8%';
+  $('slow').style.right='1.5%';$('slow').style.top='1.8%';
+  if(st.mode==='pend'){$('ovRead').style.left='';$('ovRead').style.right='1.5%';}
+  else{$('ovRead').style.left='';$('ovRead').style.right='1.5%';}
+}
 function resetScene(){
   anim=null;st.busy=false;$('launch').disabled=false;marks=[];
   pend.theta=0;pend.omega=0;pend.pointer=0;pend.caught=false;pend.ballX=null;pend.cock=true;
   hz.x=null;hz.y=null;hz.trail=[];hz.flying=false;delete hz.wt;
   vt.y=null;vt.peak=null;vt.ceil=false;vt.flying=false;
   resetReadout();known();
-  $('addSeg').classList.toggle('dis',st.mode!=='pend');
-  var msg={pend:'Choose your setup, then tap Launch. The pointer stays at the highest angle.',horiz:'The ball flies off the bench and lands on the floor tape.',vert:'The ball flies straight up. Watch out for the ceiling!'};
+  place();
+  var msg={pend:'The pointer stays at the highest angle the catcher reaches. Arm length: 20.0 cm, pivot to catcher center.',horiz:'The pendulum arm is swung up out of the way. The ball flies off the bench and lands on the floor tape.',vert:'The launcher is clamped to a ring stand, pointing straight up. The meter stick measures height above the muzzle.'};
   setBanner(msg[st.mode]);draw();
 }
 function seg(id,key,num){
@@ -491,6 +492,7 @@ if(teacher){$('teacher').hidden=false;var m=document.createElement('meta');m.nam
   $('noNoise').addEventListener('change',function(e){st.noise=!e.target.checked;});}
 
 setupCanvas();window.addEventListener('resize',function(){setupCanvas();draw();});
+window.addEventListener('orientationchange',function(){setTimeout(function(){setupCanvas();draw();},200);});
 renderLog();applyTheme();resetScene();
 })();
 </script>
