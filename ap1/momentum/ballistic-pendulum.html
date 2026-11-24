@@ -257,7 +257,7 @@ function drawPend(){
   // measurement overlays once the pointer has stopped
   if(pend.res){var R='#b3261e',r=pend.res;
     var lp=DELTA+Math.min(pend.pointer,60)*Math.PI/180;
-    tag(r.th>OFFSCALE?'off scale':r.th.toFixed(1)+'°',PX+Math.sin(lp)*215+10,PY+Math.cos(lp)*215,R,'left',17);
+    tag(r.th>OFFSCALE?'Pointer: off scale':'Pointer: '+r.th.toFixed(1)+'°',PX+75,242,R,'center',18);
     if(r.th<=OFFSCALE){
       var th=r.th*Math.PI/180,gx=PX+LS*Math.sin(th),gy=PY+LS*Math.cos(th),y0=PY+LS;
       // ghost of the catcher at its highest point
