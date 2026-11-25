@@ -6,11 +6,15 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
 
 ## Ground rules
 - **Never change an existing file without asking first.** Adding new files is fine.
+- **Assessments are off-limits.** Never open the teacher's tests or quizzes (in Google Drive or anywhere else), and never put assessment content (question wording, numbers, diagrams, or answer choices) in this repo. Use only the unit's `unit-N-assessment-blueprint.md` in `teaching-materials`, which lists topics, skills, and results by topic. Practice problems must not copy or closely paraphrase a test item.
+- **No teaching to the test.** The CED (with the slides) decides what gets taught; the blueprint is only a check. Build the unit map from the CED first, with every learning objective given a place, and open the blueprint only after the map is done. Use it to (1) flag gaps to the teacher, not fill them silently, (2) shape wrong-answer feedback around the misconceptions it lists, and (3) plan review and reteaching from results. Never give a topic more time because it is tested, or less because it isn't. A topic the blueprint marks "assessed later" is as important as any other.
 - Put each unit's files in `ap1/<unit>/` (for example, `ap1/momentum/`). Name files `ml<N>-<topic>.html` and `ml<N>-<topic>-notes.pdf`.
 - Answer keys and anything with answers for the teacher go in the unit's materials folder, **not** in this repo, because the site is public.
 - Build from the teacher's materials in this order: slides first, then the CED for anything the slides skip. Use the binder pages for lab names and practice problems.
 - **Binder lookup:** don't read the 241-page binder PDF directly. Start with `teaching-materials/General AP Physics 1 Materials/binder-index.md` (every lab, problem set, notes guide, and worksheet with PDF page numbers), then open only the matching unit file in `binder-text/`. Render a page image only when its diagram or table matters.
+- **CED lookup:** don't read the CED PDF directly. Start with `teaching-materials/General AP Physics 1 Materials/ced-index.md`, then open the unit's file in `ced/` (learning objectives, essential knowledge, boundary statements, skills, equations, sample activities). Use `ced/lo-checklist.csv` to start each unit's coverage table. Boundary statements say what is *not* on the AP exam, so don't spend mini-lesson time beyond them.
 - Plan the whole unit before building: a day-by-day map with which days get a mini-lesson, what each one covers, and a 5-minute opener for the next class. No mini-lesson is due on a lab or test day. Stop for the teacher's review after the map and after the first prototype.
+- Every unit map ends with a **coverage table**: one row per CED learning objective, with where it is taught (mini-lesson, class day, lab, practice) and where it is assessed (this unit's test, a later unit, or AP exam only). Thin or missing rows are raised with the teacher.
 
 ## Mini-lesson requirements
 - **Self-contained HTML.** No outside libraries, fonts, CDNs, or images. Inline all CSS and JS, and draw diagrams as inline SVG.
