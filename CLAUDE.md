@@ -9,6 +9,7 @@ Every flipped-classroom unit follows the format set by `ap1/momentum/ml1-momentu
 - Put each unit's files in `ap1/<unit>/` (for example, `ap1/momentum/`). Name files `ml<N>-<topic>.html` and `ml<N>-<topic>-notes.pdf`.
 - Answer keys and anything with answers for the teacher go in the unit's materials folder, **not** in this repo, because the site is public.
 - Build from the teacher's materials in this order: slides first, then the CED for anything the slides skip. Use the binder pages for lab names and practice problems.
+- **Binder lookup:** don't read the 241-page binder PDF directly. Start with `teaching-materials/General AP Physics 1 Materials/binder-index.md` (every lab, problem set, notes guide, and worksheet with PDF page numbers), then open only the matching unit file in `binder-text/`. Render a page image only when its diagram or table matters.
 - Plan the whole unit before building: a day-by-day map with which days get a mini-lesson, what each one covers, and a 5-minute opener for the next class. No mini-lesson is due on a lab or test day. Stop for the teacher's review after the map and after the first prototype.
 
 ## Mini-lesson requirements
