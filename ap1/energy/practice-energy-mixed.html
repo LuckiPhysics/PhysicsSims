@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mixed Energy Practice · Unit 3 Review</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #172033; --muted: #5a6478; --line: #d9deea;
+    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eefe;
+    --good: #15803d; --good-soft: #e4f6ea; --bad: #b42318; --bad-soft: #fde8e6;
+    --note: #b45309; --note-soft: #fff4e0; --cartA: #2563eb; --cartB: #dc2626; --track: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+      --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+      --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+      --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --ink: #e8edf6; --muted: #9aa6bc; --line: #334155;
+    --accent: #60a5fa; --accent-ink: #0b1220; --accent-soft: #1e3a5f;
+    --good: #4ade80; --good-soft: #14321f; --bad: #f87171; --bad-soft: #3b1717;
+    --note: #fbbf24; --note-soft: #3a2a0c; --cartA: #60a5fa; --cartB: #f87171; --track: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .kicker { font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .theme-btn { min-height: 48px; min-width: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 15px; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+  .stepcount { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 12px; }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+  .notes-tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--note); background: var(--note-soft); border-radius: 8px; padding: 4px 10px; margin-bottom: 10px; }
+  .notes-box { border-left: 5px solid var(--note); background: var(--note-soft); border-radius: 10px; padding: 12px 14px; margin: 14px 0; }
+  .eq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 6px; letter-spacing: .02em; }
+  .big-btn { display: block; width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 16px; text-align: left; margin: 10px 0; font-size: 19px; }
+  .big-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .big-btn.right { border-color: var(--good); background: var(--good-soft); }
+  .big-btn.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .primary { min-height: 56px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 22px; font-size: 19px; }
+  .primary:disabled { opacity: .4; }
+  .ghost { min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 20px; font-weight: 600; }
+  .feedback { border-radius: 12px; padding: 12px 14px; margin-top: 12px; display: none; }
+  .feedback.show { display: block; }
+  .feedback.good { background: var(--good-soft); border: 1px solid var(--good); }
+  .feedback.bad { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .reveal { display: none; }
+  .reveal.show { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .step-line { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { fill: var(--ink); font-family: inherit; }
+  .slider-row { margin: 16px 0; }
+  .slider-row label { display: flex; justify-content: space-between; font-weight: 600; }
+  input[type=range] { width: 100%; height: 44px; -webkit-appearance: none; appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin-top: -14px; border: 3px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--line); border-radius: 99px; }
+  input[type=range]::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); }
+  .readout { text-align: center; font-size: 24px; font-weight: 800; margin-top: 6px; }
+  .num-row { display: flex; gap: 10px; align-items: stretch; margin: 12px 0; }
+  .sign-btn { min-width: 64px; min-height: 60px; border-radius: 14px; border: 2px solid var(--accent); background: var(--accent-soft); font-size: 28px; font-weight: 800; }
+  .num-input { flex: 1; min-height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 0 14px; font-size: 24px; min-width: 0; }
+  .units { align-self: center; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .text-input { width: 100%; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: var(--card); padding: 12px 14px; font-size: 20px; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  table.wx { width: 100%; border-collapse: collapse; font-size: 17px; margin: 8px 0; }
+  table.wx th, table.wx td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; }
+  nav.bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  nav.bottom .inner { max-width: 720px; margin: 0 auto; display: flex; gap: 12px; }
+  nav.bottom .ghost { flex: 0 0 auto; }
+  nav.bottom .primary { flex: 1; }
+  .hint { font-size: 16px; color: var(--muted); margin-top: 8px; }
+  /* Results card */
+  .results { border: 3px solid var(--accent); }
+  .results h2 { margin-bottom: 4px; }
+  .res-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .res-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); }
+  .score-big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .check-row { display: flex; gap: 12px; align-items: center; min-height: 56px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 14px; margin: 10px 0; background: var(--card); width: 100%; text-align: left; }
+  .check-row .box { width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--accent); flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; }
+  .check-row.on .box { background: var(--accent); color: var(--accent-ink); }
+  .shot-tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 17px; }
+  section.step { display: none; }
+  section.step.active { display: block; }
+  .back-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); text-decoration: none; font-weight: 600; font-size: 16px; }
+  /* Teacher view (?teacher): every part at once, answers shown */
+  .teacher-banner { display: none; background: var(--note-soft); border: 2px solid var(--note); border-radius: 14px; padding: 14px 16px; margin: 8px 0 16px; font-size: 17px; }
+  .teacher-banner a { color: var(--accent); font-weight: 700; }
+  .part-label { display: none; font-size: 14px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 26px 0 8px; }
+  .teacher-note { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 16px; }
+  .teacher-note ul { margin: 6px 0 0; padding-left: 20px; }
+  body.teacher { padding-bottom: 32px; }
+  body.teacher section.step { display: block; }
+  body.teacher .teacher-banner, body.teacher .part-label { display: block; }
+  body.teacher nav.bottom, body.teacher .progress, body.teacher .stepcount, body.teacher #dirReveal, body.teacher #wxNext { display: none !important; }
+  /* ---- Mixed practice additions ---- */
+  .next-card a { color: var(--accent); font-weight: 700; }
+  .ptag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 3px 10px; margin-bottom: 10px; }
+  .expr-btn { font-family: Georgia, "Times New Roman", serif; font-size: 22px; font-weight: 700; text-align: center; }
+  .givens { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin: 10px 0; font-size: 17px; }
+  .key-line { font-size: 16px; color: var(--muted); text-align: center; margin: 4px 0 10px; }
+  .sum-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .sum-row:last-child { border-bottom: none; }
+  .badge { font-weight: 700; white-space: nowrap; }
+  .badge.g { color: var(--good); } .badge.y { color: var(--note); } .badge.r { color: var(--bad); } .badge.n { color: var(--muted); }
+  .work-note { font-size: 16px; color: var(--muted); margin-top: 10px; }
+  .expr { text-align: center; }
+  /* ---- School theme: maroon & gold accents (sample C) ---- */
+  :root, :root[data-theme="light"] { --accent: #7a1f2e; --accent-soft: #f6e9eb; --accent-ink: #ffffff; --gold: #e8bf55; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  }
+  :root[data-theme="dark"] { --accent: #c05467; --accent-soft: #3b1a21; --accent-ink: #ffffff; }
+  .card { border-top: 5px solid var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .back-link, :root:not([data-theme="light"]) .score-big, :root:not([data-theme="light"]) .teacher-banner a { color: #e6a3ae; } }
+  :root[data-theme="dark"] .back-link, :root[data-theme="dark"] .score-big, :root[data-theme="dark"] .teacher-banner a { color: #e6a3ae; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Unit 3: Work, Energy, and Power</a>
+  <div class="teacher-banner">
+    <strong>Teacher view.</strong> Every part is shown at once, with correct answers highlighted and the feedback students get for each wrong answer.
+    Students use the <a href="practice-energy-mixed.html">regular page link</a>.
+  </div>
+  <header class="top">
+    <div class="kicker">AP Physics 1 · Unit 3 Review · Practice</div>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch light or dark mode">Theme: Auto</button>
+  </header>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <div class="stepcount" id="stepCount"></div>
+
+  <!-- Start -->
+  <section class="step" data-title="Start">
+    <div class="card">
+      <h1>Mixed Energy Practice</h1>
+      <p class="muted">In class · about 40 minutes · 7 problems, 11 answers</p>
+      <p>These problems mix the whole unit, the way the reassessment will: bar-chart thinking, work, stored energy, friction, power, and symbolic derivations. Each one checks itself.</p>
+      <div class="notes-box"><strong>Show your work on paper</strong> for every problem. The page only checks the final answer, and the reassessment grades the work. Use g = 9.8 m/s².</div>
+      <p class="hint">Stuck? Each wrong answer gives a hint aimed at that mistake. After 3 tries the page shows the answer and lets you move on.</p>
+    </div>
+  </section>
+
+  <!-- P1 -->
+  <section class="step" data-title="Problem 1 · Arrows" data-q="q1">
+    <div class="card">
+      <span class="ptag">Problem 1 · ranking</span>
+      <h2>Arrows shot from buildings</h2>
+      <p>Identical arrows are shot from the tops of five buildings, all at the <strong>same speed</strong>: up at 45°, straight out, or down at 45°. Ignore air resistance.</p>
+      <svg viewBox="0 0 620 290" role="img" aria-label="Five buildings. A 35 m, arrow up at 45 degrees. B 20 m, arrow up at 45 degrees. C 45 m, arrow up at 45 degrees. D 20 m, arrow straight out. E 45 m, arrow down at 45 degrees.">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--cartB)"/></marker></defs>
+        <line x1="4" y1="270" x2="616" y2="270" stroke="var(--ink)" stroke-width="3"/>
+        <g font-size="20" font-weight="800">
+          <text x="34" y="26">A</text><text x="158" y="26">B</text><text x="282" y="26">C</text><text x="406" y="26">D</text><text x="530" y="26">E</text>
+        </g>
+        <!-- buildings: 4 px per m -->
+        <rect x="24" y="130" width="50" height="140" fill="var(--track)" opacity=".55"/>
+        <rect x="148" y="190" width="50" height="80" fill="var(--track)" opacity=".55"/>
+        <rect x="272" y="90" width="50" height="180" fill="var(--track)" opacity=".55"/>
+        <rect x="396" y="190" width="50" height="80" fill="var(--track)" opacity=".55"/>
+        <rect x="520" y="90" width="50" height="180" fill="var(--track)" opacity=".55"/>
+        <!-- arrows -->
+        <line x1="62" y1="124" x2="90" y2="96" stroke="var(--cartB)" stroke-width="3.5" marker-end="url(#ah)"/>
+        <line x1="186" y1="184" x2="214" y2="156" stroke="var(--cartB)" stroke-width="3.5" marker-end="url(#ah)"/>
+        <line x1="310" y1="84" x2="338" y2="56" stroke="var(--cartB)" stroke-width="3.5" marker-end="url(#ah)"/>
+        <line x1="434" y1="182" x2="474" y2="182" stroke="var(--cartB)" stroke-width="3.5" marker-end="url(#ah)"/>
+        <line x1="558" y1="84" x2="586" y2="112" stroke="var(--cartB)" stroke-width="3.5" marker-end="url(#ah)"/>
+        <!-- heights -->
+        <g font-size="16" font-weight="700">
+          <line x1="98" y1="130" x2="98" y2="270" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="102" y="205">35 m</text>
+          <line x1="222" y1="190" x2="222" y2="270" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="226" y="235">20 m</text>
+          <line x1="346" y1="90" x2="346" y2="270" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="350" y="185">45 m</text>
+          <line x1="470" y1="190" x2="470" y2="270" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="474" y="235">20 m</text>
+          <line x1="594" y1="90" x2="594" y2="270" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="566" y="185" text-anchor="end" style="fill:var(--ink)">45 m</text>
+        </g>
+      </svg>
+      <p><strong>Rank the speeds of the arrows just before they hit the ground</strong>, greatest first.</p>
+      <div data-mc="q1">
+        <button class="big-btn" data-opt="dir">E &gt; C &gt; A &gt; D &gt; B</button>
+        <button class="big-btn" data-opt="ok">C = E &gt; A &gt; B = D</button>
+        <button class="big-btn" data-opt="up">C &gt; E &gt; A &gt; B &gt; D</button>
+        <button class="big-btn" data-opt="same">All the same</button>
+      </div>
+      <div class="feedback" id="q1Fb"></div>
+    </div>
+  </section>
+
+  <!-- P2 -->
+  <section class="step" data-title="Problem 2 · F–x graph" data-q="q2">
+    <div class="card">
+      <span class="ptag">Problem 2 · work from a graph</span>
+      <h2>A push that changes</h2>
+      <p>A 2.0 kg cart starts at rest on a frictionless track. A horizontal force pushes it along the track, as shown in the graph. The force stops at x = 5.0 m.</p>
+      <svg viewBox="0 0 600 300" role="img" aria-label="Force versus position graph: force rises in a straight line from 0 N at 0 m to 8 N at 2 m, then stays at 8 N until 5 m.">
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="150" y1="50" x2="150" y2="250"/><line x1="230" y1="50" x2="230" y2="250"/><line x1="310" y1="50" x2="310" y2="250"/><line x1="390" y1="50" x2="390" y2="250"/><line x1="470" y1="50" x2="470" y2="250"/><line x1="550" y1="50" x2="550" y2="250"/>
+          <line x1="70" y1="210" x2="560" y2="210"/><line x1="70" y1="170" x2="560" y2="170"/><line x1="70" y1="130" x2="560" y2="130"/><line x1="70" y1="90" x2="560" y2="90"/><line x1="70" y1="50" x2="560" y2="50"/>
+        </g>
+        <line x1="70" y1="250" x2="565" y2="250" stroke="var(--ink)" stroke-width="2.5"/>
+        <line x1="70" y1="250" x2="70" y2="40" stroke="var(--ink)" stroke-width="2.5"/>
+        <polyline points="70,250 230,90 470,90" fill="none" stroke="var(--cartA)" stroke-width="4"/>
+        <line x1="470" y1="90" x2="470" y2="250" stroke="var(--cartA)" stroke-width="2" stroke-dasharray="5 4"/>
+        <g font-size="15" text-anchor="middle">
+          <text x="70" y="270">0</text><text x="150" y="270">1</text><text x="230" y="270">2</text><text x="310" y="270">3</text><text x="390" y="270">4</text><text x="470" y="270">5</text><text x="550" y="270">6</text>
+          <text x="320" y="294" font-weight="700">position x (m)</text>
+        </g>
+        <g font-size="15" text-anchor="end">
+          <text x="62" y="255">0</text><text x="62" y="215">2</text><text x="62" y="175">4</text><text x="62" y="135">6</text><text x="62" y="95">8</text><text x="62" y="55">10</text>
+        </g>
+        <text x="20" y="150" font-size="15" font-weight="700" transform="rotate(-90 20 150)" text-anchor="middle">F (N)</text>
+      </svg>
+      <p><strong>How fast is the cart moving at x = 5.0 m?</strong></p>
+      <div class="num-row"><button class="sign-btn" data-sign="q2">+</button><input class="num-input" id="q2Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
+      <button class="primary" data-check="q2" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q2Fb"></div>
+    </div>
+  </section>
+
+  <!-- P3 -->
+  <section class="step" data-title="Problem 3 · Energy graph" data-q="q3">
+    <div class="card">
+      <span class="ptag">Problem 3 · energy vs. position</span>
+      <h2>Cart on a spring</h2>
+      <p>A 0.50 kg cart oscillates on a spring on a frictionless track. The graph shows the spring's potential energy U<sub>s</sub> versus the cart's position x (x = 0 is where the spring is relaxed). The dashed line is the system's total energy.</p>
+      <svg viewBox="0 0 600 300" role="img" aria-label="Spring potential energy versus position: a parabola from 0 J at 0 m, passing 3 J at 0.10 m. Dashed total-energy line at 9 J.">
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="180" y1="40" x2="180" y2="260"/><line x1="280" y1="40" x2="280" y2="260"/><line x1="380" y1="40" x2="380" y2="260"/><line x1="480" y1="40" x2="480" y2="260"/>
+          <line x1="80" y1="238" x2="490" y2="238"/><line x1="80" y1="216" x2="490" y2="216"/><line x1="80" y1="194" x2="490" y2="194"/><line x1="80" y1="172" x2="490" y2="172"/><line x1="80" y1="150" x2="490" y2="150"/><line x1="80" y1="128" x2="490" y2="128"/><line x1="80" y1="106" x2="490" y2="106"/><line x1="80" y1="84" x2="490" y2="84"/><line x1="80" y1="62" x2="490" y2="62"/><line x1="80" y1="40" x2="490" y2="40"/>
+        </g>
+        <line x1="80" y1="260" x2="500" y2="260" stroke="var(--ink)" stroke-width="2.5"/>
+        <line x1="80" y1="260" x2="80" y2="30" stroke="var(--ink)" stroke-width="2.5"/>
+        <path id="uCurve" d="" fill="none" stroke="var(--cartA)" stroke-width="4"/>
+        <line x1="80" y1="62" x2="490" y2="62" stroke="var(--cartB)" stroke-width="3" stroke-dasharray="9 6"/>
+        <text x="486" y="54" font-size="15" font-weight="700" text-anchor="end" style="fill:var(--cartB)">total energy</text>
+        <text x="300" y="200" font-size="16" font-weight="700" style="fill:var(--cartA)">U<tspan font-size="12" dy="4">s</tspan></text>
+        <g font-size="15" text-anchor="middle">
+          <text x="80" y="278">0</text><text x="180" y="278">0.05</text><text x="280" y="278">0.10</text><text x="380" y="278">0.15</text><text x="480" y="278">0.20</text>
+          <text x="290" y="297" font-weight="700">position x (m)</text>
+        </g>
+        <g font-size="15" text-anchor="end">
+          <text x="72" y="265">0</text><text x="72" y="221">2</text><text x="72" y="177">4</text><text x="72" y="133">6</text><text x="72" y="89">8</text><text x="72" y="45">10</text>
+        </g>
+        <text x="22" y="150" font-size="15" font-weight="700" transform="rotate(-90 22 150)" text-anchor="middle">energy (J)</text>
+      </svg>
+      <p><strong>How fast is the cart moving when it passes x = 0.10 m?</strong></p>
+      <div class="num-row"><button class="sign-btn" data-sign="q3">+</button><input class="num-input" id="q3Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
+      <button class="primary" data-check="q3" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q3Fb"></div>
+    </div>
+  </section>
+
+  <!-- P4 -->
+  <section class="step" data-title="Problem 4 · Winch" data-q="q4">
+    <div class="card">
+      <span class="ptag">Problem 4 · power and efficiency</span>
+      <h2>The winch</h2>
+      <p>An electric winch takes in 2.0 kW from the wall and is 60% efficient. It lifts a 300 kg crate straight up at a constant speed.</p>
+      <p><strong>How fast does the crate rise?</strong></p>
+      <div class="num-row"><button class="sign-btn" data-sign="q4">+</button><input class="num-input" id="q4Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
+      <button class="primary" data-check="q4" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q4Fb"></div>
+    </div>
+  </section>
+
+  <!-- P5a -->
+  <section class="step" data-title="Problem 5a · Lab 3.4" data-q="q5">
+    <div class="card">
+      <span class="ptag">Problem 5 · Lab 3.4 Stopping Distance</span>
+      <h2>Back to the lab</h2>
+      <p>Like in Lab 3.4, a block of mass m is released from rest at height h on a curved ramp. The ramp is smooth, but the floor at the bottom has coefficient of friction μ. The block slides a distance d along the floor and stops.</p>
+      <svg viewBox="0 0 600 200" role="img" aria-label="A block on a curved ramp at height h above the floor. At the bottom, a rough floor where the block slides a distance d and stops.">
+        <line x1="10" y1="170" x2="590" y2="170" stroke="var(--ink)" stroke-width="3"/>
+        <path d="M30 40 Q60 165 200 170" fill="none" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="200" y="171" width="340" height="9" fill="var(--bad)" opacity=".35"/>
+        <rect x="28" y="50" width="26" height="22" rx="3" fill="var(--cartA)" transform="rotate(60 41 61)"/>
+        <rect x="480" y="146" width="30" height="24" rx="3" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <line x1="14" y1="48" x2="14" y2="170" stroke="var(--muted)" stroke-width="2"/>
+        <text x="20" y="115" font-size="18" font-weight="800">h</text>
+        <line x1="200" y1="130" x2="495" y2="130" stroke="var(--muted)" stroke-width="2"/>
+        <polygon points="487,124 499,130 487,136" fill="var(--muted)"/>
+        <text x="350" y="122" font-size="18" font-weight="800" text-anchor="middle">d</text>
+        <text x="370" y="196" font-size="15" font-weight="700" text-anchor="middle" style="fill:var(--bad)">rough floor, μ</text>
+      </svg>
+      <p><strong>Which expression gives d?</strong> Derive it on paper first.</p>
+      <div data-mc="q5">
+        <button class="big-btn expr-btn" data-opt="mu">d = μh</button>
+        <button class="big-btn expr-btn" data-opt="mgh">d = mgh / μ</button>
+        <button class="big-btn expr-btn" data-opt="ok">d = h / μ</button>
+        <button class="big-btn expr-btn" data-opt="mg">d = h / (μmg)</button>
+      </div>
+      <div class="feedback" id="q5Fb"></div>
+    </div>
+  </section>
+
+  <!-- P5b -->
+  <section class="step" data-title="Problem 5b · Lab 3.4 graph" data-q="q6">
+    <div class="card">
+      <span class="ptag">Problem 5 · Lab 3.4, continued</span>
+      <h2>Reading the slope</h2>
+      <p>A group graphs stopping distance d (vertical) against release height h (horizontal). Their best-fit line has a slope of 2.5.</p>
+      <svg viewBox="0 0 600 290" role="img" aria-label="Graph of stopping distance d versus release height h: five data points close to a straight line through the origin with slope 2.5.">
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="160" y1="50" x2="160" y2="250"/><line x1="240" y1="50" x2="240" y2="250"/><line x1="320" y1="50" x2="320" y2="250"/><line x1="400" y1="50" x2="400" y2="250"/><line x1="480" y1="50" x2="480" y2="250"/>
+          <line x1="80" y1="210" x2="490" y2="210"/><line x1="80" y1="170" x2="490" y2="170"/><line x1="80" y1="130" x2="490" y2="130"/><line x1="80" y1="90" x2="490" y2="90"/><line x1="80" y1="50" x2="490" y2="50"/>
+        </g>
+        <line x1="80" y1="250" x2="500" y2="250" stroke="var(--ink)" stroke-width="2.5"/>
+        <line x1="80" y1="250" x2="80" y2="40" stroke="var(--ink)" stroke-width="2.5"/>
+        <line x1="80" y1="250" x2="410" y2="44" stroke="var(--cartA)" stroke-width="3"/>
+        <g fill="var(--cartB)">
+          <circle cx="160" cy="196" r="7"/><circle cx="240" cy="154" r="7"/><circle cx="320" cy="96" r="7"/><circle cx="400" cy="54" r="7"/>
+        </g>
+        <text x="330" y="140" font-size="16" font-weight="800" style="fill:var(--cartA)">slope = 2.5</text>
+        <g font-size="15" text-anchor="middle">
+          <text x="80" y="268">0</text><text x="160" y="268">0.10</text><text x="240" y="268">0.20</text><text x="320" y="268">0.30</text><text x="400" y="268">0.40</text><text x="480" y="268">0.50</text>
+          <text x="290" y="288" font-weight="700">release height h (m)</text>
+        </g>
+        <g font-size="15" text-anchor="end">
+          <text x="72" y="255">0</text><text x="72" y="215">0.2</text><text x="72" y="175">0.4</text><text x="72" y="135">0.6</text><text x="72" y="95">0.8</text><text x="72" y="55">1.0</text>
+        </g>
+        <text x="22" y="150" font-size="15" font-weight="700" transform="rotate(-90 22 150)" text-anchor="middle">d (m)</text>
+      </svg>
+      <p><strong>What is the coefficient of friction μ between the block and the floor?</strong></p>
+      <div class="num-row"><button class="sign-btn" data-sign="q6">+</button><input class="num-input" id="q6Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">(no units)</span></div>
+      <button class="primary" data-check="q6" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q6Fb"></div>
+    </div>
+  </section>
+
+  <!-- P6a -->
+  <section class="step" data-title="Problem 6a · Loop speed" data-q="q7">
+    <div class="card">
+      <span class="ptag">Problem 6 · roller coaster loop</span>
+      <h2>The loop</h2>
+      <p>A 60 kg rider starts at rest at <strong>a</strong>, the top of a 30 m hill. The track is frictionless. Point <strong>b</strong> is the top of a vertical loop with radius 8.0 m, 16 m above the ground.</p>
+      <svg viewBox="0 0 600 290" role="img" aria-label="Roller coaster: start at point a, top of a 30 meter hill. Track drops to the ground and enters a loop of radius 8 meters; point b is the top of the loop, 16 meters above the ground.">
+        <line x1="10" y1="260" x2="590" y2="260" stroke="var(--muted)" stroke-width="2"/>
+        <path d="M20 120 Q80 40 140 140 Q190 255 300 260 L360 260" fill="none" stroke="var(--ink)" stroke-width="4"/>
+        <circle cx="360" cy="212" r="48" fill="none" stroke="var(--ink)" stroke-width="4"/>
+        <line x1="360" y1="260" x2="580" y2="260" stroke="var(--ink)" stroke-width="4"/>
+        <circle cx="80" cy="74" r="9" fill="var(--cartA)"/>
+        <circle cx="360" cy="170" r="9" fill="var(--cartA)"/>
+        <text x="80" y="56" font-size="18" font-weight="800" text-anchor="middle">a</text>
+        <text x="360" y="152" font-size="18" font-weight="800" text-anchor="middle">b</text>
+        <line x1="360" y1="212" x2="314" y2="212" stroke="var(--muted)" stroke-width="2"/>
+        <text x="306" y="208" font-size="15" font-weight="700" text-anchor="end">R = 8.0 m</text>
+        <line x1="50" y1="80" x2="50" y2="260" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="44" y="180" font-size="15" font-weight="700" text-anchor="end">30 m</text>
+        <line x1="440" y1="164" x2="440" y2="260" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="368" y1="164" x2="446" y2="164" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="448" y="236" font-size="15" font-weight="700">16 m</text>
+      </svg>
+      <p class="key-line">a: at rest, top of the hill · b: top of the loop (rider upside down)</p>
+      <p><strong>How fast is the rider moving at b?</strong></p>
+      <div class="num-row"><button class="sign-btn" data-sign="q7">+</button><input class="num-input" id="q7Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">m/s</span></div>
+      <button class="primary" data-check="q7" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q7Fb"></div>
+    </div>
+  </section>
+
+  <!-- P6b -->
+  <section class="step" data-title="Problem 6b · Normal force" data-q="q8">
+    <div class="card">
+      <span class="ptag">Problem 6 · continued</span>
+      <h2>Force at the top</h2>
+      <p>Same 60 kg rider at b, the top of the 8.0 m loop, moving at the speed you just found (v<sub>b</sub>² = 274 m²/s²).</p>
+      <p><strong>What is the magnitude of the normal force on the rider at b?</strong> Draw a free-body diagram first: at the top, which way is the center of the circle?</p>
+      <div class="num-row"><button class="sign-btn" data-sign="q8">+</button><input class="num-input" id="q8Input" type="text" inputmode="decimal" placeholder="number" autocomplete="off"><span class="units">N</span></div>
+      <button class="primary" data-check="q8" style="width:100%">Check my answer</button>
+      <div class="feedback" id="q8Fb"></div>
+    </div>
+  </section>
+
+  <!-- P6c -->
+  <section class="step" data-title="Problem 6c · Seat or belt?" data-q="q9">
+    <div class="card">
+      <span class="ptag">Problem 6 · continued</span>
+      <h2>Seat or seat belt?</h2>
+      <p>At b the rider is upside down. Is the normal force on the rider from the <strong>seat</strong> or from the <strong>seat belt</strong>?</p>
+      <div data-mc="q9">
+        <button class="big-btn" data-opt="belt">The seat belt, because the rider is upside down and gravity pulls them away from the seat.</button>
+        <button class="big-btn" data-opt="ok">The seat. The rider needs a net force of mv²/R toward the center, more than gravity alone gives, so the seat must push down on them too.</button>
+        <button class="big-btn" data-opt="none">Neither. At the top of a loop the normal force is always zero.</button>
+      </div>
+      <div class="feedback" id="q9Fb"></div>
+    </div>
+  </section>
+
+  <!-- P7a -->
+  <section class="step" data-title="Problem 7a · Derivation" data-q="q10">
+    <div class="card">
+      <span class="ptag">Problem 7 · derivation (binder "Massive Challenge" style)</span>
+      <h2>Launched off the table</h2>
+      <p>A spring with constant k is squeezed a distance x and launches a block of mass m across a frictionless table of height H. The block flies off the edge and lands a horizontal distance d from the table.</p>
+      <svg viewBox="0 0 600 280" role="img" aria-label="A wall-mounted spring launches a block across a table of height H. The block leaves the edge and lands a horizontal distance d away.">
+        <line x1="10" y1="262" x2="590" y2="262" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="14" y="60" width="12" height="202" fill="var(--track)"/>
+        <rect x="26" y="96" width="270" height="10" fill="var(--track)"/>
+        <rect x="60" y="106" width="8" height="156" fill="var(--track)"/><rect x="260" y="106" width="8" height="156" fill="var(--track)"/>
+        <polyline points="26,82 36,82 42,70 52,94 62,70 72,94 82,70 88,82 96,82" fill="none" stroke="var(--ink)" stroke-width="3"/>
+        <rect x="96" y="66" width="34" height="30" rx="4" fill="var(--cartA)"/>
+        <text x="113" y="60" font-size="16" font-weight="800" text-anchor="middle">m</text>
+        <text x="60" y="56" font-size="15" font-weight="700" text-anchor="middle">k</text>
+        <path d="M296 80 Q420 80 500 250" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="7 6"/>
+        <rect x="484" y="232" width="34" height="30" rx="4" fill="none" stroke="var(--cartA)" stroke-width="2.5" stroke-dasharray="5 4"/>
+        <line x1="296" y1="40" x2="500" y2="40" stroke="var(--muted)" stroke-width="2"/>
+        <polygon points="304,34 292,40 304,46" fill="var(--muted)"/><polygon points="492,34 504,40 492,46" fill="var(--muted)"/>
+        <text x="398" y="32" font-size="18" font-weight="800" text-anchor="middle">d</text>
+        <line x1="296" y1="40" x2="296" y2="96" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="500" y1="40" x2="500" y2="232" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="312" y1="106" x2="312" y2="262" stroke="var(--muted)" stroke-width="2"/>
+        <line x1="296" y1="106" x2="318" y2="106" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="320" y="190" font-size="18" font-weight="800">H</text>
+      </svg>
+      <p><strong>Which expression gives d?</strong> Derive it on paper first. (Hint: two stages. The spring gives the launch speed; projectile motion gives the time.)</p>
+      <div data-mc="q10">
+        <button class="big-btn expr-btn" data-opt="kx">d = √(2kxH / mg)</button>
+        <button class="big-btn expr-btn" data-opt="ok">d = x√(2kH / mg)</button>
+        <button class="big-btn expr-btn" data-opt="half">d = x√(kH / 2mg)</button>
+        <button class="big-btn expr-btn" data-opt="swap">d = x√(2mH / kg)</button>
+      </div>
+      <div class="feedback" id="q10Fb"></div>
+    </div>
+  </section>
+
+  <!-- P7b -->
+  <section class="step" data-title="Problem 7b · Is it reasonable?" data-q="q11">
+    <div class="card">
+      <span class="ptag">Problem 7 · continued</span>
+      <h2>Is it reasonable?</h2>
+      <div class="expr expr-btn" style="font-size:26px;margin:6px 0 12px">d = x√(2kH / mg)</div>
+      <p>An FRQ asks you to justify that this answer is reasonable using the case m → ∞ (a very heavy block). Which justification is complete?</p>
+      <div data-mc="q11">
+        <button class="big-btn" data-opt="math">As m → ∞, the denominator gets huge, so d → 0.</button>
+        <button class="big-btn" data-opt="phys">A very heavy block would barely move, so it should land right at the table.</button>
+        <button class="big-btn" data-opt="ok">The spring's energy ½kx² is fixed, so a huge mass leaves with almost no speed and should land right at the edge (d → 0). In the expression, m is in the denominator, so d → 0. They agree.</button>
+        <button class="big-btn" data-opt="units">Both sides have units of meters, so the answer is reasonable.</button>
+      </div>
+      <div class="feedback" id="q11Fb"></div>
+    </div>
+  </section>
+
+  <!-- Wrap-up -->
+  <section class="step" data-title="Wrap-up">
+    <div class="card">
+      <h2>How did it go?</h2>
+      <div id="sumRows"></div>
+      <p class="work-note">Nothing here is turned in. Use the list to pick what to redo or bring to class.</p>
+    </div>
+    <div class="card">
+      <h2>Before the reassessment</h2>
+      <ul>
+        <li>Anything marked <strong>review</strong>: go back to that problem and redo it on paper without the hints.</li>
+        <li>Need a refresher? Each problem lines up with a review lesson: 1 → R1/R4, 2 → R2/R3, 3 → R3, 4 → R5, 5 → R4/R6, 6 → R4, 7 → R4/R6.</li>
+      </ul>
+    </div>
+    <div class="card next-card">
+      <p style="margin:0">Back to the <a href="index.html">Unit 3 review page</a>.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="inner">
+    <button class="ghost" id="backBtn">Back</button>
+    <button class="primary" id="nextBtn">Start</button>
+  </div>
+</nav>
+<script>
+(function () {
+  // ---------- Theme (auto / light / dark) ----------
+  var root = document.documentElement, themeBtn = document.getElementById('themeBtn');
+  var modes = ['auto', 'light', 'dark'], mode = 'auto';
+  try { mode = localStorage.getItem('lp-theme') || 'auto'; } catch (e) {}
+  function applyTheme() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    themeBtn.textContent = 'Theme: ' + mode.charAt(0).toUpperCase() + mode.slice(1);
+  }
+  themeBtn.addEventListener('click', function () {
+    mode = modes[(modes.indexOf(mode) + 1) % 3];
+    try { localStorage.setItem('lp-theme', mode); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  function $(id) { return document.getElementById(id); }
+
+  // ---------- Problem 3 graph: Us = 300x² (k = 600 N/m), 2000 px/m, 22 px/J ----------
+  (function () {
+    var d = '', x;
+    for (x = 0; x <= 0.1826; x += 0.004) d += (d ? ' L' : 'M') + (80 + x * 2000).toFixed(1) + ' ' + (260 - 300 * x * x * 22).toFixed(1);
+    $('uCurve').setAttribute('d', d);
+  })();
+
+  // ---------- Answer key ----------
+  var Q = {
+    q1: { label: '1 · Arrows ranking', mc: true, ans: 'ok', show: 'C = E > A > B = D',
+      good: '<strong>Correct.</strong> Speed is a scalar and energy doesn\'t care about direction. Every arrow starts with the same K, and the arrow–Earth system turns U<sub>g</sub> into K: ½mv<sub>f</sub>² = ½mv<sub>i</sub>² + mgh. Only the height matters: 45 m (C, E) &gt; 35 m (A) &gt; 20 m (B, D).',
+      bad: { dir: 'Shooting downward feels faster, but energy is a scalar: the launch direction doesn\'t change K. Write ½mv<sub>f</sub>² = ½mv<sub>i</sub>² + mgh. What is the only thing that differs?',
+             up: 'An arrow shot up does go higher, but it comes back down past the roof at its launch speed. Its extra rise and fall cancel. Compare only the building heights.',
+             same: 'They all start with the same K, but they don\'t fall the same height. More drop means more U<sub>g</sub> turned into K.' } },
+    q2: { label: '2 · F–x graph', answer: 5.66, tol: 0.06, unit: 'm/s',
+      good: '<strong>Correct.</strong> Work = area under the F–x graph: triangle ½(2.0)(8) = 8 J plus rectangle (3.0)(8) = 24 J, so W = 32 J. Work–energy theorem: 32 J = ½(2.0)v², so v = 5.66 m/s.',
+      wrong: 'Find the work first: it\'s the <strong>area</strong> under the graph (a triangle plus a rectangle). Then W<sub>net</sub> = ΔK.',
+      special: [{ v: 6.32, msg: 'You used 8 N × 5 m = 40 J. The force is <strong>less</strong> than 8 N for the first 2 m, so that part is a triangle, not a rectangle.' },
+                { v: 32, msg: '32 J is the work, not the speed. Now set it equal to ½mv².' },
+                { v: 4, msg: 'Check K: it\'s <strong>½</strong>mv². 32 = ½(2.0)v² gives v² = 32.' },
+                { v: 4.9, msg: 'You may have used the triangle as 2 × 8 = 16 J. A triangle\'s area is <strong>½</strong>(base)(height) = 8 J.' }] },
+    q3: { label: '3 · Energy graph', answer: 4.90, tol: 0.06, unit: 'm/s',
+      good: '<strong>Correct.</strong> Read the graph: at x = 0.10 m, U<sub>s</sub> = 3.0 J. Total energy is 9.0 J, so K = 9.0 − 3.0 = 6.0 J. Then 6.0 = ½(0.50)v², so v = 4.90 m/s.',
+      wrong: 'Total energy stays at 9.0 J. Read U<sub>s</sub> at x = 0.10 m from the curve; whatever is left over is K.',
+      special: [{ v: 6.0, msg: 'That uses all 9.0 J as K. At x = 0.10 m some of the energy is still stored in the spring. Read U<sub>s</sub> off the curve and subtract.' },
+                { v: 3.46, msg: 'You used U<sub>s</sub> = 3.0 J as the kinetic energy. K is the <strong>gap</strong> between the total-energy line and the curve.' }] },
+    q4: { label: '4 · Winch power', answer: 0.408, tol: 0.006, unit: 'm/s',
+      good: '<strong>Correct.</strong> Useful power = 0.60 × 2000 W = 1200 W. At constant speed the winch pulls with F = mg = 2940 N, and P = Fv, so v = 1200 / 2940 = 0.408 m/s.',
+      wrong: 'Two steps: how much of the 2.0 kW actually lifts the crate? Then use P = Fv with the force needed for constant speed.',
+      special: [{ v: 0.68, msg: 'That uses all 2000 W. The winch is only 60% efficient, so only 1200 W goes into lifting.' },
+                { v: 1.13, msg: 'You divided by the efficiency. Useful power out is <strong>smaller</strong> than power in: multiply 2000 W by 0.60.' },
+                { v: 4, msg: 'P = Fv needs a <strong>force</strong>: F = mg = 2940 N, not the mass.' },
+                { v: 6.67, msg: 'P = Fv needs a <strong>force</strong> (mg = 2940 N), and only 60% of the 2000 W is useful.' }] },
+    q5: { label: '5a · Lab 3.4 equation', mc: true, ans: 'ok', show: 'd = h / μ',
+      good: '<strong>Correct.</strong> Block–Earth system, friction is external work: mgh − μmgd = 0, so d = h/μ. The mass cancels, which is why the lab didn\'t need a scale. Quick check: more friction (bigger μ) → shorter d ✓.',
+      bad: { mu: 'Direction-of-change test: a rougher floor (bigger μ) should make d <strong>shorter</strong>. In μh, bigger μ makes d longer.',
+             mgh: 'Unit check: mgh is in joules, so mgh/μ is in joules, not meters. Friction\'s force is μmg, so m and g should cancel too.',
+             mg: 'Unit check: h/(μmg) is meters per newton, not meters. Write mgh = (μmg)d and cancel what appears on both sides.' } },
+    q6: { label: '5b · μ from the slope', answer: 0.40, tol: 0.011, unit: '',
+      good: '<strong>Correct.</strong> d = h/μ = (1/μ)h, so the slope of d vs. h is 1/μ. 2.5 = 1/μ gives μ = 0.40.',
+      wrong: 'Match the graph to y = (slope)·x. Here y is d and x is h, and d = h/μ. What plays the role of the slope?',
+      special: [{ v: 2.5, msg: '2.5 is the slope, but the slope isn\'t μ. Since d = (1/μ)h, the slope is <strong>1/μ</strong>.' }] },
+    q7: { label: '6a · Speed at top of loop', answer: 16.6, tol: 0.15, unit: 'm/s',
+      good: '<strong>Correct.</strong> From a to b the rider drops 30 − 16 = 14 m: mg(14) = ½mv<sub>b</sub>², so v<sub>b</sub> = √(2 · 9.8 · 14) = 16.6 m/s. (The mass cancels.)',
+      wrong: 'Use energy from a (at rest) to b. The height that matters is how far the rider <strong>drops</strong> from a to b.',
+      special: [{ v: 24.2, msg: 'That uses the full 30 m. The rider only drops from 30 m to b at 16 m.' },
+                { v: 17.7, msg: 'That uses 16 m, the height of b. The drop from a to b is 30 − 16 = 14 m.' },
+                { v: 274, msg: '274 is v² (in m²/s²). Take the square root.' },
+                { v: 274.4, msg: '274 is v² (in m²/s²). Take the square root.' }] },
+    q8: { label: '6b · Normal force at top', answer: 1470, tol: 20, unit: 'N',
+      good: '<strong>Correct.</strong> At the top, the center is <strong>below</strong> the rider, so both N and mg point down: N + mg = mv²/R. N = 60(274/8.0) − 60(9.8) = 2058 − 588 = 1470 N.',
+      wrong: 'At the top both forces point toward the center (down): N + mg = mv<sub>b</sub>²/R. Solve for N.',
+      special: [{ v: 2058, msg: 'That\'s the whole net force mv²/R. Gravity provides 588 N of it; N only has to provide the rest.' },
+                { v: 2646, msg: 'You added mg. At the top gravity points <strong>toward</strong> the center, so it helps: N = mv²/R − mg.' },
+                { v: 588, msg: 'That\'s just the rider\'s weight. The rider is moving in a circle, so the net force must be mv²/R.' }] },
+    q9: { label: '6c · Seat or belt', mc: true, ans: 'ok', show: 'The seat',
+      good: '<strong>Correct.</strong> The rider needs 2058 N toward the center but gravity gives only 588 N, so something must push the rider toward the center (down, at the top). Upside down at the top, the seat is between the rider and the track, above them, and it pushes them down toward the center. The rider feels pressed into the seat, not hanging in the belt.',
+      bad: { belt: 'Gravity alone (588 N) is <strong>less</strong> than the 2058 N net force needed to stay on the circle, so the rider isn\'t falling out of the seat. They\'re pressed into it.',
+             none: 'N is zero only at one special (minimum) speed, where mg alone equals mv²/R. Here v is bigger than that, and you found N = 1470 N.' } },
+    q10: { label: '7a · Derive d', mc: true, ans: 'ok', show: 'd = x√(2kH / mg)',
+      good: '<strong>Correct.</strong> Stage 1 (spring → launch): ½kx² = ½mv², so v = x√(k/m). Stage 2 (projectile): H = ½gt², so t = √(2H/g). Horizontal: d = vt = x√(k/m)·√(2H/g) = x√(2kH/mg).',
+      bad: { kx: 'Spring energy is ½k<strong>x²</strong>, not kx. A unit check catches this: √(kxH/mg) has units of √m, not m.',
+             half: 'Units are fine, so check the fall time: H = ½gt² gives t = √(<strong>2</strong>H/g), not √(H/2g).',
+             swap: 'Direction-of-change test: a stiffer spring (bigger k) should launch the block farther, but here k is on the bottom. From ½kx² = ½mv², k goes on top.' } },
+    q11: { label: '7b · Justify', mc: true, ans: 'ok', show: 'The complete justification',
+      good: '<strong>Correct.</strong> A full justification has both halves: what physics predicts and why (fixed spring energy, huge mass → tiny speed → lands at the edge) and what the expression does (m in the denominator → d → 0), then the comparison.',
+      bad: { math: 'This has only the math half. It never says what <strong>should</strong> happen physically, so there\'s nothing to compare against.',
+             phys: 'This has only the physics half, and it\'s missing the "why" (the spring\'s energy is fixed). It also never says what the <strong>expression</strong> does.',
+             units: 'Right units don\'t prove an answer is right (7a\'s x√(kH/2mg) had right units too). The question asks for the m → ∞ case.' } }
+  };
+
+  // ---------- Step navigation ----------
+  var steps = Array.prototype.slice.call(document.querySelectorAll('section.step'));
+  var cur = 0, nextBtn = $('nextBtn'), backBtn = $('backBtn');
+  var st = {}; Object.keys(Q).forEach(function (k) { st[k] = { first: null, done: false, right: false, tries: 0 }; });
+
+  function canAdvance() { var q = steps[cur].getAttribute('data-q'); return q ? st[q].done : true; }
+  function upd() { nextBtn.disabled = !canAdvance(); }
+  function render() {
+    steps.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
+    $('bar').style.width = (cur / (steps.length - 1) * 100) + '%';
+    $('stepCount').textContent = 'Part ' + (cur + 1) + ' of ' + steps.length + ' · ' + steps[cur].getAttribute('data-title');
+    backBtn.style.visibility = cur === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = cur === steps.length - 1 ? 'none' : '';
+    nextBtn.textContent = cur === 0 ? 'Start' : (cur === steps.length - 2 ? 'Finish' : 'Next');
+    upd();
+    if (cur === steps.length - 1) summary();
+    window.scrollTo(0, 0);
+  }
+  nextBtn.addEventListener('click', function () { if (canAdvance() && cur < steps.length - 1) { cur++; render(); } });
+  backBtn.addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+
+  function fb(id, ok, html) { var e = $(id); e.className = 'feedback show ' + (ok ? 'good' : 'bad'); e.innerHTML = html; }
+  function record(q, ok) {
+    var s = st[q]; s.tries++;
+    if (s.first === null) s.first = ok;
+    if (ok) { s.right = true; s.done = true; }
+    if (!ok && s.tries >= 3) s.done = true;
+    upd();
+  }
+  function fmt(v) { return String(v); }
+
+  // ± buttons
+  document.querySelectorAll('[data-sign]').forEach(function (b) {
+    b.addEventListener('click', function () { b.textContent = b.textContent === '+' ? '−' : '+'; });
+  });
+
+  // Numeric checks (signs ignored: every answer here is a magnitude)
+  document.querySelectorAll('[data-check]').forEach(function (b) {
+    var q = b.getAttribute('data-check'), c = Q[q];
+    b.addEventListener('click', function () {
+      if (st[q].right) return;
+      var raw = $(q + 'Input').value.replace(/[^0-9.\-]/g, '');
+      if (raw === '' || isNaN(parseFloat(raw))) { fb(q + 'Fb', false, 'Type a number first.'); return; }
+      var v = Math.abs(parseFloat(raw)), ok = Math.abs(v - c.answer) <= c.tol;
+      if (st[q].done && !ok) { fb(q + 'Fb', false, 'The answer is <strong>' + fmt(c.answer) + (c.unit ? ' ' + c.unit : '') + '</strong>. ' + c.good.replace(/^<strong>Correct\.<\/strong> /, '')); return; }
+      record(q, ok);
+      if (ok) { fb(q + 'Fb', true, c.good); return; }
+      var msg = c.wrong;
+      (c.special || []).forEach(function (sp) { if (Math.abs(v - sp.v) <= Math.max(c.tol, Math.abs(sp.v) * 0.015)) msg = sp.msg; });
+      if (st[q].done) msg += '<br><br><strong>The answer is ' + fmt(c.answer) + (c.unit ? ' ' + c.unit : '') + '.</strong> ' + c.good.replace(/^<strong>Correct\.<\/strong> /, '') + '<br>Fix your work on paper, then tap Next.';
+      fb(q + 'Fb', false, '<strong>Not quite.</strong> ' + msg);
+    });
+  });
+
+  // Multiple choice (after 3 wrong tries the right choice turns green)
+  document.querySelectorAll('[data-mc]').forEach(function (g) {
+    var q = g.getAttribute('data-mc'), c = Q[q];
+    g.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (st[q].right || (st[q].done && g.querySelector('.right'))) return;
+        var o = b.getAttribute('data-opt'), ok = o === c.ans;
+        g.querySelectorAll('button').forEach(function (x) { x.classList.remove('wrong'); });
+        b.classList.add(ok ? 'right' : 'wrong');
+        record(q, ok);
+        if (!ok && st[q].done) g.querySelector('[data-opt="' + c.ans + '"]').classList.add('right');
+        fb(q + 'Fb', ok, ok ? c.good : '<strong>Not quite.</strong> ' + c.bad[o] + (st[q].done ? '<br>The answer is <strong>' + c.show + '</strong> (shown in green). Tap Next to move on.' : ''));
+      });
+    });
+  });
+
+  // Wrap-up summary (not a results card: nothing is turned in)
+  function summary() {
+    var keys = Object.keys(Q), n = keys.filter(function (q) { return st[q].first === true; }).length;
+    $('sumRows').innerHTML = '<p style="margin-bottom:6px"><strong>' + n + ' of ' + keys.length + '</strong> right on the first try.</p>' +
+      keys.map(function (q) {
+        var s = st[q], t = s.first === true ? ['✓ first try', 'g'] : (s.right ? ['✓ after ' + s.tries + ' tries', 'y'] : (s.done ? ['✗ review', 'r'] : ['not tried', 'n']));
+        return '<div class="sum-row"><span>' + Q[q].label + '</span><span class="badge ' + t[1] + '">' + t[0] + '</span></div>';
+      }).join('');
+  }
+
+  render();
+
+  // ---------- Teacher view: add ?teacher to the URL ----------
+  if (/[?&]teacher\b/.test(location.search)) {
+    document.body.classList.add('teacher');
+    var meta = document.createElement('meta'); meta.name = 'robots'; meta.content = 'noindex'; document.head.appendChild(meta);
+    document.title = 'Teacher view · ' + document.title;
+    steps.forEach(function (s, i) {
+      var l = document.createElement('div'); l.className = 'part-label';
+      l.textContent = 'Part ' + (i + 1) + ' of ' + steps.length + ' · ' + s.getAttribute('data-title');
+      s.insertBefore(l, s.firstChild);
+    });
+    function note(a, h) { var n = document.createElement('div'); n.className = 'teacher-note'; n.innerHTML = h; a.parentNode.insertBefore(n, a.nextSibling); }
+    function list(i) { return '<ul>' + i.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; }
+    Object.keys(Q).forEach(function (q) {
+      var c = Q[q];
+      if (c.mc) {
+        var g = document.querySelector('[data-mc="' + q + '"]');
+        g.querySelector('[data-opt="' + c.ans + '"]').classList.add('right'); fb(q + 'Fb', true, c.good);
+        note($(q + 'Fb'), '<strong>Feedback for wrong choices</strong> (3 tries, then the answer turns green):' + list(Object.keys(c.bad).map(function (o) { return '"' + g.querySelector('[data-opt="' + o + '"]').textContent + '": ' + c.bad[o]; })));
+      } else {
+        $(q + 'Input').value = c.answer; fb(q + 'Fb', true, c.good);
+        var items = (c.special || []).map(function (sp) { return sp.v + ': ' + sp.msg; });
+        note($(q + 'Fb'), '<strong>Feedback for wrong answers</strong> (accepts ±' + c.tol + ', signs ignored; 3 tries, then the answer is shown):' + list(items.concat(['Anything else: ' + c.wrong])));
+      }
+    });
+    Object.keys(Q).forEach(function (q, i) { st[q] = (i % 4 === 3) ? { first: false, done: true, right: true, tries: 2 } : { first: true, done: true, right: true, tries: 1 }; });
+    summary();
+    note($('sumRows'), 'Sample summary. Students see their own first-try results here; nothing is turned in.');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
